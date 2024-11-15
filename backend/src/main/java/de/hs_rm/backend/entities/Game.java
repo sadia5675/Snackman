@@ -42,17 +42,20 @@ public class Game {
         System.out.print("started: "+this.started);
     }
 
-    private String kick(Player player){ 
-        System.out.print(player+" is kicked");
-         // TODO: Implementierung für player kicken
-         return "0";
+    private String kick(long playerId){ 
+        for (Player player : players) {
+            if (player.getId() == playerId) {   
+                players.remove(player);
+                return "Player " + player + " has been kicked.";
+            }
+        }
+        return "Player with ID " + playerId + " not found.";
     }
 
     private void setChicken(int total){ 
         System.out.print("total Chicken: "+total);
         // TODO: Implementierung für hinzufügen von Hühnern
     }
-
 
     public long getId() {
         return id;
