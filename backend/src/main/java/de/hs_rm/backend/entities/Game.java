@@ -32,17 +32,17 @@ public class Game {
         this.map =  new Map();                           
     }
 
-    private void start(){
+    public void start(){
         this.started = true;
         System.out.print("started: "+this.started);
     }
 
-    private void end(){
+    public void end(){
         this.started = false;
         System.out.print("started: "+this.started);
     }
 
-    private String kick(long playerId){ 
+    public String kick(long playerId){ 
         for (Player player : players) {
             if (player.getId() == playerId) {   
                 players.remove(player);
@@ -52,7 +52,7 @@ public class Game {
         return "Player with ID " + playerId + " not found.";
     }
 
-    private void setChicken(int total){ 
+    public void setChicken(int total){ 
         System.out.print("total Chicken: "+total);
         // TODO: Implementierung für hinzufügen von Hühnern
     }

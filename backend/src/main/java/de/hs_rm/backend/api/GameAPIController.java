@@ -3,6 +3,8 @@ package de.hs_rm.backend.api;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.hs_rm.backend.entities.Game;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,7 @@ public class GameAPIController {
     @PostMapping("/create")
     public ResponseEntity<?> createGame() {
         if(game==null){
-            game = new Game();
+            //game = new Game();
             return ResponseEntity.ok(game);
         }
         return createErrorResponse("A game exists already");
@@ -55,7 +57,7 @@ public class GameAPIController {
 
     // Method to end the game
     @PostMapping("/end")
-    public ResponseEntity<Game> endGame() {
+    public ResponseEntity<?> endGame() {
         if(game==null){
             return createErrorResponse("No game found to end.");
         }
@@ -65,7 +67,7 @@ public class GameAPIController {
     
     // Method to kick a user from the game
     @PostMapping("/kick/{userId}")
-    public ResponseEntity<?> kickUser(@PathVariable String userId) {
+    public ResponseEntity<?> kickUser(@PathVariable int userId) {
         if (game == null) {
             return createErrorResponse("No game found.");
         }
@@ -80,7 +82,7 @@ public class GameAPIController {
         if (game == null) {
             return createErrorResponse("No game found.");
         }
-        game.setChickenCount(number);
+        game.setChicken(number);
         return ResponseEntity.ok(game);
     }
 
