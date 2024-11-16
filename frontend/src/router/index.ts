@@ -3,7 +3,6 @@ import Index from '../views/Index.vue'
 import Lobby from '../views/Lobby.vue'
 import LobbyList from '../views/LobbyList.vue'
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

@@ -1,6 +1,6 @@
-<script lang="ts">
+<script setup lang="ts">
 </script>
 
 <template>
-    Hier ist die Lobby
+    Hallo
 </template>
