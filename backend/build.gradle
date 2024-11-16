@@ -28,6 +28,8 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+def isWindows = System.getProperty("os.name").toLowerCase().contains("win")
+def npmCommand = isWindows ? "C:\\Program Files\\nodejs\\npm.cmd" : "npm"
 
 //Von Weitz Projekt SpringVueVerknotung
 task build_frontend {
@@ -35,12 +37,12 @@ task build_frontend {
 		// JS-Pakete in Vue-Projekt installieren
 		exec {
 			workingDir "${projectDir}/../frontend"
-			commandLine "C:\\Program Files\\nodejs\\npm.cmd", "install"
+			commandLine npmCommand, "install"
 		}
 		// Vue-Frontend bauen
 		exec {
 			workingDir "${projectDir}/../frontend"
-			commandLine "C:\\Program Files\\nodejs\\npm.cmd","run", "build"
+			commandLine npmCommand,"run", "build"
 		}
 		// eventuell vorhandenes public/fe (Frontend)-Verzeichnis loeschen
 		delete files("${projectDir}/src/main/resources/public/")
