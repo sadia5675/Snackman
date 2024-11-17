@@ -3,7 +3,12 @@ package de.hs_rm.backend.api;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import de.hs_rm.backend.entities.Game;
+import de.hs_rm.backend.entities.Player;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -25,15 +30,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/game")
 public class GameAPIController {
     private Game game;
- 
+
+    // TODO: Sicherheit für Spiel, keys in responsebody
+    // TODO: Was passiert wenn Fehler nicht hier sondern in Spiellogik (Game-Klasse) kommt
+
     // Method to create a new game
     @PostMapping("/create")
-    public ResponseEntity<?> createGame() {
-        if(game==null){
-            //game = new Game();
-            return ResponseEntity.ok(game);
-        }
-        return createErrorResponse("A game exists already");
+    public ResponseEntity<?> createGame(@RequestBody Player gamemasterFromFrontend) {
+        //warte noch auf ticket #28
+        Player gamemaster = new Player(gamemasterFromFrontend.getUsername());
+        game = new Game(gamemaster);
+        return createOkResponse();
     }
     // Method to join an existing game
     // @PostMapping("/join/{gameId}")
@@ -52,7 +59,7 @@ public class GameAPIController {
             return createErrorResponse("No game found to start.");
         }
         game.start();
-        return ResponseEntity.ok(game);
+        return createOkResponse();
     }
 
     // Method to end the game
@@ -62,17 +69,22 @@ public class GameAPIController {
             return createErrorResponse("No game found to end.");
         }
         game.end();
-        return ResponseEntity.ok(game);
+        return createOkResponse();
     }
     
     // Method to kick a user from the game
-    @PostMapping("/kick/{userId}")
-    public ResponseEntity<?> kickUser(@PathVariable int userId) {
+    // soll username oder playerobj von frontend bekommen?
+    @PostMapping("/kick/{username}") // soll username
+    public ResponseEntity<?> kickUser(@PathVariable String username) {
         if (game == null) {
             return createErrorResponse("No game found.");
         }
-        game.kick(userId);
-        return ResponseEntity.ok(game);
+        if(game.kick(username)){
+            return createOkResponse();
+        }
+        return createErrorResponse("username is invalid!");
+        
+                
     }
 
     
@@ -83,7 +95,7 @@ public class GameAPIController {
             return createErrorResponse("No game found.");
         }
         game.setChicken(number);
-        return ResponseEntity.ok(game);
+        return createOkResponse();
     }
 
     // Retrieve the game status
@@ -92,7 +104,7 @@ public class GameAPIController {
         if (game == null) {
             return createErrorResponse("No game found.");
         }
-        return ResponseEntity.ok(game);
+        return createOkResponse();
     }
 
     // Helper method for standardized error response
@@ -102,6 +114,23 @@ public class GameAPIController {
         feedbackData.put("feedback", feedbackMessage);
         feedbackData.put("time", LocalDateTime.now().toString());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(feedbackData);
+    }
+        // Helper method for standardized ok response
+    private ResponseEntity<Map<String, Object>> createOkResponse() {
+        Map<String, Object> feedbackData = new HashMap<>();
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String gameJSON;
+        feedbackData.put("status", "error");
+        feedbackData.put("time", LocalDateTime.now().toString());
+        try {
+            gameJSON = ow.writeValueAsString(game);
+            feedbackData.put("feedback", gameJSON);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            feedbackData.put("feedback", "something in backend went wrong!");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
 }
 
