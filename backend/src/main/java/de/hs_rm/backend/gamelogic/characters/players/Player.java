@@ -11,4 +11,7 @@ public class Player {
         this.uniqueName = uniqueName;
     }
 
+    public Player(String uniqueName) {
+        this.uniqueName = uniqueName;
+    }
 }

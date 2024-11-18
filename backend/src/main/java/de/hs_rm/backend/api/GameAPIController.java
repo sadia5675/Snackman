@@ -7,8 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-import de.hs_rm.backend.entities.Game;
-import de.hs_rm.backend.entities.Player;
+import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.characters.players.Player;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ public class GameAPIController {
     @PostMapping("/create")
     public ResponseEntity<?> createGame(@RequestBody Player gamemasterFromFrontend) {
         //warte noch auf ticket #28
-        Player gamemaster = new Player(gamemasterFromFrontend.getUsername());
+        Player gamemaster = new Player(gamemasterFromFrontend.getUniqueName());
         game = new Game(gamemaster);
         return createOkResponse();
     }
