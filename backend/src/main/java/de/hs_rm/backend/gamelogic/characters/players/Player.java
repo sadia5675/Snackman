@@ -1,5 +1,12 @@
 package de.hs_rm.backend.gamelogic.characters.players;
-
+/*
+ * Die Player Klasse umfasst alle Eigenschaften zum Login und Regestrierungen. 
+ * Dabei können sich Gastspieler mit einem Namen(unique) und deren ID ist immer 0 
+ * währendem Spieler die sich regestrieren möchten sich richtig verifizieren müssen 
+ * mit Email und Passwort. 
+ * --> Unterschieden werden beide Spieler durch einen Enum 
+ *  
+ */
 public class Player{
     //@Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY) // automatische ID-Generierung
@@ -9,6 +16,7 @@ public class Player{
     private String password; 
     PlayerType playertype; 
 
+    //Konstruktor für regestrierte Player
     public Player(long userId, String name, String email, String password,PlayerType playertype){
         this.userId=userId; 
         this.name=name; 
@@ -17,12 +25,15 @@ public class Player{
         this.playertype=PlayerType.REGISTERED; 
 
     }
+
+    //Konstruktor für Gastspieler 
     public Player(long userId, String name){
         this.userId=0; 
         this.name=name; 
         this.playertype=PlayerType.GUEST;  
     }
 
+    //Getter und Setter
     public String getEmail() {
         return email;
     }public void setEmail(String email) {

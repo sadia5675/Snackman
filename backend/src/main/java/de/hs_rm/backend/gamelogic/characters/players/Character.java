@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic.characters.players;
-
+// Bauplan der Characters --> hierbei handelt es sich um eine abstrakte Klasse!
 public abstract class Character{
+    //Initialisierung 
     //Der Spieler bekommt später eine spring boot entity id 
     private long id; 
     private String name;
@@ -17,6 +18,7 @@ public abstract class Character{
         this.playerposition=playerposition; 
 
     }
+    //Getter udn Setter 
     public long getId() {
         return id;
     }
