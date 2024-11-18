@@ -3,6 +3,9 @@ package de.hs_rm.backend.gamelogic.characters.players;
 public class Player {
     private String uniqueName;
 
+    public Player() {
+    // Empty constructor for deserialization
+    }
     public String getUniqueName() {
         return uniqueName;
     }

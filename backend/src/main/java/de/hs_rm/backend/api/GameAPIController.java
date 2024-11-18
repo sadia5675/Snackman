@@ -39,7 +39,7 @@ public class GameAPIController {
     public ResponseEntity<?> createGame(@RequestBody Player gamemasterFromFrontend) {
         //warte noch auf ticket #28
         Player gamemaster = new Player(gamemasterFromFrontend.getUniqueName());
-        game = new Game(gamemaster);
+        game = new Game(gamemaster);        
         return createOkResponse();
     }
     // Method to join an existing game
@@ -120,11 +120,11 @@ public class GameAPIController {
         Map<String, Object> feedbackData = new HashMap<>();
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String gameJSON;
-        feedbackData.put("status", "error");
+        feedbackData.put("status", "ok");
         feedbackData.put("time", LocalDateTime.now().toString());
         try {
             gameJSON = ow.writeValueAsString(game);
-            feedbackData.put("feedback", gameJSON);
+            feedbackData.put("feedback", game);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             feedbackData.put("feedback", "something in backend went wrong!");
