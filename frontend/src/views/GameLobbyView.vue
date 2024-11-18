@@ -22,7 +22,7 @@
                 <li 
                     v-for="player in players" 
                     :key="player.id"
-                    class="p-4 flex items-center justify-between transition-colors">
+                    class="pr-4 pl-4 p-2 flex items-center justify-between transition-colors">
                     <div>
                         <p class="text-sm font-medium text-gray-900">ID: {{ player.id }}</p>
                         <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
@@ -38,11 +38,20 @@
                     </p>
                     <button 
                         class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
-                        @click="kickPlayer(player.id)">
+                        @click="kickPlayer(player.name)">
                         kick
                     </button>
                 </li>
             </ul>
+            <div class="flex items-center space-x-2 mt-3">
+                <p class="text-lg w-50 font-semibold text-gray-500"> Chickens: </p>
+                <input 
+                    type="number" 
+                    v-model="chickenCount"
+                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+                />
+            </div>
+            
             <button 
                 :class="{
                     'bg-green-500 hover:bg-green-600 text-white': isHost,
@@ -61,7 +70,7 @@
     import { onMounted, ref } from 'vue';
     import { useRoute } from 'vue-router';
 
-    //Testing definitions
+    //Test definitions
     const players = [
         {
             id: "1",
@@ -99,27 +108,78 @@
     const route = useRoute();
 
     //Lobby/Game-Store definieren 
-    const isHost = ref(true);
-    const isReady = ref(false);
-    const lobbyId = route.params.id.toString();
-    console.log(lobbyId)
+    const isHost = ref(true); //TODO: aus store holen
+
+    const isReady = ref(false); // Brauchen wir ready überhaupt
+    const lobbyId = route.params.id.toString(); //TODO: aus store holen
+    
+    const chickenCount = ref(5);
 
     //Methode wenn Host Spieler kicken will
-    async function kickPlayer(playerid: any){
-        //kick Player request an backend
+    async function kickPlayer(username: string){
+        try{
+            //Senden der POST anfrage um Spieler zu kicken 
+            const response = await fetch(`/api/api/game/kick/${username}`,{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            //Response in Json umwandeln
+            const data = await response.json();
+
+            //Wenn error, werfen eines Errors mit Server Feedback als Error-Message
+            if(data.status == "error"){
+                throw new Error(data.feedback);
+            }
+            //Ansonsten wurde der Spieler erfolgreich gekickt
+            else{
+                console.log("Kicked player: ", username);
+            }
+        }catch(error){
+            console.log(error);
+        }
     }
-    
+
+    //Funktion um das Game zu starten
+    async function startGame(){
+        //startGame request and backend
+        try{
+            //Post Anfrage zum starten des Spiels
+            const response = await fetch('/api/api/game/start',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            //Response in JSON umwandeln
+            const data = await response.json();
+            
+            //Wenn error, soll ein Error geworfen werden, mit dem Server Feedback als Error-Message
+            if(data.status == 'error'){
+                throw new Error(data.feedback);
+            }
+
+            //Ansonsten wurde das Game erfolgreich gestartet
+            else{
+                console.log("Game started!");
+                //TODO: weiterleiten an Game 
+            }
+        }catch(error){
+            console.log(error);
+        }
+
+    }
+
     function copyToClipboard(){
         alert("Copied to Clipboard!")
         navigator.clipboard.writeText(lobbyId);
-    }
-
-    async function startGame(){
-        //startGame request and backend
     }  
 
     onMounted(() => {
-        //subscribe to lobby websocket
+        //store.initWebsocket
         //send "Lobby join" Request, receive players in lobby
     });
 </script>
