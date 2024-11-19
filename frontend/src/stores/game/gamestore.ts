@@ -1,0 +1,119 @@
+import {defineStore} from "pinia";
+import {type Reactive, reactive} from "vue";
+import type {IPlayerDTD} from "@/stores/game/dtd/IPlayerDTD";
+import type {GameResponse} from "@/stores/game/responses/GameResponse";
+import type {IGameDTD} from "@/stores/game/dtd/IGameDTD";
+import {emptyGame, type IGameState} from "@/stores/game/IGameState";
+
+export const useGameStore = defineStore("gameStore", () => {
+  // Base URL for API calls
+  const apiUrl = "/api/game";
+
+  // Game state
+  const gameState: Reactive<IGameState> = reactive(emptyGame)
+
+  function resetGameState() {
+    gameState.ok = emptyGame.ok;
+    gameState.gamedata = emptyGame.gamedata;
+  }
+
+  function setGameStateFromResponse(gameResponse: GameResponse) {
+    gameState.ok = true;
+    gameState.gamedata = gameResponse.feedback as IGameDTD;
+  }
+
+  // Helper function to handle API responses
+  async function handleResponse(response: Response): Promise<GameResponse> {
+    const gameResponse: GameResponse = await response.json();
+    if (gameResponse.status === "error") {
+      throw new Error(gameResponse.feedback);
+    }
+    return gameResponse;
+  }
+
+  // API methods
+  async function createGame(gamemaster: IPlayerDTD) {
+    try {
+      const response: Response = await fetch(`${apiUrl}/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gamemaster),
+      });
+
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      resetGameState()
+      console.error("Error creating game:", error);
+    }
+  }
+
+  async function startGame() {
+    try {
+      const response = await fetch(`${apiUrl}/start`, {method: "POST"});
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      resetGameState()
+      console.error("Error starting game:", error);
+    }
+  }
+
+  async function endGame() {
+    try {
+      const response = await fetch(`${apiUrl}/end`, {method: "POST"});
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      resetGameState()
+      console.error("Error ending game:", error);
+    }
+  }
+
+  async function kickUser(username: string) {
+    try {
+      const response = await fetch(`${apiUrl}/kick/${username}`, {method: "POST",});
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      resetGameState()
+      console.error("Error kicking user:", error);
+    }
+  }
+
+  async function setChickenCount(number: number) {
+    try {
+      const response = await fetch(`${apiUrl}/setChicken/${number}`, {
+        method: "POST",
+      });
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      resetGameState()
+      console.error("Error setting chicken count:", error);
+    }
+  }
+
+  async function fetchGameStatus() {
+    try {
+      const response = await fetch(`${apiUrl}/status`);
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      resetGameState()
+      console.error("Error fetching game status:", error);
+    }
+  }
+
+  return {
+    gameState,
+    createGame,
+    startGame,
+    endGame,
+    kickUser,
+    setChickenCount,
+    fetchGameStatus,
+  };
+});
