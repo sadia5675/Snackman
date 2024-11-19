@@ -38,7 +38,10 @@ public class GameAPIController {
     @PostMapping("/create")
     public ResponseEntity<?> createGame(@RequestBody Player gamemasterFromFrontend) {
         //warte noch auf ticket #28
-        Player gamemaster = new Player(gamemasterFromFrontend.getUserId(),gamemasterFromFrontend.getName());
+        Player gamemaster = new Player(gamemasterFromFrontend.getName());
+        if (gamemasterFromFrontend == null || gamemasterFromFrontend.getName() == null) {
+            return ResponseEntity.badRequest().body("Invalid gamemaster data");
+        }
         game = new Game(gamemaster);        
         return createOkResponse();
     }

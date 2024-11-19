@@ -15,6 +15,11 @@ public class Player{
     private String email; 
     private String password; 
     PlayerType playertype; 
+    
+    // No-args constructor for Jackson
+    public Player() {
+        
+    }
 
     //Konstruktor für regestrierte Player
     public Player(long userId, String name, String email, String password){
@@ -27,7 +32,7 @@ public class Player{
     }
 
     //Konstruktor für Gastspieler 
-    public Player(long userId, String name){
+    public Player(String name){
         this.userId=0; 
         this.name=name; 
         this.playertype=PlayerType.GUEST;  
