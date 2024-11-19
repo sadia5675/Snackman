@@ -12,6 +12,10 @@ export const useGameStore = defineStore("gameStore", () => {
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
 
+  function handleGameStateError() {
+    resetGameState()
+  }
+
   function resetGameState() {
     gameState.ok = emptyGame.ok;
     gameState.gamedata = emptyGame.gamedata;
@@ -24,10 +28,14 @@ export const useGameStore = defineStore("gameStore", () => {
 
   // Helper function to handle API responses
   async function handleResponse(response: Response): Promise<GameResponse> {
+    if (!response.ok) {
+      throw new Error(`Error while fetching data with status: ${response.status}`);
+    }
     const gameResponse: GameResponse = await response.json();
     if (gameResponse.status === "error") {
       throw new Error(gameResponse.feedback);
     }
+
     return gameResponse;
   }
 
@@ -45,7 +53,7 @@ export const useGameStore = defineStore("gameStore", () => {
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
-      resetGameState()
+      handleGameStateError()
       console.error("Error creating game:", error);
     }
   }
@@ -56,7 +64,7 @@ export const useGameStore = defineStore("gameStore", () => {
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
-      resetGameState()
+      handleGameStateError()
       console.error("Error starting game:", error);
     }
   }
@@ -67,7 +75,7 @@ export const useGameStore = defineStore("gameStore", () => {
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
-      resetGameState()
+      handleGameStateError()
       console.error("Error ending game:", error);
     }
   }
@@ -78,7 +86,7 @@ export const useGameStore = defineStore("gameStore", () => {
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
-      resetGameState()
+      handleGameStateError()
       console.error("Error kicking user:", error);
     }
   }
@@ -91,7 +99,7 @@ export const useGameStore = defineStore("gameStore", () => {
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
-      resetGameState()
+      handleGameStateError()
       console.error("Error setting chicken count:", error);
     }
   }
@@ -102,7 +110,7 @@ export const useGameStore = defineStore("gameStore", () => {
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
-      resetGameState()
+      handleGameStateError()
       console.error("Error fetching game status:", error);
     }
   }
