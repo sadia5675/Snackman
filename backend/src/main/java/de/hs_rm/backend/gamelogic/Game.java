@@ -72,7 +72,7 @@ public class Game {
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
     public boolean kick(String uniqueName){ 
         for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getUniqueName().equals(uniqueName)) {
+            if (players.get(i).getName().equals(uniqueName)) {
                 players.remove(i); 
                 System.err.println();
                 LOGGER.info("Player with unique name {} has been kicked.", uniqueName);
