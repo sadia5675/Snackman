@@ -17,7 +17,7 @@ public class Player{
     PlayerType playertype; 
 
     //Konstruktor für regestrierte Player
-    public Player(long userId, String name, String email, String password,PlayerType playertype){
+    public Player(long userId, String name, String email, String password){
         this.userId=userId; 
         this.name=name; 
         this.email=email; 
