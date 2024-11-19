@@ -27,7 +27,8 @@ public class Game {
     public Game(Player gamemaster) {
         this.id = generateId(5);
         this.players = new ArrayList<>();         
-        this.chickens = new ArrayList<>();         
+        this.chickens = new ArrayList<>();   
+        this.gamemaster = gamemaster;      
         this.players.add(this.gamemaster);             
         this.started = false;                     
         // TODO: Random map generieren                        
