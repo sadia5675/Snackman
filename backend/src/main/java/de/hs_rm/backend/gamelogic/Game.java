@@ -70,6 +70,7 @@ public class Game {
     }
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
+    // TODO: man kann aber doch mit kick gamemaster zu kicken
     public boolean kick(String uniqueName){ 
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getName().equals(uniqueName)) {
