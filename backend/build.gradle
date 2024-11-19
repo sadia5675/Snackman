@@ -56,10 +56,3 @@ task build_frontend {
 }
 bootJar.dependsOn build_frontend
 
-task clean_frontend {
-	delete files("${projectDir}/src/main/resources/public/")
-	delete files("${projectDir}/../frontend/node_modules/")
-	delete files("${projectDir}/../frontend/dist/")
-	delete files("${projectDir}/bin/")
-}
-clean.dependsOn clean_frontend
