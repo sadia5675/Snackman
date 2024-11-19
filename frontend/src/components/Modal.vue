@@ -11,18 +11,8 @@
 
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useModalStore  } from '@/stores/modalstore';
 
-const isModalOpen = ref(false);
-
-function openModal(){
-    isModalOpen.value = true;
-}
-
-function closeModal(){
-    isModalOpen.value = false;
-}
-
-export { openModal, closeModal}
+const { isModalOpen, openModal, closeModal } = useModalStore();
 
 </script>
