@@ -32,32 +32,33 @@ public class GameAPIController {
     private Game game;
 
     // TODO: Sicherheit für Spiel, keys in responsebody
-    // TODO: Was passiert wenn Fehler nicht hier sondern in Spiellogik (Game-Klasse) kommt
+    // TODO: Was passiert wenn Fehler nicht hier sondern in Spiellogik (Game-Klasse)
+    // kommt
 
     // Method to create a new game
     @PostMapping("/create")
     public ResponseEntity<?> createGame(@RequestBody Player gamemasterFromFrontend) {
-        //warte noch auf ticket #28
+        // warte noch auf ticket #28
         Player gamemaster = new Player(gamemasterFromFrontend.getName());
         if (gamemasterFromFrontend == null || gamemasterFromFrontend.getName() == null) {
             return ResponseEntity.badRequest().body("Invalid gamemaster data");
         }
-        game = new Game(gamemaster);        
+        game = new Game(gamemaster);
         return createOkResponse();
     }
     // Method to join an existing game
     // @PostMapping("/join/{gameId}")
-        // public ResponseEntity<?> joinGame(@PathVariable String gameId) {
-        //     if (game == null || !game.getId().equals(gameId)) {
-        //         return createErrorResponse("Game ID is invalid!");
-        //     }
-        //     // Logik zum Beitreten des Spiels
-        //     return ResponseEntity.ok(game);
-        // }
+    // public ResponseEntity<?> joinGame(@PathVariable String gameId) {
+    // if (game == null || !game.getId().equals(gameId)) {
+    // return createErrorResponse("Game ID is invalid!");
+    // }
+    // // Logik zum Beitreten des Spiels
+    // return ResponseEntity.ok(game);
+    // }
 
     // Method to start the game
     @PostMapping("/start")
-    public ResponseEntity<?>  startGame() {
+    public ResponseEntity<?> startGame() {
         if (game == null) {
             return createErrorResponse("No game found to start.");
         }
@@ -68,13 +69,13 @@ public class GameAPIController {
     // Method to end the game
     @PostMapping("/end")
     public ResponseEntity<?> endGame() {
-        if(game==null){
+        if (game == null) {
             return createErrorResponse("No game found to end.");
         }
         game.end();
         return createOkResponse();
     }
-    
+
     // Method to kick a user from the game
     // soll username oder playerobj von frontend bekommen?
     @PostMapping("/kick/{username}") // soll username
@@ -82,15 +83,13 @@ public class GameAPIController {
         if (game == null) {
             return createErrorResponse("No game found.");
         }
-        if(game.kick(username)){
+        if (game.kick(username)) {
             return createOkResponse();
         }
         return createErrorResponse("username is invalid!");
-        
-                
+
     }
 
-    
     // Method to set the number of elements (e.g., chickens) in the game
     @PostMapping("/setChicken/{number}")
     public ResponseEntity<?> setNumberOfChicken(@PathVariable int number) {
@@ -110,6 +109,29 @@ public class GameAPIController {
         return createOkResponse();
     }
 
+    @PostMapping("/setRole")
+    public ResponseEntity<?> setPlayerRole(@RequestBody Map<String, String> payload) {
+        if (game == null) {
+            return createErrorResponse("No game found.");
+        }
+
+        // Extrahiere username und role aus der Anfrage
+        String username = payload.get("username");
+        String role = payload.get("role");
+
+        if (username == null || role == null) {
+            return createErrorResponse("Invalid payload: 'username' or 'role' is missing.");
+        }
+
+        // Fehlende Hilfsinstanz für findPlayerByName
+        Player player = game.getPlayers().get(0);
+        if (player == null) {
+            return createErrorResponse("Player with username '" + username + "' not found.");
+        }
+        player.setPlayerrole(role);
+        return createOkResponse();
+    }
+
     // Helper method for standardized error response
     private ResponseEntity<Map<String, Object>> createErrorResponse(String feedbackMessage) {
         Map<String, Object> feedbackData = new HashMap<>();
@@ -118,7 +140,8 @@ public class GameAPIController {
         feedbackData.put("time", LocalDateTime.now().toString());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(feedbackData);
     }
-        // Helper method for standardized ok response
+
+    // Helper method for standardized ok response
     private ResponseEntity<Map<String, Object>> createOkResponse() {
         Map<String, Object> feedbackData = new HashMap<>();
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -136,5 +159,3 @@ public class GameAPIController {
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
 }
-
-

@@ -1,9 +1,9 @@
-import {defineStore} from "pinia";
-import {type Reactive, reactive} from "vue";
-import type {IPlayerDTD} from "@/stores/game/dtd/IPlayerDTD";
-import type {GameResponse} from "@/stores/game/responses/GameResponse";
-import type {IGameDTD} from "@/stores/game/dtd/IGameDTD";
-import {emptyGame, type IGameState} from "@/stores/game/IGameState";
+import { defineStore } from "pinia";
+import { type Reactive, reactive } from "vue";
+import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
+import type { GameResponse } from "@/stores/game/responses/GameResponse";
+import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
+import { emptyGame, type IGameState } from "@/stores/game/IGameState";
 
 export const useGameStore = defineStore("gameStore", () => {
   // Base URL for API calls
@@ -60,7 +60,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function startGame() {
     try {
-      const response = await fetch(`${apiUrl}/start`, {method: "POST"});
+      const response = await fetch(`${apiUrl}/start`, { method: "POST" });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -71,7 +71,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function endGame() {
     try {
-      const response = await fetch(`${apiUrl}/end`, {method: "POST"});
+      const response = await fetch(`${apiUrl}/end`, { method: "POST" });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -82,7 +82,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function kickUser(username: string) {
     try {
-      const response = await fetch(`${apiUrl}/kick/${username}`, {method: "POST",});
+      const response = await fetch(`${apiUrl}/kick/${username}`, { method: "POST", });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -115,6 +115,26 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   }
 
+  async function setPlayerRole(username: string, role: string) {
+    try {
+      const response = await fetch(`${apiUrl}/setRole`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, role }),
+      });
+
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse)
+    } catch (error) {
+      handleGameStateError()
+      console.error("Error set user role:", error);
+    }
+  }
+
+
+
   return {
     gameState,
     createGame,
@@ -123,5 +143,6 @@ export const useGameStore = defineStore("gameStore", () => {
     kickUser,
     setChickenCount,
     fetchGameStatus,
+    setPlayerRole
   };
 });
