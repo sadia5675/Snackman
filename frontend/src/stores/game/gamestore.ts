@@ -61,12 +61,14 @@ export const useGameStore = defineStore("gameStore", () => {
 
   function joinLobby(lobbyId: string) {
     stompClient.onConnect = () => {
-      subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
-      sendMessage(`/topic/game/${lobbyId}/join`,{
-        name: 'Berhan',
-        email: 'TESt MAIL',
-        userId: 123
-      })
+      if(gameState.gamedata?.players){
+        subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
+        sendMessage(`/topic/game/${lobbyId}/join`,{
+          name: 'Berhan',
+          email: 'Test MAIL',
+          userId: 123
+        })
+      }
     }
 
     if (!stompClient.connected) {

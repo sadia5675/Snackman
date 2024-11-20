@@ -73,7 +73,6 @@
     import { useGameStore } from '@/stores/game/gamestore';
     import { onMounted, computed, ref } from 'vue';
     import { useRoute } from 'vue-router';
-    import { receiveMessageOnPort } from 'worker_threads';
     
     const route = useRoute();
 
