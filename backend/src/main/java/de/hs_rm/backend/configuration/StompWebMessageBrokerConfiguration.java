@@ -13,7 +13,7 @@ public class StompWebMessageBrokerConfiguration implements WebSocketMessageBroke
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry){
         registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/game");
+        // registry.setApplicationDestinationPrefixes("/app");
     }
 
     @Override

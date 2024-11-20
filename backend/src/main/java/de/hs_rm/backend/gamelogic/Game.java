@@ -84,6 +84,10 @@ public class Game {
         return false;
     }
 
+    public void joinGame(Player player){
+        players.add(player);
+    }
+
     public void setChicken(int total){ 
        LOGGER.info("total Chicken: {}", total);
         // TODO: Implementierung für hinzufügen von Hühnern
