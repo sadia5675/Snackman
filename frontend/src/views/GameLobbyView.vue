@@ -5,13 +5,13 @@
             <div class="mb-4">
                 <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
                 <div class="flex items-center space-x-2">
-                    <input 
-                        type="text" 
-                        class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" 
-                        disabled="true" 
+                    <input
+                        type="text"
+                        class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300"
+                        disabled="true"
                         v-model="lobbyId"
                     />
-                    <button 
+                    <button
                         class="bg-yellow-500  text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
                         @click="copyToClipboard()">
                         Copy
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-                <li v-for="player in players" 
+                <li v-for="player in players"
                     :key="player.userId"
                     class="pr-4 pl-4 p-2 flex items-center justify-between transition-colors">
                     <div>
@@ -27,7 +27,7 @@
                         <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
                         <p class="text-sm text-gray-500">{{  }}</p>
                     </div>
-                    <p 
+                    <p
                         :class="{
                             'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !player.isReady,
                             'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded ': player.isReady
@@ -35,7 +35,7 @@
                         class="transition text-center">
                         {{ player.isReady ? 'Ready' : 'Not Ready' }}
                     </p>
-                    <button 
+                    <button
                         class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
                         @click="kickPlayer(player.name)">
                         kick
@@ -46,14 +46,14 @@
             </ul>
             <div class="flex items-center space-x-2 mt-3">
                 <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-                <input 
-                    type="number" 
+                <input
+                    type="number"
                     v-model="chickenCount"
                     class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
                 />
             </div>
-            
-            <button 
+
+            <button
                 :class="{
                     'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
                     'bg-gray-600': !isHost
@@ -68,23 +68,22 @@
 </template>
 
 <script setup lang="ts">
-    import { stompClient, subscribeToLobby } from '@/config/stompWebsocket';
 import { useGameStore } from '@/stores/game/gamestore';
     import { onMounted, computed, ref } from 'vue';
     import { useRoute } from 'vue-router';
-    
+
     const route = useRoute();
 
     const gamestore = useGameStore();
 
     // TODO: gamemaster.id mit clientplayer.id vergleichen
-    const isHost = ref(true); 
+    const isHost = ref(true);
 
     // Eventuell erst starten wenn alle Ready
-    const isReady = ref(false); 
+    const isReady = ref(false);
 
     //ID in der aktuellen Lobby
-    const lobbyId = route.params.id.toString(); 
+    const lobbyId = route.params.id.toString();
 
     // Maximale Anzahl an Spielern in der Lobby
     const maxPlayers = 7;
@@ -94,12 +93,12 @@ import { useGameStore } from '@/stores/game/gamestore';
 
     // Anzahl der Platzhalter
     const placeholderCount = computed(() => maxPlayers - players.value.length);
-    
+
     //Anzahl der festgelegten Chickens im Game
     const chickenCount = computed({
         get: () => gamestore.gameState.gamedata?.chickens.length || 0,
         set: async (value: number) => {
-            await gamestore.setChickenCount(value); 
+            await gamestore.setChickenCount(value);
         },
     });
 
@@ -132,24 +131,18 @@ import { useGameStore } from '@/stores/game/gamestore';
     function copyToClipboard(){
         alert("Copied to Clipboard!")
         navigator.clipboard.writeText(lobbyId);
-    }  
+    }
 
     onMounted(async () => {
         try {
-            await gamestore.fetchGameStatus(); 
+            await gamestore.fetchGameStatus();
+            gamestore.joinLobby(lobbyId);
             //Log zum testen
-            stompClient.onConnect = ()=>{
-                subscribeToLobby(lobbyId,(message)=>{console.log(message)})
-                
-            }
-            if(!stompClient.connected){
-                stompClient.activate()
-            }
             console.log(gamestore.gameState.gamedata)
 
         } catch (error) {
             console.error("Error fetching game status:", error);
         }
-        
+
     });
 </script>
