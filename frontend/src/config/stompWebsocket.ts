@@ -24,7 +24,7 @@ function subscribeToLobby(lobbyId: string, callback: (message: any) => void) {
     console.error('Lobby ID is required to subscribe.');
     return;
   }
-  stompClient.subscribe(`/topic/lobby/${lobbyId}`, (message: Message) => {
+  stompClient.subscribe(`/topic/game`, (message: Message) => {
     callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
   });
 }

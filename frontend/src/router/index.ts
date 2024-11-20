@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Index from '../views/Index.vue'
-import Lobby from '../views/Lobby.vue'
 import LobbyList from '../views/LobbyList.vue'
 import GameLobbyView from '@/views/GameLobbyView.vue'
 

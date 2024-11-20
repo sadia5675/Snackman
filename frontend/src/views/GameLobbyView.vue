@@ -68,7 +68,8 @@
 </template>
 
 <script setup lang="ts">
-    import { useGameStore } from '@/stores/game/gamestore';
+    import { stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { useGameStore } from '@/stores/game/gamestore';
     import { onMounted, computed, ref } from 'vue';
     import { useRoute } from 'vue-router';
     
@@ -136,8 +137,14 @@
     onMounted(async () => {
         try {
             await gamestore.fetchGameStatus(); 
-
             //Log zum testen
+            stompClient.onConnect = ()=>{
+                subscribeToLobby(lobbyId,(message)=>{console.log(message)})
+                
+            }
+            if(!stompClient.connected){
+                stompClient.activate()
+            }
             console.log(gamestore.gameState.gamedata)
 
         } catch (error) {
