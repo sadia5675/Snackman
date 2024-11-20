@@ -1,4 +1,12 @@
 package de.hs_rm.backend.gamelogic.characters.players;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import com.fasterxml.jackson.annotation.JsonIgnore; // Korrektes Import für JsonIgnore
 /*
  * Die Player Klasse umfasst alle Eigenschaften zum Login und Regestrierungen. 
  * Dabei können sich Gastspieler mit einem Namen(unique) und deren ID ist immer 0 
@@ -7,13 +15,19 @@ package de.hs_rm.backend.gamelogic.characters.players;
  * --> Unterschieden werden beide Spieler durch einen Enum 
  *  
  */
+
 public class Player{
     //@Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY) // automatische ID-Generierung
     private long userId; 
     private String name; 
     private String email; 
+
+    //Dadurch das wir das Passwort während der Ausgabe also von backend zu Frontend eigentlich verbergen möchten
+    //Die Ausgabe erfolgt über ein Json-Format 
+    @JsonIgnore 
     private String password; 
+
     PlayerType playertype; 
 
     //Konstruktor für regestrierte Player
