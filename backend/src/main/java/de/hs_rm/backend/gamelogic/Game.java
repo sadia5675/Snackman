@@ -27,7 +27,8 @@ public class Game {
     public Game(Player gamemaster) {
         this.id = generateId(5);
         this.players = new ArrayList<>();         
-        this.chickens = new ArrayList<>();         
+        this.chickens = new ArrayList<>();   
+        this.gamemaster = gamemaster;      
         this.players.add(this.gamemaster);             
         this.started = false;                     
         // TODO: Random map generieren                        
@@ -69,9 +70,10 @@ public class Game {
     }
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
+    // TODO: man kann aber doch mit kick gamemaster zu kicken
     public boolean kick(String uniqueName){ 
         for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getUniqueName().equals(uniqueName)) {
+            if (players.get(i).getName().equals(uniqueName)) {
                 players.remove(i); 
                 System.err.println();
                 LOGGER.info("Player with unique name {} has been kicked.", uniqueName);

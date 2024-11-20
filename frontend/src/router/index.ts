@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Index from '../views/Index.vue'
 import Lobby from '../views/Lobby.vue'
 import LobbyList from '../views/LobbyList.vue'
+import GameLobbyView from '@/views/GameLobbyView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,7 +10,7 @@ const router = createRouter({
     {
       path: "/",
       redirect: "/index"
-    }, // Hier wird direkt zur Hauptseite weitergeleitet 
+    }, // Hier wird direkt zur Hauptseite weitergeleitet
     {
       path: '/index',
       name: 'index',
@@ -18,7 +19,7 @@ const router = createRouter({
     {
       path: '/lobby/:id',
       name: 'lobbyWithId',
-      component: Lobby
+      component: GameLobbyView
     },  // Hier wird die Lobby mit Id angezeigt
     {
       path: '/lobby',
