@@ -82,10 +82,11 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/join")
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
+        game.joinGame(player);
         messagingService.sendPlayerList(lobbyid, game.getPlayers());
         logger.info("PLAYER WURDE GEJOINED");
     }
-    
+
     // Method to end the game
     @PostMapping("/end")
     public ResponseEntity<?> endGame() {

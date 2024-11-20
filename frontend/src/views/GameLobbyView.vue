@@ -69,13 +69,13 @@
 
 <script setup lang="ts">
     import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
-import { PlayerType } from '@/stores/game/dtd/PlayerType';
-import { useGameStore } from '@/stores/game/gamestore';
+    import { PlayerType } from '@/stores/game/dtd/PlayerType';
+    import { useGameStore } from '@/stores/game/gamestore';
     import { onMounted, computed, ref } from 'vue';
     import { useRoute } from 'vue-router';
-import { receiveMessageOnPort } from 'worker_threads';
+    import { receiveMessageOnPort } from 'worker_threads';
     
-   const route = useRoute();
+    const route = useRoute();
 
     const gamestore = useGameStore();
     const jsonString = '{"employee":{ "name":"John", "age":30, "city":"New York" }}';
@@ -141,21 +141,7 @@ import { receiveMessageOnPort } from 'worker_threads';
         try {
             await gamestore.fetchGameStatus();
             //Log zum testen
-            stompClient.onConnect = ()=>{
-                subscribeToLobby(lobbyId,(message)=>{console.log(message)})
-                sendMessage(`/topic/game/${lobbyId}/join`,{
-                    name: "test",
-                    userId: 1222,
-                    password: "AAAAAAAAAA",
-                    email: "HALLOOOO",
-                    playertype: PlayerType.REGISTERED
-                })
-                
-            }
-            if(!stompClient.connected){
-                stompClient.activate()
-            }
-            console.log(gamestore.gameState.gamedata)
+            gamestore.joinLobby(lobbyId);
 
         } catch (error) {
             console.error("Error fetching game status:", error);

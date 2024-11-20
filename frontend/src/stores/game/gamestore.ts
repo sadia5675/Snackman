@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
 import { type Reactive, reactive } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
@@ -61,7 +61,12 @@ export const useGameStore = defineStore("gameStore", () => {
 
   function joinLobby(lobbyId: string) {
     stompClient.onConnect = () => {
-      subscribeToLobby(lobbyId, (message) => { console.log(message) })
+      subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
+      sendMessage(`/topic/game/${lobbyId}/join`,{
+        name: 'Berhan',
+        email: 'TESt MAIL',
+        userId: 123
+      })
     }
 
     if (!stompClient.connected) {
@@ -132,6 +137,7 @@ export const useGameStore = defineStore("gameStore", () => {
     startGame,
     endGame,
     kickUser,
+    joinLobby,
     setChickenCount,
     fetchGameStatus,
   };
