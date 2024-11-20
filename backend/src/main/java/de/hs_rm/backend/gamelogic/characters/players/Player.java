@@ -14,7 +14,9 @@ public class Player{
     private String email; 
     private String password; 
     PlayerType playertype; 
+    private String playerrole;
     
+
     // No-args constructor for Jackson
     public Player() {
         
@@ -60,5 +62,13 @@ public class Player{
     }
     public void setPlayertype(PlayerType playertype) {
         this.playertype = playertype;
+    }
+
+    public String getPlayerrole() {
+        return playerrole;
+    }
+
+    public void setPlayerrole(String playerrole) {
+        this.playerrole = playerrole;
     }
 }
