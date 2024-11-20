@@ -20,10 +20,9 @@
             </div>
             <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
                 <li v-for="player in players" 
-                    :key="player.userId"
+                    :key="player.username"
                     class="pr-4 pl-4 p-2 flex items-center justify-between transition-colors">
                     <div>
-                        <p class="text-sm font-medium text-gray-900">ID: {{ player.userId }}</p>
                         <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
                         <p class="text-sm text-gray-500">{{  }}</p>
                     </div>
