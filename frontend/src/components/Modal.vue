@@ -1,6 +1,6 @@
 <template>
     <div >
-        <slot name="icon"></slot>
+        <slot name="titel"></slot>
         <div v-if="isModalOpen">
             <div>
                 <slot name="content"></slot>
