@@ -9,7 +9,7 @@ const router = createRouter({
     {
       path: "/",
       redirect: "/index"
-    }, // Hier wird direkt zur Hauptseite weitergeleitet 
+    }, // Hier wird direkt zur Hauptseite weitergeleitet
     {
       path: '/index',
       name: 'index',
