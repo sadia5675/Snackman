@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
-import de.hs_rm.backend.gamelogic.maps.SnackmanMap;
+import de.hs_rm.backend.gamelogic.maps.PlayMap;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -138,27 +138,19 @@ public class GameAPIController {
     }
 
 
-    @PostMapping("/loadMap/{mapName}")
+    /* @PostMapping("/loadMap/{mapName}")
     public ResponseEntity<?> loadMap(@PathVariable String mapName) {
         /*if (game == null) {
             return createErrorResponse("No game found to load a map into.");
-        }*/
+        }
 
         try {
-            SnackmanMap newMap = new SnackmanMap();
-            newMap.readLevel(mapName); // JSON-Datei wird gelesen
-            Map<String, Object> mapDetails = new HashMap<>();
-            mapDetails.put("name", newMap.getName());
-            mapDetails.put("width", newMap.getWidth());
-            mapDetails.put("height", newMap.getHeight());
-            mapDetails.put("tiles", newMap.getTiles());
-            //game.setMap(newMap);
-            //return createOkResponse();
-            return ResponseEntity.ok(mapDetails);
+            PlayMap newMap = new PlayMap();
+          
         } catch (Exception e) {
             return createErrorResponse("Failed to load map: " + e.getMessage());
         }
-    }
+    }*/
 
 
 }
