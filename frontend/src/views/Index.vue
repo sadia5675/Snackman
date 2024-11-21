@@ -1,16 +1,15 @@
 <template>
 
-  <Modal v-if="modal.isModalOpen">
+  <Modal v-if="modal.isModalOpen" >
     <template #titel>
-      Titel
+      <h2 class="font-bold text-3xl text-center" >Titel</h2>
     </template>
     <template #content>
-      bitte gib eine namen ein
       <input v-model="newPlayer.name" type="text" name="name" id="name"
         class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-        placeholder="Aron" />
+        placeholder="Username eingeben" />
       <!-- TODO: überprüfen ob name eingeben worden ist -->
-      <button @click="newGame()">Weiter</button>
+      <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="newGame()">Weiter</button>
     </template>
 
   </Modal>
