@@ -1,15 +1,18 @@
-
 <template>
+
   <Modal v-if="modal.isModalOpen">
     <template #titel>
       Titel
     </template>
     <template #content>
-        bitte gib eine namen ein
-        <input v-model="newPlayer.name" type="text" name="name" id="name" class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6" placeholder="Aron" />
-        <!-- TODO: überprüfen ob name eingeben worden ist -->
-        <button @click="newGame()">Weiter</button>
+      bitte gib eine namen ein
+      <input v-model="newPlayer.name" type="text" name="name" id="name"
+        class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+        placeholder="Aron" />
+      <!-- TODO: überprüfen ob name eingeben worden ist -->
+      <button @click="newGame()">Weiter</button>
     </template>
+
   </Modal>
 
 
@@ -31,36 +34,37 @@
 
 
 <script setup lang="ts">
-  import Modal from '@/components/Modal.vue';
-  import { reactive, ref } from 'vue';
-  import { useModalStore } from '@/stores/modalstore';
-  import { useGameStore } from '@/stores/game/gamestore';
-  import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
-  import { PlayerType } from '@/stores/game/dtd/PlayerType';
-  import router from '@/router';
-
-  const modal = useModalStore()
-  const game = useGameStore()
-
-  const gameId = ref('');
+import Modal from '@/components/Modal.vue';
+import { reactive, ref } from 'vue';
+import { useModalStore } from '@/stores/modalstore';
+import { useGameStore } from '@/stores/game/gamestore';
+import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
+import { PlayerType } from '@/stores/game/dtd/PlayerType';
+import router from '@/router';
 
 
-  const newPlayer: IPlayerDTD = reactive({
-    name: "",
-    email: "",
-    password: "",
-    playertype: PlayerType.GUEST
+const modal = useModalStore()
+const game = useGameStore()
 
-  })
+const gameId = ref('');
 
-  async function newGame() {
-    await game.createGame(newPlayer)
-  
-    const id = useGameStore().gameState.gamedata?.id
-    router.push({ name: 'lobbyWithId', params: { id }})
-  }
 
-  
+const newPlayer: IPlayerDTD = reactive({
+  name: "",
+  email: "",
+  password: "",
+  playertype: PlayerType.GUEST
+
+})
+
+async function newGame() {
+  await game.createGame(newPlayer)
+
+  const id = useGameStore().gameState.gamedata?.id
+  router.push({ name: 'lobbyWithId', params: { id } })
+}
+
+
 
 </script>
 
@@ -69,7 +73,7 @@
 
 <style>
 @media (min-width: 1024px) {
-  h1{
+  h1 {
     font-size: 50px;
     margin-bottom: 80px;
   }
@@ -88,20 +92,24 @@
     flex-direction: column;
     gap: 15px;
   }
+
   .buttons-top-bottom {
-    background-color:bisque;
+    background-color: bisque;
     border-radius: 10px;
     padding: 10px;
   }
-  .button-middle{
-    background-color:bisque;
+
+  .button-middle {
+    background-color: bisque;
     border-radius: 0 10px 10px 0;
     padding: 10px;
   }
+
   .button-middle:hover,
   .buttons-top-bottom:hover {
     background-color: rgb(247, 194, 130);
   }
+
   .gameid-input-field {
     height: 44px;
     border-radius: 10px 0 0 10px;
