@@ -1,7 +1,7 @@
 <template>
-    <div class="fixed insert-0 bg-black backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 w-full h-full">
+        <div class="fixed insert-0 bg-black backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 w-full h-full">
         
-        <div v-if="isModalOpen" class="bg-white space-y-4 rounded-lg bg-gray-200 p-16">
+        <div class="bg-white space-y-4 rounded-lg bg-gray-200 p-16">
             <div>
                 <slot name="titel" ></slot>
             </div>
@@ -11,7 +11,7 @@
             </div>
         </div>
 
-    </div>
+    </div>    
 </template>
 
 
