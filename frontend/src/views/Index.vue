@@ -15,8 +15,7 @@
   </Modal>
 
 
-  <div class="homeMenue">
-    <h1>Snackman</h1>
+  <div class="homeMenue" :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }">    <h1>Snackman</h1>
     <div class="form-container">
       <button class="buttons-top-bottom" @click="modal.openModal()">New Game</button>
       <div>
