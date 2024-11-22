@@ -78,16 +78,16 @@ public class GameAPIController {
 
     // Method to kick a user from the game
     // soll username oder playerobj von frontend bekommen?
-    @PostMapping("/kick/{username}") // soll username
-    public ResponseEntity<?> kickUser(@PathVariable String username) {
+    @PostMapping("/kick/{usernameKicker}/{usernameKicked}") // soll username
+    public ResponseEntity<?> kickUser(@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
         if (game == null) {
             return createErrorResponse("No game found.");
         }
-        if (game.kick(username)) {
+        if(game.kick(usernameKicker, usernameKicked)){
             return createOkResponse();
         }
-        return createErrorResponse("username is invalid!");
-
+        return createErrorResponse("can not kick "+ usernameKicked +"!");
+                
     }
 
     // Method to set the number of elements (e.g., chickens) in the game
