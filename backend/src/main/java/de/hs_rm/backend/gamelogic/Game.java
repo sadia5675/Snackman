@@ -111,6 +111,21 @@ public class Game {
         // TODO: Implementierung für hinzufügen von Hühnern
     }
 
+    public Player findPlayerByUsername(String username) {
+        if(players==null || players.isEmpty()){
+            return null;
+        }
+        for (Player player : players) {
+            if (player.getName().equals(username)) {
+                return player;
+            }
+        }
+        LOGGER.info("Player with username {} not found.", username);
+        return null; 
+    }
+
+
+
     public String getId() {
         return id;
     }
