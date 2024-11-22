@@ -132,6 +132,23 @@ public class GameAPIController {
         return createOkResponse();
     }
 
+    @PostMapping("/addPlayer") 
+    public ResponseEntity<?> kickUser(@RequestBody Player playerFromFrontend) {
+        if (game == null) {
+            return createErrorResponse("No game found.");
+        }
+        Player player = new Player(playerFromFrontend.getName());
+        if(game.addPlayer(player)){
+            return createOkResponse();
+        }
+
+        return createErrorResponse("can not add "+ player.getName() +"!");
+        
+                
+    }
+
+
+
     // Helper method for standardized error response
     private ResponseEntity<Map<String, Object>> createErrorResponse(String feedbackMessage) {
         Map<String, Object> feedbackData = new HashMap<>();
