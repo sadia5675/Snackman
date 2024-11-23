@@ -59,7 +59,7 @@ public class Game {
 
     public boolean start(){
         this.started = true;
-        LOGGER.info("started: {}", this.started);
+        LOGGER.info("started: {} gameid: {}", this.started, this.id);
         return started;
     }
 
@@ -111,7 +111,7 @@ public class Game {
 
 
     public void setChicken(int total){
-       LOGGER.info("total Chicken: {}", total);
+       LOGGER.info("Chicken: {}, Game: {}", total, this.id);
         // TODO: Implementierung für hinzufügen von Hühnern
     }
 
