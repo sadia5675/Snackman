@@ -84,7 +84,7 @@ public class GameAPIController {
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
         game.joinGame(player);
-        messagingService.sendPlayerList(lobbyid, game.getPlayers());
+        messagingService.sendPlayerList(lobbyid, game);
         logger.info("PLAYER WURDE GEJOINED");
     }
 

@@ -62,7 +62,7 @@ export const useGameStore = defineStore("gameStore", () => {
   function joinLobby(lobbyId: string) {
     stompClient.onConnect = () => {
       if(gameState.gamedata?.players){
-        subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
+        subscribeToLobby(lobbyId, (message) => { gameState.gamedata = message })
         sendMessage(`/topic/game/${lobbyId}/join`,{
           name: 'Berhan',
           email: 'Test MAIL',
