@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
-import de.hs_rm.backend.gamelogic.maps.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

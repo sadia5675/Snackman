@@ -51,7 +51,7 @@ public class Game {
         Random random = new Random();
 
         for (int i = 0; i < length; i++) {
-            int index = random.nextInt(alphaNumericString.length()); 
+            int index = random.nextInt(alphaNumericString.length()); // zwischen 0 und alphaNumericString.length() - 1
             sb.append(alphaNumericString.charAt(index));
         }
         return sb.toString();
@@ -100,6 +100,17 @@ public class Game {
     public List<Player> getPlayers() {
         return players;
     }
+
+    // zufällig einen Spieler aus der Liste auszuwählen
+    public Player getRandomPlayer() {
+        if (players.isEmpty()) {
+            return null; 
+        }
+        Random random = new Random();
+        int index = random.nextInt(players.size()); // zwischen 0 und players.size() - 1
+        return players.get(index); 
+    }
+
 
     public void setPlayers(List<Player> players) {
         this.players = players;

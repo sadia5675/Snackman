@@ -1,4 +1,4 @@
-package main.java.de.hs_rm.backend.gamelogic.maps;
+package de.hs_rm.backend.gamelogic.map;
 
 import java.util.ArrayList;
 import java.util.List;
