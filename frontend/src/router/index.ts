@@ -3,6 +3,7 @@ import Index from '../views/Index.vue'
 import Lobby from '../views/Lobby.vue'
 import LobbyList from '../views/LobbyList.vue'
 import GameLobbyView from '@/views/GameLobbyView.vue'
+import MapCreator from '@/views/MapCreator.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +26,11 @@ const router = createRouter({
       path: '/lobby',
       name: 'lobbyList',
       component: LobbyList
+    }, // Hier wird die Lobby Liste angezeigt
+    {
+      path: '/createmap',
+      name: 'createmap',
+      component: MapCreator
     }, // Hier wird die Lobby Liste angezeigt
   ],
 })

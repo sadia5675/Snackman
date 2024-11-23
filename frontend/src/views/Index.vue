@@ -22,6 +22,7 @@
         <button class="button-middle" v-on:click="joinGame">Join</button>
       </div>
       <button class="buttons-top-bottom" v-on:click="findLobbies">Find Lobbies/Games</button>
+      <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
     </div>
   </div>
 
@@ -53,14 +54,17 @@
 
   })
 
+  //Funktion um zur MapCreator zu gelangen
+  function toMapCreator() {
+  router.push({ name: 'createmap' });
+}
+
   async function newGame() {
     await game.createGame(newPlayer)
   
     const id = useGameStore().gameState.gamedata?.id
     router.push({ name: 'lobbyWithId', params: { id }})
   }
-
-  
 
 </script>
 
