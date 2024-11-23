@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tile {
+    // TODO: vielleicht erwetiern mit zb boolean hasSnackman, hasGhost, hasItemx ...
     int x,y;
     TileType type;
 

@@ -54,7 +54,7 @@ public void readMap(String name){
         }
     
 }
-
+// TODO: erzeugen von items, snackman, ghosts, chickens
 public void createMap(Game game){
 for(int i = 0; i < tiles.length; i++){
     for (int j = 0; j < tiles[i].length; j++){
