@@ -9,17 +9,24 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.messaging.GameMessagingService;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST controller for managing game-related operations.
@@ -29,6 +36,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/api/game")
 public class GameAPIController {
+
+    @Autowired
+    GameMessagingService messagingService;
+
+    Logger logger = LoggerFactory.getLogger(GameAPIController.class);
+
+
     private Game game;
 
     // TODO: Sicherheit für Spiel, keys in responsebody
@@ -64,6 +78,14 @@ public class GameAPIController {
         }
         game.start();
         return createOkResponse();
+    }
+
+    @MessageMapping("/topic/game/{lobbyid}/join")
+    @SendTo("/topic/game/{lobbyid}")
+    public void joinLobby(Player player, @DestinationVariable String lobbyid) {
+        game.joinGame(player);
+        messagingService.sendPlayerList(lobbyid, game.getPlayers());
+        logger.info("PLAYER WURDE GEJOINED");
     }
 
     // Method to end the game

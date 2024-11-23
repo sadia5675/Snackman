@@ -5,7 +5,7 @@ export interface IGameDTD {
   id: string;
   players: IPlayerDTD[];
   chickens: IChickenDTD[];
-  gamemaster: IPlayerDTD;
+  gamemaster: IPlayerDTD | null;
   started: boolean;
 }
 

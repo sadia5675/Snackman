@@ -71,7 +71,7 @@ public class Game {
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
     // TODO: man kann aber doch mit kick gamemaster zu kicken
-    public boolean kick(String usernameKicker,String usernameKicked){ 
+    public boolean kick(String usernameKicker,String usernameKicked){
         if(usernameKicked.contentEquals(gamemaster.getName())){
             return false;
         }
@@ -90,6 +90,10 @@ public class Game {
         return false;
     }
 
+    public void joinGame(Player player){
+        players.add(player);
+    }
+
     public boolean addPlayer(Player newPlayer) {
         // Überprüfen, ob der Spieler bereits in der Liste ist
         for (Player player : players) {
@@ -98,15 +102,15 @@ public class Game {
                 return false; // Spieler bereits vorhanden
             }
         }
-    
+
         // Spieler zur Liste hinzufügen
         players.add(newPlayer);
         LOGGER.info("Player with name {} has been added to the game.", newPlayer.getName());
         return true;
     }
-    
 
-    public void setChicken(int total){ 
+
+    public void setChicken(int total){
        LOGGER.info("total Chicken: {}", total);
         // TODO: Implementierung für hinzufügen von Hühnern
     }
@@ -121,7 +125,7 @@ public class Game {
             }
         }
         LOGGER.info("Player with username {} not found.", username);
-        return null; 
+        return null;
     }
 
 

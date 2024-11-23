@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
 import { type Reactive, reactive } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
@@ -55,6 +56,23 @@ export const useGameStore = defineStore("gameStore", () => {
     } catch (error) {
       handleGameStateError()
       console.error("Error creating game:", error);
+    }
+  }
+
+  function joinLobby(lobbyId: string) {
+    stompClient.onConnect = () => {
+      if(gameState.gamedata?.players){
+        subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
+        sendMessage(`/topic/game/${lobbyId}/join`,{
+          name: 'Berhan',
+          email: 'Test MAIL',
+          userId: 123
+        })
+      }
+    }
+
+    if (!stompClient.connected) {
+      stompClient.activate()
     }
   }
 
@@ -141,6 +159,7 @@ export const useGameStore = defineStore("gameStore", () => {
     startGame,
     endGame,
     kickUser,
+    joinLobby,
     setChickenCount,
     fetchGameStatus,
     setPlayerRole

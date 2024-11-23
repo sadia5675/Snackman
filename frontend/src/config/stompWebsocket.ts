@@ -24,13 +24,13 @@ function subscribeToLobby(lobbyId: string, callback: (message: any) => void) {
     console.error('Lobby ID is required to subscribe.');
     return;
   }
-  stompClient.subscribe(`/topic/lobby/${lobbyId}`, (message: Message) => {
+  stompClient.subscribe(`/topic/game/${lobbyId}`, (message: Message) => {
     callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
   });
 }
 
 // Funktion zum Senden von Nachrichten
-function sendMessage(destination: string, body: JSON) {
+function sendMessage(destination: string, body: any) {
   if (stompClient.connected) {
     stompClient.publish({
       destination,

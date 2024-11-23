@@ -1,0 +1,24 @@
+package de.hs_rm.backend.messaging;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class GameMessagingService {
+
+    Logger logger = LoggerFactory.getLogger(GameMessagingService.class);
+
+    private SimpMessagingTemplate template;
+
+    public GameMessagingService(SimpMessagingTemplate template) {
+        this.template = template;
+    }
+
+    public void sendPlayerList(String lobbyid, Object ev) {
+        template.convertAndSend("/topic/game/" + lobbyid, ev);
+
+    }
+}
