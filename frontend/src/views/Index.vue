@@ -66,7 +66,11 @@ async function newGame() {
     await game.createGame(newPlayer)
 
     const id = useGameStore().gameState.gamedata?.id
-    router.push({ name: 'lobbyWithId', params: { id } })
+    
+    router.push({ 
+      name: 'lobbyWithId', 
+      params: { id } 
+    })
   }
 
 
