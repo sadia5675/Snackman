@@ -22,9 +22,9 @@
       <button class="buttons-top-bottom" @click="modal.openModal()">New Game</button>
       <div>
         <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="gameid-input-field">
-        <button class="button-middle" v-on:click="joinGame">Join</button>
+        <button class="button-middle" @click="joinGame()">Join</button>
       </div>
-      <button class="buttons-top-bottom" v-on:click="findLobbies">Find Lobbies/Games</button>
+      <button class="buttons-top-bottom" @click="findLobbies()">Find Lobbies/Games</button>
     </div>
   </div>
 
