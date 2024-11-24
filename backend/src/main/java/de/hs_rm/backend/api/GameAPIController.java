@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.messaging.GameMessagingService;
 
@@ -40,10 +41,13 @@ public class GameAPIController {
     @Autowired
     GameMessagingService messagingService;
 
+    @Autowired
+    GameService gameService;
+
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
 
 
-    private Game game;
+    //private Game game;
 
     // TODO: Sicherheit für Spiel, keys in responsebody
     // TODO: Was passiert wenn Fehler nicht hier sondern in Spiellogik (Game-Klasse)
@@ -53,12 +57,15 @@ public class GameAPIController {
     @PostMapping("/create")
     public ResponseEntity<?> createGame(@RequestBody Player gamemasterFromFrontend) {
         // warte noch auf ticket #28
-        Player gamemaster = new Player(gamemasterFromFrontend.getName());
         if (gamemasterFromFrontend == null || gamemasterFromFrontend.getName() == null) {
             return ResponseEntity.badRequest().body("Invalid gamemaster data");
         }
-        game = new Game(gamemaster);
-        return createOkResponse();
+
+        Player gamemaster = new Player(gamemasterFromFrontend.getName());
+        // #63 NEW: gameservice now creates game
+        Game newGame = gameService.createGame(gamemaster);
+
+        return createOkResponse(newGame);
     }
     // Method to join an existing game
     // @PostMapping("/join/{gameId}")
@@ -71,69 +78,88 @@ public class GameAPIController {
     // }
 
     // Method to start the game
-    @PostMapping("/start")
-    public ResponseEntity<?> startGame() {
-        if (game == null) {
+    @PostMapping("/start/{gameId}")
+    public ResponseEntity<?> startGame(@PathVariable String gameId) {
+        // #63 NEW: gameService now starts the game
+        Game existingGame = gameService.startGame(gameId);
+
+        if (existingGame == null) {
             return createErrorResponse("No game found to start.");
         }
-        game.start();
-        return createOkResponse();
+
+        return createOkResponse(existingGame);
     }
 
     @MessageMapping("/topic/game/{lobbyid}/join")
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
-        game.joinGame(player);
-        messagingService.sendPlayerList(lobbyid, game.getPlayers());
-        logger.info("PLAYER WURDE GEJOINED");
+        // #63 NEW: gameService now handles Player join
+        Game existingGame = gameService.joinGame(lobbyid, player);
+
+        logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
+
+        messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
+
     }
 
     // Method to end the game
-    @PostMapping("/end")
-    public ResponseEntity<?> endGame() {
-        if (game == null) {
+    @PostMapping("/end/{gameId}")
+    public ResponseEntity<?> endGame(@PathVariable String gameId) {
+        // #63 NEW: gameService now ends the game
+        Game existingGame = gameService.endGame(gameId);
+
+        if (existingGame == null) {
             return createErrorResponse("No game found to end.");
         }
-        game.end();
-        return createOkResponse();
+
+        return createOkResponse(existingGame);
     }
 
     // Method to kick a user from the game
     // soll username oder playerobj von frontend bekommen?
-    @PostMapping("/kick/{usernameKicker}/{usernameKicked}") // soll username
-    public ResponseEntity<?> kickUser(@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
-        if (game == null) {
+    @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
+    public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
+        Game existingGame = gameService.getGameById(gameId);
+        
+        if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
-        if(game.kick(usernameKicker, usernameKicked)){
-            return createOkResponse();
+        if(existingGame.kick(usernameKicker, usernameKicked)){
+            return createOkResponse(existingGame);
         }
         return createErrorResponse("can not kick "+ usernameKicked +"!");
                 
     }
 
     // Method to set the number of elements (e.g., chickens) in the game
-    @PostMapping("/setChicken/{number}")
-    public ResponseEntity<?> setNumberOfChicken(@PathVariable int number) {
-        if (game == null) {
+    @PostMapping("/setChicken/{gameId}/{number}")
+    public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId ,@PathVariable int number) {
+        // #63 NEW: gameService now sets the number of Chickens
+        Game existingGame = gameService.setChicken(gameId, number);
+        
+        if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
-        game.setChicken(number);
-        return createOkResponse();
+    
+        return createOkResponse(existingGame);
     }
 
     // Retrieve the game status
-    @GetMapping("/status")
-    public ResponseEntity<?> getGameStatus() {
-        if (game == null) {
+    @GetMapping("/status/{gameId}")
+    public ResponseEntity<?> getGameStatus(@PathVariable String gameId) {
+        Game existingGame = gameService.getGameById(gameId);
+
+        if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
-        return createOkResponse();
+        return createOkResponse(existingGame);
     }
 
-    @PostMapping("/setRole")
-    public ResponseEntity<?> setPlayerRole(@RequestBody Map<String, String> payload) {
-        if (game == null) {
+    @PostMapping("/setRole/{gameId}")
+    public ResponseEntity<?> setPlayerRole(@RequestBody Map<String, String> payload, @PathVariable String gameId) {
+        Game existingGame = gameService.getGameById(gameId);
+        
+        if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
 
@@ -146,22 +172,23 @@ public class GameAPIController {
         }
 
         // Fehlende Hilfsinstanz für findPlayerByName
-        Player player = game.getPlayers().get(0);
+        Player player = existingGame.getPlayers().get(0);
         if (player == null) {
             return createErrorResponse("Player with username '" + username + "' not found.");
         }
         player.setPlayerrole(role);
-        return createOkResponse();
+        return createOkResponse(existingGame);
     }
 
-    @PostMapping("/addPlayer") 
-    public ResponseEntity<?> kickUser(@RequestBody Player playerFromFrontend) {
-        if (game == null) {
+    @PostMapping("/addPlayer/{gameId}") 
+    public ResponseEntity<?> kickUser(@RequestBody Player playerFromFrontend, @PathVariable String gameId) {
+        Game existingGame = gameService.getGameById(gameId);
+        if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
         Player player = new Player(playerFromFrontend.getName());
-        if(game.addPlayer(player)){
-            return createOkResponse();
+        if(existingGame.addPlayer(player)){
+            return createOkResponse(existingGame);
         }
 
         return createErrorResponse("can not add "+ player.getName() +"!");
@@ -181,7 +208,7 @@ public class GameAPIController {
     }
 
     // Helper method for standardized ok response
-    private ResponseEntity<Map<String, Object>> createOkResponse() {
+    private ResponseEntity<Map<String, Object>> createOkResponse(Game game) {
         Map<String, Object> feedbackData = new HashMap<>();
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String gameJSON;
