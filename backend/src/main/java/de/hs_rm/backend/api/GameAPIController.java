@@ -145,8 +145,7 @@ public class GameAPIController {
             return createErrorResponse("Invalid payload: 'username' or 'role' is missing.");
         }
 
-        // Fehlende Hilfsinstanz für findPlayerByName
-        Player player = game.getPlayers().get(0);
+        Player player = game.findPlayerByUsername(username);
         if (player == null) {
             return createErrorResponse("Player with username '" + username + "' not found.");
         }
