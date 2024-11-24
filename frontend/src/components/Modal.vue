@@ -19,8 +19,7 @@
 
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalstore';
-import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue';
 
-const { isModalOpen, openModal, closeModal } = useModalStore();
+
 
 </script>
