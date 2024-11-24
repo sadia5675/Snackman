@@ -29,6 +29,11 @@ public class PlayMap {
 private int[][] tiles;
 private List <Tile> tilesList = new ArrayList<>();
 
+
+public PlayMap(String mapname, Game game) {
+    readMap(mapname);
+    createMap(game);
+}
 public void readMap(String name){
     ObjectMapper objectMapper = new ObjectMapper();
     try {
@@ -103,5 +108,13 @@ public int[][] getTiles() {
 public void setTiles(int[][] tiles) {
     this.tiles = tiles;
 }
+public List<Tile> getTilesList() {
+    return tilesList;
+}
+public void setTilesList(List<Tile> tilesList) {
+    this.tilesList = tilesList;
+}
+
+
 
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
 
 public class Game {
     private static Set<String> existingIds = new HashSet<>(); // set --> verhindert Duplikate und static --> diese liste wird für alle Instanzen der Klasse geteilt
@@ -19,6 +20,7 @@ public class Game {
     private List<Chicken> chickens;
     private Player gamemaster;
     private boolean started;
+    private PlayMap playmap;
     // Map map;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
@@ -60,6 +62,10 @@ public class Game {
     public boolean start(){
         this.started = true;
         LOGGER.info("started: {}", this.started);
+
+        // TODO: hier sollte random name als param übergeben werden
+        playmap = new PlayMap("map1",this);
+
         return started;
     }
 
@@ -139,4 +145,22 @@ public class Game {
     public void setStarted(boolean started) {
         this.started = started;
     }
+
+    public static Set<String> getExistingIds() {
+        return existingIds;
+    }
+
+    public static void setExistingIds(Set<String> existingIds) {
+        Game.existingIds = existingIds;
+    }
+
+    public PlayMap getPlaymap() {
+        return playmap;
+    }
+
+    public void setPlaymap(PlayMap playmap) {
+        this.playmap = playmap;
+    }
+
+    
 }
