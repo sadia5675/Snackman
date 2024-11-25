@@ -6,8 +6,8 @@ import {ref, onMounted} from "vue";
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/ window.outerWidth,0.1, 1000);
-camera.position.set(0,3,2);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000);
+camera.position.set(0, 3, 2);
 const renderer = new THREE.WebGLRenderer();
 
 const threeContainer = ref<null | HTMLElement>(null)
@@ -19,13 +19,13 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 renderer.render(scene, camera);
 //Playfield
-const fieldGeometry = new THREE.PlaneGeometry(50,50)
-const fieldMaterial = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+const fieldGeometry = new THREE.PlaneGeometry(50, 50)
+const fieldMaterial = new THREE.MeshLambertMaterial({color: 0xaaaaaa});
 const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
 field.rotation.x = -Math.PI / 2; //so its like the ground
 
 //Ball
-const sphereGeometry = new THREE.SphereGeometry(1,30,30);
+const sphereGeometry = new THREE.SphereGeometry(1, 30, 30);
 const sphereMaterial = new THREE.MeshStandardMaterial({
   color: 0xFFFF00,
   metalness: 0,
@@ -36,7 +36,7 @@ sphere.position.y = 2;
 sphere.position.x = 3;
 sphere.position.z = -4;
 
-scene.add(field,sphere);
+scene.add(field, sphere);
 
 //lightning
 const ambientLight = new THREE.AmbientLight(0x404040, 10);
@@ -49,25 +49,24 @@ pointLight.position.set(10, 20, 10); //extra Lightning for the ball
 scene.add(pointLight);
 
 
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera)
 }
+
 onMounted(() => {
-  if(threeContainer.value){
+  if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement);
   }
   animate();
 });
 
 
-
-
 </script>
 
 <template>
 
-  <div ref="threeContainer"  id="app" class="gameContainer"></div>
+  <div ref="threeContainer" id="app" class="gameContainer"></div>
 
 </template>
 
