@@ -62,7 +62,7 @@ export const useGameStore = defineStore("gameStore", () => {
   function joinLobby(lobbyId: string) {
     stompClient.onConnect = () => {
       if(gameState.gamedata?.players){
-        subscribeToLobby(lobbyId, (message) => { gameState.gamedata = message })
+        subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
         sendMessage(`/topic/game/${lobbyId}/join`,{
           name: 'Berhan',
           email: 'Test MAIL',
@@ -78,6 +78,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function startGame() {
     try {
+      console.log(gameState.gamedata.id)
       const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: "POST" });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)

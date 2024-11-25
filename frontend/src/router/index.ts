@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Index from '../views/Index.vue'
 import LobbyList from '../views/LobbyList.vue'
 import GameLobbyView from '@/views/GameLobbyView.vue'
+import Game from '@/views/Game.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +26,11 @@ const router = createRouter({
       name: 'lobbyList',
       component: LobbyList
     }, // Hier wird die Lobby Liste angezeigt
+    {
+      path: '/lobby/:id/ingame',
+      name: 'game',
+      component: Game
+    }
   ],
 })
 

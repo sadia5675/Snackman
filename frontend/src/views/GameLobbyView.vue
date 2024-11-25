@@ -75,8 +75,9 @@
     import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
     import { PlayerType } from '@/stores/game/dtd/PlayerType';
     import { useGameStore } from '@/stores/game/gamestore';
-    import { onMounted, computed, ref } from 'vue';
+    import { onMounted, computed, ref , watch} from 'vue';
     import { useRoute } from 'vue-router';
+    import router from "@/router";
 
     const route = useRoute();
 
@@ -108,6 +109,13 @@
             await gamestore.setChickenCount(value);
         },
     });
+
+    watch(()=> gamestore.gameState.gamedata?.started,
+      (newValue) => {
+      if(newValue){
+        router.push({name:"game"})
+      }
+      })
 
 // Funktion, um die Rolle des Spielers zu setzen
 function setPlayerRole(playerName: string, role: string) {

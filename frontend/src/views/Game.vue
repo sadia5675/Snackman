@@ -10,7 +10,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth/ window.outerWi
 camera.position.set(0,3,2);
 const renderer = new THREE.WebGLRenderer();
 
-const threeContainer = ref(null)
+const threeContainer = ref<null | HTMLElement>(null)
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -54,7 +54,9 @@ function animate(){
   renderer.render(scene, camera)
 }
 onMounted(() => {
-  threeContainer.value.appendChild(renderer.domElement);
+  if(threeContainer.value){
+    threeContainer.value.appendChild(renderer.domElement);
+  }
   animate();
 });
 
@@ -65,7 +67,6 @@ onMounted(() => {
 
 <template>
 
-  <h1>test</h1>
   <div ref="threeContainer"  id="app" class="gameContainer"></div>
 
 </template>
