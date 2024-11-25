@@ -10,8 +10,13 @@
         placeholder="Username eingeben" />
       <div v-if="inputErrorMessage" class="input-error-message">{{ inputErrorMessage }}</div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
-      <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="newGame()">Weiter</button>
+       <div class="flex space-x-4">
+        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="newGame()">Weiter</button>
+        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
+       </div>
+      
     </template>
+
 
   </Modal>
 
@@ -22,9 +27,11 @@
       <button class="buttons-top-bottom" @click="modal.openModal()">New Game</button>
       <div>
         <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="gameid-input-field">
-        <button class="button-middle" @click="joinGame()">Join</button>
+        <!-- @click="game.joinGame()"-->
+        <button class="button-middle">Join</button>
       </div>
-      <button class="buttons-top-bottom" @click="findLobbies()">Find Lobbies/Games</button>
+      <!-- @click="game.findLobbies()"-->
+      <button class="buttons-top-bottom">Find Lobbies/Games</button>
     </div>
   </div>
 
@@ -60,13 +67,14 @@ const newPlayer: IPlayerDTD = reactive({
 })
 
 async function newGame() {
+
   if (!newPlayer.name) {
     inputErrorMessage.value = "Bitte einen Usernamen eingeben";
   } else {
     await game.createGame(newPlayer)
 
     const id = useGameStore().gameState.gamedata?.id
-    
+
     router.push({ 
       name: 'lobbyWithId', 
       params: { id } 
