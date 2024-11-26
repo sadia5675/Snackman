@@ -76,11 +76,14 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
   }
 
   function updateCell(rowIndex:number,colIndex:number){
-  // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
-  //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
-  grid.value[rowIndex][colIndex] =
-    grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
-    
+    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value) {
+    return; // um das klicken zu ignorieren
+   }
+    // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
+    //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
+    grid.value[rowIndex][colIndex] =
+      grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
+      
   }
 
 </script>
