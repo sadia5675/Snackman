@@ -67,7 +67,7 @@ public class Game {
 
     public boolean start(){
         this.started = true;
-        LOGGER.info("started: {}", this.started);
+        LOGGER.info("started: {} gameid: {}", this.started, this.id);
 
         // TODO: hier sollte random name als param übergeben werden
         playmap = new PlayMap("map1",this);
@@ -103,30 +103,44 @@ public class Game {
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
     // TODO: man kann aber doch mit kick gamemaster zu kicken
-    public boolean kick(String uniqueName){ 
+    public boolean kick(String usernameKicker,String usernameKicked){
+        if(usernameKicked.contentEquals(gamemaster.getName())){
+            return false;
+        }
+        if(!usernameKicker.contentEquals(gamemaster.getName())){
+            return false;
+        }
         for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getName().equals(uniqueName)) {
+            if (players.get(i).getName().equals(usernameKicked)) {
                 players.remove(i); 
                 System.err.println();
-                LOGGER.info("Player with unique name {} has been kicked.", uniqueName);
+                LOGGER.info("Player with unique name {} has been kicked.", usernameKicked);
                 return true;
             }
         }
-        LOGGER.info("Player with unique name {} not found.", uniqueName);
+        LOGGER.info("Player with unique name {} not found.", usernameKicked);
         return false;
     }
 
-    public boolean move(String username, int coordinateX, int coordinateY){
-        // TODO: Tile obj von x und y überprüfen
-        // TODO: position von character aktualisieren für frontend
-        // TODO: kollision in tile: aktuelles Tile und TargetTile
-
-    }
-
-    public void setChicken(int total){ 
-       LOGGER.info("total Chicken: {}", total);
+    public void setChicken(int total){
+       LOGGER.info("Chicken: {}, Game: {}", total, this.id);
         // TODO: Implementierung für hinzufügen von Hühnern
     }
+
+    public Player findPlayerByUsername(String username) {
+        if(players==null || players.isEmpty()){
+            return null;
+        }
+        for (Player player : players) {
+            if (player.getName().equals(username)) {
+                return player;
+            }
+        }
+        LOGGER.info("Player with username {} not found.", username);
+        return null;
+    }
+
+
 
     public String getId() {
         return id;

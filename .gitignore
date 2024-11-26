@@ -49,3 +49,6 @@ Thumbs.db
 /venv/
 /src/main/resources/public/
 /data/
+
+package-lock.json
+/node_modules

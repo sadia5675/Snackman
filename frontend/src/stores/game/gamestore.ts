@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
 import { type Reactive, reactive } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
@@ -58,9 +59,26 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   }
 
+  function joinLobby(lobbyId: string) {
+    stompClient.onConnect = () => {
+      if(gameState.gamedata?.players){
+        subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
+        sendMessage(`/topic/game/${lobbyId}/join`,{
+          name: 'Berhan',
+          email: 'Test MAIL',
+          userId: 123
+        })
+      }
+    }
+
+    if (!stompClient.connected) {
+      stompClient.activate()
+    }
+  }
+
   async function startGame() {
     try {
-      const response = await fetch(`${apiUrl}/start`, { method: "POST" });
+      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: "POST" });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -71,7 +89,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function endGame() {
     try {
-      const response = await fetch(`${apiUrl}/end`, { method: "POST" });
+      const response = await fetch(`${apiUrl}/end/${gameState.gamedata.id}`, { method: "POST" });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -82,7 +100,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function kickUser(username: string) {
     try {
-      const response = await fetch(`${apiUrl}/kick/${username}`, { method: "POST", });
+      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username}`, { method: "POST", });
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -93,7 +111,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function setChickenCount(number: number) {
     try {
-      const response = await fetch(`${apiUrl}/setChicken/${number}`, {
+      const response = await fetch(`${apiUrl}/setChicken/${gameState.gamedata.id}/${number}`, {
         method: "POST",
       });
       const gameResponse = await handleResponse(response);
@@ -106,7 +124,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function fetchGameStatus() {
     try {
-      const response = await fetch(`${apiUrl}/status`);
+      const response = await fetch(`${apiUrl}/status/${gameState.gamedata.id}`);
       const gameResponse = await handleResponse(response);
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -117,7 +135,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function setPlayerRole(username: string, role: string) {
     try {
-      const response = await fetch(`${apiUrl}/setRole`, {
+      const response = await fetch(`${apiUrl}/setRole/${gameState.gamedata.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -141,6 +159,7 @@ export const useGameStore = defineStore("gameStore", () => {
     startGame,
     endGame,
     kickUser,
+    joinLobby,
     setChickenCount,
     fetchGameStatus,
     setPlayerRole
