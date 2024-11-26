@@ -59,24 +59,24 @@ public void readMap(String name){
         }
     
 }
-// TODO: erzeugen von items, snackman, ghosts, chickens
+
 public void createMap(Game game){
 for(int i = 0; i < tiles.length; i++){
     for (int j = 0; j < tiles[i].length; j++){
         if(tiles[i][j] == 0){//leer
-            tilesList.add(new Tile(TileType.SURFACE, i, j));
+            tilesList.add(new Tile(TileType.SURFACE));
 
         }else if (tiles[i][j] == 1) {//wand
-            tilesList.add(new Tile(TileType.WALL, i, j));
+            tilesList.add(new Tile(TileType.WALL));
 
         }else if (tiles[i][j] == 2) {//Item
-            Tile newTile = new Tile(TileType.SURFACE, i, j);
+            Tile newTile = new Tile(TileType.SURFACE);
             // Item item = new Item(null, new PlayerPosition(i, j));
             // newTile.addItem(item);
             tilesList.add(newTile);
 
         }else if (tiles[i][j] == 3) {//Snackmann
-            Tile newTile = new Tile(TileType.SURFACE, i, j);
+            Tile newTile = new Tile(TileType.SURFACE);
             // Player player = game.getRandomPlayer();
             // String name = player.getName();
             // Character character = new Snackman(player, name,  game.getId(),  null, new PlayerPosition(i, j),3,null);
@@ -84,7 +84,7 @@ for(int i = 0; i < tiles.length; i++){
             tilesList.add(newTile);
 
         }else if (tiles[i][j] == 4) {//Geist
-            Tile newTile = new Tile(TileType.SURFACE, i, j);
+            Tile newTile = new Tile(TileType.SURFACE);
             // Player player = game.getRandomPlayer();
             // String name = player.getName();
             // Character character = new Ghost(player,name, game.getId(), null, new PlayerPosition(i, j), null);
@@ -92,13 +92,25 @@ for(int i = 0; i < tiles.length; i++){
             tilesList.add(newTile);
             
         }else if (tiles[i][j] == 5) {//Hühn
-            Tile newTile = new Tile(TileType.SURFACE, i, j);
+            Tile newTile = new Tile(TileType.SURFACE);
             // Chicken chicken = new Chicken(new PlayerPosition(i, j));
             // newTile.addChicken(...);
             tilesList.add(newTile);
         }
     }
 }
+}
+
+public int getHeight() {
+    return tiles.length; // Anzahl der Zeilen
+}
+
+public int getWidth() {
+    if (tiles.length > 0) {
+        return tiles[0].length; // Anzahl der Spalten in der ersten Zeile
+    } else {
+        return 0; // Falls keine Zeilen existieren, Rückgabewert 0
+    }
 }
 
 public int[][] getTiles() {

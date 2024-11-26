@@ -3,37 +3,44 @@ package de.hs_rm.backend.gamelogic.map;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hs_rm.backend.gamelogic.characters.players.*;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+
+
 public class Tile {
-    // TODO: vielleicht erwetiern mit zb boolean hasSnackman, hasGhost, hasItemx ...
-    int x,y;
-    TileType type;
-
-//    List<Item> itemList;
+    private TileType type;
+    //    List<Item> itemList;
     List<Character> characterList;
+    List<Chicken> chickenList;
 
-    public Tile(TileType type, int x, int y){
+    public Tile(TileType type) {
         this.type = type;
-        this.x = x;
-        this.y = y;
         // itemList = new ArrayList<>();
         characterList = new ArrayList<>();
     }
 
-    public boolean moveTo(Character character, Tile targetTile){
-        if(targetTile.getType()==TileType.WALL){
-            return false;
-        }
-        if (!characterList.contains(character)) {
-            return false;
-        }
+    // public boolean hasItem() {
+    //     return itemList != null && !itemList.isEmpty();
+    // }
 
-        targetTile.addCharacter(character);
-        this.characterList.remove(character);
+    public boolean hasCharacter() {
+        return characterList != null && !characterList.isEmpty();
+    }
+    public boolean hasChicken() {
+        return chickenList != null && !chickenList.isEmpty();
+    }
+
+
+    public boolean addCharacter(Character character){
+        this.characterList.add(character);
+        // if(!itemList.isEmpty()){
+            // TODO: Item hier nehmen
+        // }
         return true;
     }
 
-    public boolean addCharacter(Character character){
-        this.addCharacter(character);
+    public boolean addChicken(Chicken chicken){
+        this.chickenList.add(chicken);
         // if(!itemList.isEmpty()){
             // TODO: Item hier nehmen
         // }
@@ -45,22 +52,13 @@ public class Tile {
     //     return true;
     // }
 
+    // public List<Item> getItemList() {
+    //     return itemList;
+    // }
 
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
+    // public void setItemList(List<Item> itemList) {
+    //     this.itemList = itemList;
+    // }
 
     public TileType getType() {
         return type;
@@ -70,14 +68,6 @@ public class Tile {
         this.type = type;
     }
 
-    // public List<Item> getItemList() {
-    //     return itemList;
-    // }
-
-    // public void setItemList(List<Item> itemList) {
-    //     this.itemList = itemList;
-    // }
-
     public List<Character> getCharacterList() {
         return characterList;
     }
@@ -85,6 +75,5 @@ public class Tile {
     public void setCharacterList(List<Character> characterList) {
         this.characterList = characterList;
     }
-    
     
 }

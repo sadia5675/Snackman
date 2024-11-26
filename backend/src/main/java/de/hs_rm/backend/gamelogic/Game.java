@@ -1,12 +1,6 @@
 package de.hs_rm.backend.gamelogic;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +9,10 @@ import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.Tile;
+import de.hs_rm.backend.gamelogic.map.TileType;
 import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 public class Game {
@@ -26,6 +23,7 @@ public class Game {
     private Player gamemaster;
     private boolean started;
     private PlayMap playmap;
+    private int chickenNum;
 
     
     private Map<String, Character> characters; // for game (after game start), strinng for username
@@ -72,27 +70,53 @@ public class Game {
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
 
         // TODO: hier sollte random name als param übergeben werden
-        playmap = new PlayMap("map1",this);
+        this.playmap = new PlayMap("map1",this);
 
-        // TODO: hier sollte Charakter liste erstellen und player zu jedem charater zuweisen
+        Random random = new Random();
+        
+
+        // DONE: hier sollte Charakter liste erstellen und player zu jedem charater zuweisen
         for (Player player : players) {
+            Tile randomTile = null;
+            // Wiederholen, bis ein Surface-Tile gefunden wird
+            int index =-1;
+            do {
+                index = random.nextInt(playmap.getTilesList().size()); 
+                randomTile = playmap.getTilesList().get(index);
+            } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter());
+
             switch(player.getPlayerrole()){
-                // TODO: random position von Charakter
+                // DONE: random position von Charakter
                 case GHOST -> {
-                    // dummy
-                    // characters.put(player.getName(), new Ghost(1.0, 0,0));
+
+                     characters.put(player.getName(), new Ghost(1.0, index%playmap.getWidth(),index/playmap.getWidth()));
+                     randomTile.addCharacter(characters.get(player.getName()));
                 }
                 case SNACKMAN -> {
-                    //dummy
-                    // characters.put(player.getName(), new Snackman(1.0, 1, 1, 3));
+
+                     characters.put(player.getName(), new Snackman(1.0, index%playmap.getWidth(),index/playmap.getWidth(), 3));
+                     randomTile.addCharacter(characters.get(player.getName()));
                 }
                 default ->{
-                    
+                    LOGGER.warn("Unknown player role for player: {}", player.getName());
                 }
             }
  
         }
-        // TODO: random position von hühnchen
+        // DONE: random position von hühnchen
+        for (int i = 0; i < this.chickenNum; i++) {
+            Tile randomTile;
+            int index = -1;
+            do {
+                index = random.nextInt(playmap.getTilesList().size()); 
+                randomTile = playmap.getTilesList().get(index);
+            } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
+            
+            Chicken chicken = new Chicken(index%playmap.getWidth(),index/playmap.getWidth());
+            chickens.add(chicken);
+            //DONE: chicken zu random tile hinzufügen
+            randomTile.addChicken(chicken);
+        }
 
         return started;
     }
@@ -144,7 +168,8 @@ public class Game {
 
     public void setChicken(int total){
        LOGGER.info("Chicken: {}, Game: {}", total, this.id);
-        // TODO: Implementierung für hinzufügen von Hühnern
+        this.chickenNum=total;
+
     }
 
     public Player findPlayerByUsername(String username) {
