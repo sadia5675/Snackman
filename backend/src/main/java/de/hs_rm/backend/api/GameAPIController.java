@@ -12,6 +12,7 @@ import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.messaging.GameMessagingService;
+import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -177,7 +178,12 @@ public class GameAPIController {
         if (player == null) {
             return createErrorResponse("Player with username '" + username + "' not found.");
         }
-        player.setPlayerrole(role);
+        try {
+            player.setPlayerrole(PlayerRole.valueOf(role.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid player role: {}", role);
+
+        }
         return createOkResponse(existingGame);
     }
 

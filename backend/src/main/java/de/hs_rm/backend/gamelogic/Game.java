@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +28,7 @@ public class Game {
     private PlayMap playmap;
 
     
-    private HashMap<String, Character> characters; // for game (after game start), strinng for username
+    private Map<String, Character> characters; // for game (after game start), strinng for username
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
@@ -39,7 +40,8 @@ public class Game {
         this.chickens = new ArrayList<>();   
         this.gamemaster = gamemaster;      
         this.players.add(this.gamemaster);             
-        this.started = false;                                        
+        this.started = false;     
+        this.characters = new HashMap<>();                                   
     }
 
     // Generiert eindeutige ID
@@ -74,15 +76,15 @@ public class Game {
 
         // TODO: hier sollte Charakter liste erstellen und player zu jedem charater zuweisen
         for (Player player : players) {
-            switch(player.getPlayerrole){
+            switch(player.getPlayerrole()){
                 // TODO: random position von Charakter
-                case PlayerRole.GHOST -> {
+                case GHOST -> {
                     // dummy
-                    characters.put(player.getName(), new Ghost(0, id, id, 0, null, 0));
+                    // characters.put(player.getName(), new Ghost(1.0, 0,0));
                 }
-                case PlayerRole.SNACKMAN -> {
+                case SNACKMAN -> {
                     //dummy
-                    characters.put(player.getName(), new Snackman(0, id, id, 0, null, 0, 0));
+                    // characters.put(player.getName(), new Snackman(1.0, 1, 1, 3));
                 }
                 default ->{
                     
@@ -102,7 +104,6 @@ public class Game {
     }
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
-    // TODO: man kann aber doch mit kick gamemaster zu kicken
     public boolean kick(String usernameKicker,String usernameKicked){
         if(usernameKicked.contentEquals(gamemaster.getName())){
             return false;
@@ -120,6 +121,25 @@ public class Game {
         }
         LOGGER.info("Player with unique name {} not found.", usernameKicked);
         return false;
+    }
+
+    public void joinGame(Player player){
+        players.add(player);
+    }
+
+    public boolean addPlayer(Player newPlayer) {
+        // Überprüfen, ob der Spieler bereits in der Liste ist
+        for (Player player : players) {
+            if (player.getName().equals(newPlayer.getName())) {
+                LOGGER.warn("Player with name {} is already in the game.", newPlayer.getName());
+                return false; // Spieler bereits vorhanden
+            }
+        }
+
+        // Spieler zur Liste hinzufügen
+        players.add(newPlayer);
+        LOGGER.info("Player with name {} has been added to the game.", newPlayer.getName());
+        return true;
     }
 
     public void setChicken(int total){

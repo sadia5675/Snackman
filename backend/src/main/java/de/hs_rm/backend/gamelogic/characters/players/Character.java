@@ -3,8 +3,8 @@ package de.hs_rm.backend.gamelogic.characters.players;
 public abstract class Character{
     //Initialisierung 
     //Der Spieler bekommt später eine spring boot entity id 
-    private long id; 
-    private String name;
+    // private long id; 
+    // private String name;
     // private String gameId; 
     private double speed;
     // PlayerPosition playerposition;
@@ -12,9 +12,9 @@ public abstract class Character{
     private int posX, posY;
 
 
-    public Character(long id, String name, double speed, int posX, int posY){
-        this.id=id; 
-        this.name=name; 
+    public Character(double speed, int posX, int posY){
+        // this.id=id; 
+        // this.name=name; 
         // this.gameId=gameId; 
         this.speed=speed; 
         //this.playerposition=playerposition; 
@@ -24,24 +24,24 @@ public abstract class Character{
 
     }
     //Getter udn Setter 
-    public long getId() {
-        return id;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getGamiId() {
-        return gameId;
-    }
-    public void setGamiId(String gamiId) {
-        this.gameId = gamiId;
-    }
+    // public long getId() {
+    //     return id;
+    // }
+    // public void setId(long id) {
+    //     this.id = id;
+    // }
+    // public String getName() {
+    //     return name;
+    // }
+    // public void setName(String name) {
+    //     this.name = name;
+    // }
+    // public String getGamiId() {
+    //     return gameId;
+    // }
+    // public void setGamiId(String gamiId) {
+    //     this.gameId = gamiId;
+    // }
     public double getSpeed() {
         return speed;
     }
