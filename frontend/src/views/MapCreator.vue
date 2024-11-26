@@ -59,6 +59,19 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
   grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
     Array.from({ length: cols.value }, () => " ")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
   );
+  for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
+    for (let colIndex = 0; colIndex < cols.value; colIndex++) {
+      if (
+        //Minus 1 wegen Arrayindex und Grid 
+        rowIndex === 0 || // Erste Zeile
+        rowIndex === rows.value - 1 || // Letzte Zeile
+        colIndex === 0 || // Erste Spalte
+        colIndex === cols.value - 1 // Letzte Spalte
+      ) {
+        grid.value[rowIndex][colIndex] = "*";
+      }
+    }
+  }
   console.log(`Erstelle ein Spielfeld mit ${rows.value} Reihen und ${cols.value} Spalten.`);
   }
 
