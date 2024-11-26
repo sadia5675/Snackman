@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -10,18 +11,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.hs_rm.backend.gamelogic.characters.players.Chicken;
+import de.hs_rm.backend.gamelogic.characters.players.Ghost;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
+import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 public class Game {
     private static Set<String> existingIds = new HashSet<>(); // set --> verhindert Duplikate und static --> diese liste wird für alle Instanzen der Klasse geteilt
     private String id;
-    private List<Player> players;
+    private List<Player> players; //for lobby
     private List<Chicken> chickens;
     private Player gamemaster;
     private boolean started;
     private PlayMap playmap;
-    // Map map;
+
+    
+    private HashMap<String, Character> characters; // for game (after game start), strinng for username
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
@@ -32,8 +39,7 @@ public class Game {
         this.chickens = new ArrayList<>();   
         this.gamemaster = gamemaster;      
         this.players.add(this.gamemaster);             
-        this.started = false;                     
-        // TODO: Random map generieren                        
+        this.started = false;                                        
     }
 
     // Generiert eindeutige ID
@@ -66,6 +72,26 @@ public class Game {
         // TODO: hier sollte random name als param übergeben werden
         playmap = new PlayMap("map1",this);
 
+        // TODO: hier sollte Charakter liste erstellen und player zu jedem charater zuweisen
+        for (Player player : players) {
+            switch(player.getPlayerrole){
+                // TODO: random position von Charakter
+                case PlayerRole.GHOST -> {
+                    // dummy
+                    characters.put(player.getName(), new Ghost(0, id, id, 0, null, 0));
+                }
+                case PlayerRole.SNACKMAN -> {
+                    //dummy
+                    characters.put(player.getName(), new Snackman(0, id, id, 0, null, 0, 0));
+                }
+                default ->{
+                    
+                }
+            }
+ 
+        }
+        // TODO: random position von hühnchen
+
         return started;
     }
 
@@ -88,6 +114,13 @@ public class Game {
         }
         LOGGER.info("Player with unique name {} not found.", uniqueName);
         return false;
+    }
+
+    public boolean move(String username, int coordinateX, int coordinateY){
+        // TODO: Tile obj von x und y überprüfen
+        // TODO: position von character aktualisieren für frontend
+        // TODO: kollision in tile: aktuelles Tile und TargetTile
+
     }
 
     public void setChicken(int total){ 

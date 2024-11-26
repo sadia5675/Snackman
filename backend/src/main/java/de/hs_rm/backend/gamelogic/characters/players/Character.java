@@ -5,17 +5,22 @@ public abstract class Character{
     //Der Spieler bekommt später eine spring boot entity id 
     private long id; 
     private String name;
-    private String gameId; 
-    private double playerSpeed;
-    PlayerPosition playerposition;
+    // private String gameId; 
+    private double speed;
+    // PlayerPosition playerposition;
+    // Player player;
+    private int posX, posY;
 
 
-    public Character(long id, String name, String gameId, double playerSpeed, PlayerPosition playerposition){
+    public Character(long id, String name, double speed, int posX, int posY){
         this.id=id; 
         this.name=name; 
-        this.gameId=gameId; 
-        this.playerSpeed=playerSpeed; 
-        this.playerposition=playerposition; 
+        // this.gameId=gameId; 
+        this.speed=speed; 
+        //this.playerposition=playerposition; 
+        //this.player = player;
+        this.posX=posX;
+        this.posY=posY;
 
     }
     //Getter udn Setter 
@@ -37,19 +42,24 @@ public abstract class Character{
     public void setGamiId(String gamiId) {
         this.gameId = gamiId;
     }
-    public double getPlayerSpeed() {
-        return playerSpeed;
+    public double getSpeed() {
+        return speed;
     }
-    public void setPlayerSpeed(double playerSpeed) {
-        this.playerSpeed = playerSpeed;
+    public void setSpeed(double playerSpeed) {
+        this.speed = playerSpeed;
     }
-    public PlayerPosition getPlayerposition() {
-        return playerposition;
+    public int getPosX() {
+        return posX;
     }
-    public void setPlayerposition(PlayerPosition playerposition) {
-        this.playerposition = playerposition;
+    public void setPosX(int posX) {
+        this.posX = posX;
     }
-
+    public int getPosY() {
+        return posY;
+    }
+    public void setPosY(int posY) {
+        this.posY = posY;
+    }
     //Abstrakte Methoden 
     public abstract PlayerPosition move(); 
     public abstract void pickUpItem(Item item); 
