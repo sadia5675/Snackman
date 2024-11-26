@@ -76,7 +76,7 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
   }
 
   function updateCell(rowIndex:number,colIndex:number){
-    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value) {
+    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
     return; // um das klicken zu ignorieren
    }
     // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
