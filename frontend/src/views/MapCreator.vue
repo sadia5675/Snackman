@@ -6,8 +6,10 @@
     <input type="number" v-model="rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
     <p>Spalten</p>
     <input type="number" v-model="cols" placeholder="Anzahl der Spalten" min="1" max="15" />
-    <button @click="createGrid">Spielfeld erstellen</button>
+    <button class="buttons-top-bottom" @click="createGrid">Spielfeld erstellen</button>
   </div>
+  <br>
+  <br>
   <!-- Raster des Spielfelds -->
   <!-- um dynamischer zur sein inline style verwendet (sofort Änderungen gezeigt)
    Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit) 
@@ -37,6 +39,10 @@
      bsp.index = 5, cols = 3, 5 % 3 = 2 -> Spalte 2.
      -->
   </div>
+  <br>
+  <br>
+  <button class="buttons-top-bottom"@click="finishMap">Create</button>
+
 </template>
 
 
@@ -85,7 +91,9 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
       grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
       
   }
-
+  function finishMap(){
+    console.log(`Fertigstellung der Map`);
+  }
 </script>
 
 <style scoped>
@@ -125,6 +133,15 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
 /* Hover-Effekt */
 .grid-cell:hover {
   background-color: #6fcdd2;
+}
+
+.buttons-top-bottom {
+    background-color:bisque;
+    border-radius: 10px;
+    padding: 10px;
+}
+.buttons-top-bottom:hover {
+  background-color: rgb(247, 194, 130);
 }
 </style>
 
