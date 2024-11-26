@@ -13,6 +13,7 @@ import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.messaging.GameMessagingService;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -194,6 +195,18 @@ public class GameAPIController {
         return createErrorResponse("can not add "+ player.getName() +"!");
         
                 
+    }
+
+    @GetMapping("/games")
+    public ResponseEntity<Map<String, Object>> getMethodName() {
+        Collection<?> gameList = gameService.getGameList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("feedback", gameList);
+        response.put("status", "ok");
+        response.put("time", LocalDateTime.now().toString());
+
+        return ResponseEntity.ok(response);
     }
 
 
