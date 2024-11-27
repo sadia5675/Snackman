@@ -64,6 +64,7 @@ public class GameAPIController {
         }
 
         Player gamemaster = new Player(gamemasterFromFrontend.getName());
+        gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
         // #63 NEW: gameservice now creates game
         Game newGame = gameService.createGame(gamemaster);
 
