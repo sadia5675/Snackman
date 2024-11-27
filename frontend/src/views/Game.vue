@@ -25,10 +25,7 @@ function createSceneCameraRendererControlsClock() {
   renderer.shadowMap.enabled = true
 
   const pointerLockControls = new PointerLockControls(camera, renderer.domElement)
-  pointerLockControls.movementSpeed = 5;
-  pointerLockControls.lookSpeed = 1;
-  pointerLockControls.lookVertical = false
-  pointerLockControls.activeLook = true
+  pointerLockControls.pointerSpeed = 1;
 
   const clock = new THREE.Clock()
   return{scene, camera, renderer, pointerLockControls, clock}
