@@ -77,5 +77,19 @@ public class GameService {
         return game;
     }
 
-    
+    public boolean move(String username, int targetX, int targetY) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username and direction must not be empty.");
+        }
+
+        // Iteriert über alle Games, um den Spieler zu finden
+        for (Game game : gameList.values()) {
+            Player player = game.getPlayerByName(username);
+            if (player != null) {
+                return game.move(username, targetX, targetY);
+            }
+        }
+        // Spieler nicht gefunden
+        throw new IllegalArgumentException("Player not found in any game.");
+    }
 }
