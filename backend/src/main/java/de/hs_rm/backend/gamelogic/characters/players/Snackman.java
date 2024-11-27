@@ -12,10 +12,10 @@ public class Snackman extends Character {
     private double nutriscore; 
     private List <Item> items;
 
-    public Snackman(long id, String name, String gameId, double playerSpeed, PlayerPosition playerposition, int life,double nutriscore){
-        super(id,name,gameId,playerSpeed,playerposition);
+    public Snackman(double speed, int posX, int posY, int life){
+        super(speed,posX,posY);
         this.life=life; 
-        this.nutriscore=nutriscore; 
+        this.nutriscore=0; 
         this.items=new ArrayList<>(); 
     }
 

@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.messaging.GameMessagingService;
+import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -175,7 +177,12 @@ public class GameAPIController {
         if (player == null) {
             return createErrorResponse("Player with username '" + username + "' not found.");
         }
-        player.setPlayerrole(role);
+        try {
+            player.setPlayerrole(PlayerRole.valueOf(role.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid player role: {}", role);
+
+        }
         return createOkResponse(existingGame);
     }
 
@@ -223,4 +230,21 @@ public class GameAPIController {
 
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
+
+
+    /* @PostMapping("/loadMap/{mapName}")
+    public ResponseEntity<?> loadMap(@PathVariable String mapName) {
+        /*if (game == null) {
+            return createErrorResponse("No game found to load a map into.");
+        }
+
+        try {
+            PlayMap newMap = new PlayMap();
+          
+        } catch (Exception e) {
+            return createErrorResponse("Failed to load map: " + e.getMessage());
+        }
+    }*/
+
+
 }
