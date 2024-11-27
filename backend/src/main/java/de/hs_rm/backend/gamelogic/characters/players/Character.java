@@ -60,8 +60,12 @@ public abstract class Character{
     public void setPosY(int posY) {
         this.posY = posY;
     }
+    public void move(int x, int y){
+        this.posX = x;
+        this.posY = y;
+    }
     //Abstrakte Methoden 
-    public abstract PlayerPosition move(); 
+
     public abstract void pickUpItem(Item item); 
     
 }

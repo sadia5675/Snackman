@@ -166,6 +166,28 @@ public class Game {
         return true;
     }
 
+    public boolean move(String username, int posX, int posY){
+        // DONE: Tile obj von x und y überprüfen
+        int targetIndex = posY*playmap.getWidth()+posX;
+        Tile targetTile = playmap.getTilesList().get(targetIndex);
+        Character curCharacter = characters.get(username);
+
+        int curIndex = curCharacter.getPosY()*playmap.getWidth() + curCharacter.getPosX();
+        Tile curTile = playmap.getTilesList().get(curIndex);
+
+        if (targetTile.getType()==TileType.WALL){
+            return false;
+        }
+        // DONE: position von character aktualisieren für frontend
+        curCharacter.move(posX,posY);
+        // TODO: hier fehlt noch Kollision in addCharacter
+        curTile.removeCharacter(curCharacter);
+        targetTile.addCharacter(curCharacter);
+
+        return true;
+
+    }
+
     public void setChicken(int total){
        LOGGER.info("Chicken: {}, Game: {}", total, this.id);
         this.chickenNum=total;

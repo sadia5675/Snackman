@@ -36,11 +36,11 @@ public class Ghost extends Character {
     }
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
-    @Override
-    public PlayerPosition move(){
-        System.out.println("the ghost is moving");
-        return null; 
-    }
+    // @Override
+    // public PlayerPosition move(){
+    //     System.out.println("the ghost is moving");
+    //     return null; 
+    // }
 
     //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln
     @Override
