@@ -9,11 +9,11 @@ import ground from "@/assets/game/realistic/ground.png"
 import wall from "@/assets/game/realistic/wall.png"
 
 
-let movingFoward:boolean, movingBackward:boolean, movingLeft:boolean, movingRight:boolean = false
+let movingForward:boolean, movingBackward:boolean, movingLeft:boolean, movingRight:boolean = false
 const slowMovementSpeed = 5
 const fastMovementSpeed = 10
 let movementSpeed = slowMovementSpeed
-function createSceneCameraRendererControllsClock() {
+function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000);
@@ -49,7 +49,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer){
         }
         break
       case "KeyW":
-        movingFoward = true
+        movingForward = true
         break
       case "KeyA":
         movingLeft = true
@@ -66,7 +66,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer){
     console.log("Losgelasen: " + e.code)
     switch (e.code) {
       case "KeyW":
-        movingFoward = false
+        movingForward = false
         break
       case "KeyA":
         movingLeft = false
@@ -81,7 +81,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer){
   });
 }
 
-const {scene, camera, renderer, pointerLockControls, clock} = createSceneCameraRendererControllsClock()
+const {scene, camera, renderer, pointerLockControls, clock} = createSceneCameraRendererControlsClock()
 registerListeners(window,renderer)
 
 const threeContainer = ref<null | HTMLElement>(null)
@@ -143,11 +143,9 @@ function cameraPositionBewegen(delta:number) {
   let cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
-  if (movingFoward || movingBackward || movingLeft || movingRight) {
-    if (movingFoward) {
-      console.log("movingFoward")
+  if (movingForward || movingBackward || movingLeft || movingRight) {
+    if (movingForward) {
       if (movingRight) {
-        console.log("and movingRight")
         camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 7 * Math.PI / 4), movementSpeed * delta)
       } else if (movingLeft) {
         camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4), movementSpeed * delta)
