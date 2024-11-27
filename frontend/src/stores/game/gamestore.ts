@@ -1,14 +1,15 @@
-import { defineStore } from "pinia";
-import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
-import { type Reactive, reactive } from "vue";
-import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
-import type { GameResponse } from "@/stores/game/responses/GameResponse";
-import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
-import { emptyGame, type IGameState } from "@/stores/game/IGameState";
+import { defineStore } from 'pinia'
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket'
+import { type Reactive, reactive } from 'vue'
+import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
+import type { GameResponse } from '@/stores/game/responses/GameResponse'
+import type { IGameDTD } from '@/stores/game/dtd/IGameDTD'
+import { emptyGame, type IGameState } from '@/stores/game/IGameState'
 
-export const useGameStore = defineStore("gameStore", () => {
+export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
-  const apiUrl = "/api/game";
+  const apiUrl = '/api/game'
+  const topicUrl = '/topic/game'
 
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
@@ -18,55 +19,57 @@ export const useGameStore = defineStore("gameStore", () => {
   }
 
   function resetGameState() {
-    gameState.ok = emptyGame.ok;
-    gameState.gamedata = emptyGame.gamedata;
+    gameState.ok = emptyGame.ok
+    gameState.gamedata = emptyGame.gamedata
   }
 
   function setGameStateFromResponse(gameResponse: GameResponse) {
-    gameState.ok = true;
-    gameState.gamedata = gameResponse.feedback as IGameDTD;
+    gameState.ok = true
+    gameState.gamedata = gameResponse.feedback as IGameDTD
   }
 
   // Helper function to handle API responses
   async function handleResponse(response: Response): Promise<GameResponse> {
     if (!response.ok) {
-      throw new Error(`Error while fetching data with status: ${response.status}`);
+      throw new Error(`Error while fetching data with status: ${response.status}`)
     }
-    const gameResponse: GameResponse = await response.json();
-    if (gameResponse.status === "error") {
-      throw new Error(gameResponse.feedback);
+    const gameResponse: GameResponse = await response.json()
+    if (gameResponse.status === 'error') {
+      throw new Error(gameResponse.feedback)
     }
 
-    return gameResponse;
+    return gameResponse
   }
 
   // API methods
   async function createGame(gamemaster: IPlayerDTD) {
     try {
       const response: Response = await fetch(`${apiUrl}/create`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(gamemaster),
-      });
+      })
 
-      const gameResponse = await handleResponse(response);
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error creating game:", error);
+      console.error('Error creating game:', error)
     }
   }
 
   function joinLobby(lobbyId: string) {
     stompClient.onConnect = () => {
-      if(gameState.gamedata?.players){
-        subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
-        sendMessage(`/topic/game/${lobbyId}/join`,{
+      if (gameState.gamedata?.players) {
+        subscribeToLobby(lobbyId, (message) => {
+          gameState.gamedata.players = message
+        })
+        sendMessage(`${topicUrl}/${lobbyId}/join`, {
           name: 'Berhan',
           email: 'Test MAIL',
-          userId: 123
+          userId: 123,
         })
       }
     }
@@ -78,80 +81,80 @@ export const useGameStore = defineStore("gameStore", () => {
 
   async function startGame() {
     try {
-      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: "POST" });
-      const gameResponse = await handleResponse(response);
+      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: 'POST' })
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error starting game:", error);
+      console.error('Error starting game:', error)
     }
   }
 
   async function endGame() {
     try {
-      const response = await fetch(`${apiUrl}/end/${gameState.gamedata.id}`, { method: "POST" });
-      const gameResponse = await handleResponse(response);
+      const response = await fetch(`${apiUrl}/end/${gameState.gamedata.id}`, { method: 'POST' })
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error ending game:", error);
+      console.error('Error ending game:', error)
     }
   }
 
   async function kickUser(username: string) {
     try {
-      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username}`, { method: "POST", });
-      const gameResponse = await handleResponse(response);
+      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username}`, {
+        method: 'POST',
+      })
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error kicking user:", error);
+      console.error('Error kicking user:', error)
     }
   }
 
   async function setChickenCount(number: number) {
     try {
       const response = await fetch(`${apiUrl}/setChicken/${gameState.gamedata.id}/${number}`, {
-        method: "POST",
-      });
-      const gameResponse = await handleResponse(response);
+        method: 'POST',
+      })
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error setting chicken count:", error);
+      console.error('Error setting chicken count:', error)
     }
   }
 
   async function fetchGameStatus() {
     try {
-      const response = await fetch(`${apiUrl}/status/${gameState.gamedata.id}`);
-      const gameResponse = await handleResponse(response);
+      const response = await fetch(`${apiUrl}/status/${gameState.gamedata.id}`)
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error fetching game status:", error);
+      console.error('Error fetching game status:', error)
     }
   }
 
   async function setPlayerRole(username: string, role: string) {
     try {
       const response = await fetch(`${apiUrl}/setRole/${gameState.gamedata.id}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, role }),
-      });
+      })
 
-      const gameResponse = await handleResponse(response);
+      const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
       handleGameStateError()
-      console.error("Error set user role:", error);
+      console.error('Error set user role:', error)
     }
   }
-
-
 
   return {
     gameState,
@@ -162,6 +165,6 @@ export const useGameStore = defineStore("gameStore", () => {
     joinLobby,
     setChickenCount,
     fetchGameStatus,
-    setPlayerRole
-  };
-});
+    setPlayerRole,
+  }
+})
