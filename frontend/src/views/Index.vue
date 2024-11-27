@@ -14,7 +14,7 @@
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="newGame()">Weiter</button>
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
        </div>
-      
+
     </template>
 
 
@@ -32,6 +32,7 @@
       </div>
       <!-- @click="game.findLobbies()"-->
       <button class="buttons-top-bottom">Find Lobbies/Games</button>
+      <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
     </div>
   </div>
 
@@ -66,6 +67,10 @@ const newPlayer: IPlayerDTD = reactive({
 
 })
 
+function toMapCreator() {
+  router.push({ name: 'createmap' });
+}
+
 async function newGame() {
 
   if (!newPlayer.name) {
@@ -75,9 +80,9 @@ async function newGame() {
 
     const id = useGameStore().gameState.gamedata?.id
 
-    router.push({ 
-      name: 'lobbyWithId', 
-      params: { id } 
+    router.push({
+      name: 'lobbyWithId',
+      params: { id }
     })
   }
 
