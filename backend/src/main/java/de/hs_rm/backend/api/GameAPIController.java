@@ -101,7 +101,9 @@ public class GameAPIController {
 
         logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
 
-        messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
+        if(existingGame != null){
+            messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
+        }
 
     }
 

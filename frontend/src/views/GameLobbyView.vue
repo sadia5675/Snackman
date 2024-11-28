@@ -15,17 +15,18 @@
             </div>
 
             <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-                <li v-for="player in players" :key="player.userId"
+                <li v-for="player in players" :key="player.name"
                     class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
                     <div class="flex flex-col flex-grow">
-                        <p class="text-sm font-medium text-gray-900">ID: {{ player.userId }}</p>
+                        <p class="text-sm font-medium text-gray-900">ID: {{ player.name }}</p>
                         <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
                     </div>
+                  <!--Ursprünglich wird auf player.isReady gecheckt ist aber noch nicht implementiert und wird temporär auf true gesetzt--->
                     <p :class="{
-                        'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !player.isReady,
-                        'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded': player.isReady
+                        'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !true,
+                        'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded': true
                     }" class="transition text-center w-32">
-                        {{ player.isReady ? 'Ready' : 'Not Ready' }}
+                        {{ true ? 'Ready' : 'Not Ready' }}
                     </p>
                     <div class="flex items-center space-x-2">
                         <select v-model="player.playerrole"

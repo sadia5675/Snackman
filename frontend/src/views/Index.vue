@@ -63,8 +63,8 @@ const newPlayer: IPlayerDTD = reactive({
   name: "",
   email: "",
   password: "",
-  playertype: PlayerType.GUEST
-
+  playertype: PlayerType.GUEST,
+  playerrole: ""
 })
 
 function toMapCreator() {
