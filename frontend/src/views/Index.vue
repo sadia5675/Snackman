@@ -6,17 +6,15 @@
     </template>
     <template #content>
       <input v-model="newPlayer.name" type="text" name="name" id="name"
-        class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-        placeholder="Username eingeben" />
+             class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+             placeholder="Username eingeben"/>
       <div v-if="inputErrorMessage" class="input-error-message">{{ inputErrorMessage }}</div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
-       <div class="flex space-x-4">
+      <div class="flex space-x-4">
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="newGame()">Weiter</button>
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
-       </div>
-
+      </div>
     </template>
-
 
   </Modal>
 
@@ -39,15 +37,14 @@
 </template>
 
 
-
-
 <script setup lang="ts">
 import Modal from '@/components/Modal.vue';
-import { reactive, ref } from 'vue';
-import { useModalStore } from '@/stores/modalstore';
-import { useGameStore } from '@/stores/game/gamestore';
-import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
-import { PlayerType } from '@/stores/game/dtd/PlayerType';
+import {reactive, ref} from 'vue';
+import {useModalStore} from '@/stores/modalstore';
+import {useGameStore} from '@/stores/game/gamestore';
+import type {IPlayerDTD} from '@/stores/game/dtd/IPlayerDTD';
+import {PlayerType} from '@/stores/game/dtd/PlayerType';
+import {PlayerRole} from '@/stores/game/dtd/PlayerRole'
 import router from '@/router';
 
 
@@ -64,11 +61,11 @@ const newPlayer: IPlayerDTD = reactive({
   email: "",
   password: "",
   playertype: PlayerType.GUEST,
-  playerrole: ""
+  playerrole: PlayerRole.SnackMan
 })
 
 function toMapCreator() {
-  router.push({ name: 'createmap' });
+  router.push({name: 'createmap'});
 }
 
 async function newGame() {
@@ -82,18 +79,13 @@ async function newGame() {
 
     router.push({
       name: 'lobbyWithId',
-      params: { id }
+      params: {id}
     })
   }
-
-
 }
 
 
-
 </script>
-
-
 
 
 <style>
@@ -140,8 +132,6 @@ async function newGame() {
     border-radius: 10px 0 0 10px;
     text-align: center;
   }
-
-
 
 
 }

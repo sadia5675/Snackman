@@ -88,6 +88,7 @@ public class Player{
 
     public void setPlayerrole(PlayerRole playerrole) {
         this.playerrole = playerrole;
+        System.out.println("PlayerRole ist jetzt:" + this.playerrole);
     }
 
     public boolean isGamemaster() {

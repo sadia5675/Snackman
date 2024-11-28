@@ -66,11 +66,6 @@ export const useGameStore = defineStore('gameStore', () => {
         subscribeToLobby(lobbyId, (message) => {
           gameState.gamedata.players = message
         })
-        sendMessage(`${topicUrl}/${lobbyId}/join`, {
-          name: 'Berhan',
-          email: 'Test MAIL',
-          userId: 123,
-        })
       }
     }
 
