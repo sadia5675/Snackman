@@ -203,10 +203,10 @@ public class GameAPIController {
     }
 
 
-    @PostMapping("/move/{username}/{coordinateX}/{coordinateY}")
-    public ResponseEntity<?> movePlayer(@PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
-        //damit ich die bewegung sehe beim testen
-        Game existingGame = gameService.findGameByPlayerUsername(username);
+    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}")
+    public ResponseEntity<?> movePlayer( @PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
+
+        Game existingGame = gameService.getGameById(gameId);
         
         if (existingGame == null) {
             return createErrorResponse("No game found.");
@@ -216,7 +216,7 @@ public class GameAPIController {
             if (success) {
                 return createOkResponse(existingGame);
             } else {
-                return ResponseEntity.badRequest().body("Failed to move player.");
+                return ResponseEntity.badRequest().body("Failed to move player --> TileTyp is WALL.");
             }
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());
@@ -248,7 +248,6 @@ public class GameAPIController {
             e.printStackTrace();
             feedbackData.put("feedback", "something in backend went wrong!");
         }
-
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
 }
