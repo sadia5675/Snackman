@@ -64,6 +64,7 @@ public class GameAPIController {
         }
 
         Player gamemaster = new Player(gamemasterFromFrontend.getName());
+        gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
         // #63 NEW: gameservice now creates game
         Game newGame = gameService.createGame(gamemaster);
 
@@ -122,7 +123,7 @@ public class GameAPIController {
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
     public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
-        
+
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
@@ -138,11 +139,11 @@ public class GameAPIController {
     public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId ,@PathVariable int number) {
         // #63 NEW: gameService now sets the number of Chickens
         Game existingGame = gameService.setChicken(gameId, number);
-        
+
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
-    
+
         return createOkResponse(existingGame);
     }
 
@@ -160,7 +161,7 @@ public class GameAPIController {
     @PostMapping("/setRole/{gameId}")
     public ResponseEntity<?> setPlayerRole(@RequestBody Map<String, String> payload, @PathVariable String gameId) {
         Game existingGame = gameService.getGameById(gameId);
-        
+
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
@@ -173,8 +174,7 @@ public class GameAPIController {
             return createErrorResponse("Invalid payload: 'username' or 'role' is missing.");
         }
 
-        // Fehlende Hilfsinstanz für findPlayerByName
-        Player player = existingGame.getPlayers().get(0);
+        Player player = existingGame.findPlayerByUsername(username);
         if (player == null) {
             return createErrorResponse("Player with username '" + username + "' not found.");
         }
@@ -187,7 +187,7 @@ public class GameAPIController {
         return createOkResponse(existingGame);
     }
 
-    @PostMapping("/addPlayer/{gameId}") 
+    @PostMapping("/addPlayer/{gameId}")
     public ResponseEntity<?> kickUser(@RequestBody Player playerFromFrontend, @PathVariable String gameId) {
         Game existingGame = gameService.getGameById(gameId);
         if (existingGame == null) {
