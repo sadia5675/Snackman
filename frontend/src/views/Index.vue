@@ -19,7 +19,7 @@
   </Modal>
 
 
-  <div class="homeMenue" :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }">
+  <div class="homeMenue" :style="{ backgroundImage: `url(`+backgroundImage+`)` }">
     <h1>Snackman</h1>
     <div class="form-container">
       <button class="buttons-top-bottom" @click="modal.openModal()">New Game</button>
@@ -33,7 +33,6 @@
       <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
     </div>
   </div>
-
 </template>
 
 
@@ -45,6 +44,7 @@ import {useGameStore} from '@/stores/game/gamestore';
 import type {IPlayerDTD} from '@/stores/game/dtd/IPlayerDTD';
 import {PlayerType} from '@/stores/game/dtd/PlayerType';
 import {PlayerRole} from '@/stores/game/dtd/PlayerRole'
+import backgroundImage from '@/assets/TestBackground1.jpg'
 import router from '@/router';
 
 
