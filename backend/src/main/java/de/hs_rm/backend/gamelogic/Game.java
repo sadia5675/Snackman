@@ -168,19 +168,6 @@ public class Game {
         return true;
     }
 
-    // Spieler anhand des Namens suchen
-    public Player getPlayerByName(String name) {
-        if (name == null || name.isEmpty()) {
-            return null;
-        }
-            for (Player player : players) {
-                if (player.getName().equalsIgnoreCase(name)) {
-                    return player;
-                }
-            }
-        return null;
-    }
-
     public boolean move(String username, int posX, int posY) {
         // DONE: Tile obj von x und y überprüfen
         int targetIndex = posY * playmap.getWidth() + posX;

@@ -205,10 +205,16 @@ public class GameAPIController {
 
     @PostMapping("/move/{username}/{coordinateX}/{coordinateY}")
     public ResponseEntity<?> movePlayer(@PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
+        //damit ich die bewegung sehe beim testen
+        Game existingGame = gameService.findGameByPlayerUsername(username);
+        
+        if (existingGame == null) {
+            return createErrorResponse("No game found.");
+        }
         try {
             boolean success = gameService.move(username, coordinateX, coordinateY);
             if (success) {
-                return createOkResponse(null);
+                return createOkResponse(existingGame);
             } else {
                 return ResponseEntity.badRequest().body("Failed to move player.");
             }
@@ -218,7 +224,6 @@ public class GameAPIController {
             return createErrorResponse("An unexpected error occurred.");
         }
     }
-
 
     // Helper method for standardized error response
     private ResponseEntity<Map<String, Object>> createErrorResponse(String feedbackMessage) {

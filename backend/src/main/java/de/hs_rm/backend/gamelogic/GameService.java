@@ -84,12 +84,24 @@ public class GameService {
 
         // Iteriert über alle Games, um den Spieler zu finden
         for (Game game : gameList.values()) {
-            Player player = game.getPlayerByName(username);
+            Player player = game.findPlayerByUsername(username);
             if (player != null) {
                 return game.move(username, targetX, targetY);
             }
         }
-        // Spieler nicht gefunden
         throw new IllegalArgumentException("Player not found in any game.");
     }
+
+    public Game findGameByPlayerUsername(String username) {
+        // Iteriert über alle Spiele im gameList und suche nach dem Spieler
+        for (Game game : gameList.values()) {
+            Player player = game.findPlayerByUsername(username);
+            if (player != null) {
+                return game;
+            }
+        }
+        
+        throw new IllegalArgumentException("Player with username " + username + " not found in any game.");
+    }
+
 }
