@@ -5,5 +5,5 @@ export interface IPlayerDTD {
   email: string;
   password: string;
   playertype: PlayerType;
-  playerrole: string;
+  playerrole: number;
 }
