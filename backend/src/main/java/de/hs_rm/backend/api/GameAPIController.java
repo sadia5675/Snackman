@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
@@ -95,12 +96,25 @@ public class GameAPIController {
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
         // #63 NEW: gameService now handles Player join
-        Game existingGame = gameService.joinGame(lobbyid, player);
+        HashMap<String,Object> response = new HashMap<>();
 
-        logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
+        try{
+            Game existingGame = gameService.joinGame(lobbyid, player);
+            logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
 
-        messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
 
+            messagingService.sendPlayerList(lobbyid, response);
+
+        }catch(GameJoinException e){
+            response.put("feedback", e.getMessage());
+            response.put("status", "error");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyid, response);
+        }
     }
 
     // Method to end the game
