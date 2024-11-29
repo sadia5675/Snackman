@@ -15,24 +15,24 @@
             </div>
 
             <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-                <li v-for="player in players" :key="player.userId"
+                <li v-for="player in players" :key="player.name"
                     class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
                     <div class="flex flex-col flex-grow">
-                        <p class="text-sm font-medium text-gray-900">ID: {{ player.userId }}</p>
+                        <p class="text-sm font-medium text-gray-900">Name</p>
                         <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
                     </div>
                     <p :class="{
-                        'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !player.isReady,
-                        'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded': player.isReady
+                        'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !true,
+                        'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded': true
                     }" class="transition text-center w-32">
-                        {{ player.isReady ? 'Ready' : 'Not Ready' }}
+                        {{ true ? 'Ready' : 'Not Ready' }}
                     </p>
                     <div class="flex items-center space-x-2">
                         <select v-model="player.playerrole"
                         @change="setPlayerRole(player.name, player.playerrole)"
                             class="w-28 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option value="SNACKMAN">Snackman</option>
-                            <option value="GHOST">Ghost</option>
+                            <option :value="Playerrole.SNACKMAN">Snackman</option>
+                            <option :value="Playerrole.GHOST">Ghost</option>
                         </select>
                         <button
                             class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
@@ -78,6 +78,7 @@
     import { onMounted, computed, ref , watch} from 'vue';
     import { useRoute } from 'vue-router';
     import router from "@/router";
+import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
     const route = useRoute();
 
@@ -118,7 +119,7 @@
       })
 
 // Funktion, um die Rolle des Spielers zu setzen
-function setPlayerRole(playerName: string, role: string) {
+function setPlayerRole(playerName: string, role: number) {
     const player = players.value.find(p => p.name === playerName);
     if (player) {
         player.playerrole = role; // Rolle des Spielers setzen
