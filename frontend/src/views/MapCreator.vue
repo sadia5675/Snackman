@@ -69,7 +69,7 @@ const mapName = ref<string>(""); // Map-Name
   }
   // Raster als 2D-Array erstellen
   grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-    Array.from({ length: cols.value }, () => "wall")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
+    Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
   );
   for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
     for (let colIndex = 0; colIndex < cols.value; colIndex++) {
@@ -80,7 +80,7 @@ const mapName = ref<string>(""); // Map-Name
         colIndex === 0 || // Erste Spalte
         colIndex === cols.value - 1 // Letzte Spalte
       ) {
-        grid.value[rowIndex][colIndex] = "*";
+        grid.value[rowIndex][colIndex] = "wall";
       }
     }
   }
@@ -94,7 +94,7 @@ const mapName = ref<string>(""); // Map-Name
     // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
     //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
     grid.value[rowIndex][colIndex] =
-      grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
+      grid.value[rowIndex][colIndex] === "wall" ? "weg" : "wall";
       
   }
   /*
@@ -108,7 +108,20 @@ const mapName = ref<string>(""); // Map-Name
       return;
     }
     //Validierung zu den Values damit diese nicht null sind, ob diese wirklich gefüllt sind
-    if(!rows.value||!cols.value|| !grid.value.length){
+    //!rows.value||!cols.value|| !grid.value.length
+    let valideCell=false;
+    for (let row of grid.value){
+      for (let cell of row){
+        //3= weil er denn wert des Strings überprüft ob er wirklich
+        if (cell == "null"){
+          valideCell=true;
+          break; 
+        }
+      }if(valideCell){
+        break; // wenn schon in der äußeren Schleife eine ungültige eingabe gefunden wurde also null
+      }
+    }
+    if(valideCell){
       alert("Pleas fill the Map at first!");
       return; 
     }
@@ -156,7 +169,7 @@ const mapName = ref<string>(""); // Map-Name
 }
 
 /* Wand (Stern '*') */
-.grid-cell[data-value="*"] {
+.grid-cell[data-value="wall"] {
   background-color: #444; 
   color: #fff;
 }
