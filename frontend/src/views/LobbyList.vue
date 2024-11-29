@@ -8,6 +8,7 @@ import { useModalStore } from '@/stores/modalstore';
 import { PlayerType } from '@/stores/game/dtd/PlayerType';
 import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
 import { ModalType } from '@/stores/game/dtd/EModalType';
+import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
 const modal = useModalStore();
 const apiUrl = "/api/game";
@@ -19,7 +20,7 @@ const newPlayer: IPlayerDTD = reactive({
   email: "",
   password: "",
   playertype: PlayerType.GUEST,
-  playerrole: "",
+  playerrole: Playerrole.GHOST,
 
 })
 

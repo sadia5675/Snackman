@@ -50,6 +50,7 @@ import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
 import { PlayerType } from '@/stores/game/dtd/PlayerType';
 import router from '@/router';
 import { ModalType } from '@/stores/game/dtd/EModalType';
+import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
 
 const modal = useModalStore()
@@ -59,13 +60,12 @@ const gameId = ref('');
 
 const inputErrorMessage = ref('');
 
-
 const newPlayer: IPlayerDTD = reactive({
   name: "",
   email: "",
   password: "",
   playertype: PlayerType.GUEST,
-  playerrole:""
+  playerrole: Playerrole.GHOST,
 })
 
 function toMapCreator() {

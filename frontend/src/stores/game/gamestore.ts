@@ -7,6 +7,8 @@ import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
 import { emptyGame, type IGameState } from "@/stores/game/IGameState";
 import type { Message } from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
+import { Playerrole } from "./dtd/EPlayerrole";
+import { PlayerType } from "./dtd/PlayerType";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -47,6 +49,7 @@ export const useGameStore = defineStore('gameStore', () => {
   // API methods
   async function createGame(gamemaster: IPlayerDTD) {
     try {
+      gamemaster.playerrole = Playerrole.SNACKMAN;
       const response: Response = await fetch(`${apiUrl}/create`, {
         method: 'POST',
         headers: {
