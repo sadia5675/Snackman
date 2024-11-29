@@ -16,11 +16,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore; // Korrektes Import für Jso
  *  
  */
 
+import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+
 public class Player{
     //@Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY) // automatische ID-Generierung
     private String name; 
     private String email; 
+
+    private boolean isGamemaster;
 
     //Dadurch das wir das Passwort während der Ausgabe also von backend zu Frontend eigentlich verbergen möchten
     //Die Ausgabe erfolgt über ein Json-Format 
@@ -28,7 +32,7 @@ public class Player{
     private String password; 
 
     PlayerType playertype; 
-    private String playerrole;
+    private PlayerRole playerrole;
     
 
     // No-args constructor for Jackson
@@ -78,11 +82,21 @@ public class Player{
         this.playertype = playertype;
     }
 
-    public String getPlayerrole() {
+    public PlayerRole getPlayerrole() {
         return playerrole;
     }
 
-    public void setPlayerrole(String playerrole) {
+    public void setPlayerrole(PlayerRole playerrole) {
         this.playerrole = playerrole;
     }
+
+    public boolean isGamemaster() {
+        return isGamemaster;
+    }
+
+    public void setGamemaster(boolean isGamemaster) {
+        this.isGamemaster = isGamemaster;
+    }
+
+    
 }

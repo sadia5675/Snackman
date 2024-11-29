@@ -14,7 +14,7 @@
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click=" modal.modalType === ModalType.NEW_GAME ? modal.newGame(newPlayer) : modal.joinGame(newPlayer)">Weiter</button>
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
        </div>
-      
+
     </template>
 
 
@@ -32,6 +32,7 @@
       </div>
       <!-- @click="game.findLobbies()"-->
       <button class="buttons-top-bottom" @click="router.push('/lobby')">Find Lobbies/Games</button>
+      <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
     </div>
   </div>
 
@@ -52,8 +53,11 @@ import { ModalType } from '@/stores/game/dtd/EModalType';
 
 
 const modal = useModalStore()
+const game = useGameStore()
 
 const gameId = ref('');
+
+const inputErrorMessage = ref('');
 
 
 const newPlayer: IPlayerDTD = reactive({
@@ -61,9 +65,14 @@ const newPlayer: IPlayerDTD = reactive({
   email: "",
   password: "",
   playertype: PlayerType.GUEST,
-  playerrole: "",
-
+  playerrole:""
 })
+
+function toMapCreator() {
+  router.push({ name: 'createmap' });
+}
+
+
 </script>
 
 

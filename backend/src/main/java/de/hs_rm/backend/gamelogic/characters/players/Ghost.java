@@ -14,9 +14,9 @@ public class Ghost extends Character {
     private int touchcount; 
     private List <Item> items;
     
-    public Ghost(long id, String name, String gameId, double playerSpeed, PlayerPosition playerposition, int touchcount){
-        super(id,name,gameId,playerSpeed,playerposition);
-        this.touchcount=touchcount; 
+    public Ghost(double speed, int posX, int posY){
+        super(speed,posX,posY);
+        this.touchcount=0; 
         this.items= new ArrayList<>();  
     }
 

@@ -28,11 +28,11 @@
                         {{ player.isReady ? 'Ready' : 'Not Ready' }}
                     </p>
                     <div class="flex items-center space-x-2">
-                        <select v-model="player.playertype"
+                        <select v-model="player.playerrole"
                         @change="setPlayerRole(player.name, player.playerrole)"
                             class="w-28 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option selected value="snackman">Snackman</option>
-                            <option value="ghost">Ghost</option>
+                            <option value="SNACKMAN">Snackman</option>
+                            <option value="GHOST">Ghost</option>
                         </select>
                         <button
                             class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
@@ -75,8 +75,9 @@
     import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
     import { PlayerType } from '@/stores/game/dtd/PlayerType';
     import { useGameStore } from '@/stores/game/gamestore';
-    import { onMounted, computed, ref } from 'vue';
+    import { onMounted, computed, ref , watch} from 'vue';
     import { useRoute } from 'vue-router';
+    import router from "@/router";
 
     const route = useRoute();
 
@@ -108,6 +109,13 @@
             await gamestore.setChickenCount(value);
         },
     });
+
+    watch(()=> gamestore.gameState.gamedata?.started,
+      (newValue) => {
+      if(newValue){
+        router.push({name:"game"})
+      }
+      })
 
 // Funktion, um die Rolle des Spielers zu setzen
 function setPlayerRole(playerName: string, role: string) {
