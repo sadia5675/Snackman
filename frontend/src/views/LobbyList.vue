@@ -2,12 +2,27 @@
 import LobbyTabellenZeile from '@/components/LobbyTabellenZeile.vue';
 import type { IGameDTD } from '@/stores/game/dtd/IGameDTD';
 import { useGameStore } from '@/stores/game/gamestore';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import Modal from '@/components/Modal.vue';
+import { useModalStore } from '@/stores/modalstore';
+import { PlayerType } from '@/stores/game/dtd/PlayerType';
+import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
+import { ModalType } from '@/stores/game/dtd/EModalType';
 
-const gameStore = useGameStore();
+const modal = useModalStore();
 const apiUrl = "/api/game";
 
 const games = ref<IGameDTD[]>([]);
+
+const newPlayer: IPlayerDTD = reactive({
+  name: "",
+  email: "",
+  password: "",
+  playertype: PlayerType.GUEST,
+  playerrole: "",
+
+})
+
 
 async function getAllGames(){
     try{
@@ -33,6 +48,23 @@ async function getAllGames(){
 </script>
 
 <template>
+  <Modal v-if="modal.isModalOpen">
+    <template #titel>
+      <h2 class="font-bold text-3xl text-center">Join Game</h2>
+    </template>
+    <template #content>
+      <input v-model="newPlayer.name" type="text" name="name" id="name"
+        class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+        placeholder="Username eingeben" />
+      <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
+      <!-- TODO: überprüfen ob name eingeben worden ist -->
+       <div class="flex space-x-4">
+        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.joinGame(newPlayer)">Weiter</button>
+        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
+       </div>
+      
+    </template>
+  </Modal>
     <div class="flex items-center justify-center min-h-screen bg-gray-100">
       <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-4xl">
         <table class="table-auto w-full border-rounded-lg border-collapse border border-gray-300">
@@ -49,6 +81,7 @@ async function getAllGames(){
                 :game="game">
                 <LobbyTabellenZeile 
                     :game="game"
+                    @open-modal="modal.openModal"
                 />
             </tr>
           </tbody>
