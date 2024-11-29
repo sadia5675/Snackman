@@ -1,6 +1,8 @@
 <template>
   <div>
     <h1>Map Creator</h1>
+    <p>Gib einen Namen für die Map ein:</p>
+    <input type="text" v-model="mapName" placeholder="Map Name" />
     <p>Definiere die Größe des Spielfelds:</p>
     <p> Zeilen:</p>
     <input type="number" v-model="rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
@@ -41,7 +43,7 @@
   </div>
   <br>
   <br>
-  <button class="buttons-top-bottom"@click="finishMap">Create</button>
+  <button class="buttons-top-bottom"@click="saveMap">Create</button>
 
 </template>
 
@@ -49,10 +51,14 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-//ref = reagitives Objekt dass direkt auf Änderungen reagiert und an die UI aktualisiert
+import axios from "axios";
+
+
+//ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI aktualisiert
 const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
+const mapName = ref<string>(""); // Map-Name
 
   //funktion um Raster zu erstellen
   function createGrid() {
@@ -63,7 +69,7 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
   }
   // Raster als 2D-Array erstellen
   grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-    Array.from({ length: cols.value }, () => " ")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
+    Array.from({ length: cols.value }, () => "wall")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
   );
   for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
     for (let colIndex = 0; colIndex < cols.value; colIndex++) {
@@ -91,8 +97,12 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
       grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
       
   }
-  function finishMap(){
-    console.log(`Fertigstellung der Map`);
+  /*
+  * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um 
+  */
+  //
+  function saveMap(){
+    
   }
 </script>
 
