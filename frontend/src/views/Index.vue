@@ -31,7 +31,7 @@
         <button class="button-middle" @click="modal.openModal(ModalType.JOIN_GAME,gameId)">Join</button>
       </div>
       <!-- @click="game.findLobbies()"-->
-      <button class="buttons-top-bottom">Find Lobbies/Games</button>
+      <button class="buttons-top-bottom" @click="router.push('/lobby')">Find Lobbies/Games</button>
     </div>
   </div>
 
