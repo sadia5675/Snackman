@@ -101,9 +101,37 @@ const mapName = ref<string>(""); // Map-Name
   * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um 
   */
   //
-  function saveMap(){
-    
+  async function saveMap(){
+    //Überprüfung zur eingabe des Namens der Map, ob der Benutzer hier etwas eingegebn hat
+    if (!mapName.value.trim()){
+      alert("Please Enter the a name for the Map!");
+      return;
+    }
+    //Validierung zu den Values damit diese nicht null sind, ob diese wirklich gefüllt sind
+    if(!rows.value||!cols.value|| !grid.value.length){
+      alert("Pleas fill the Map at first!");
+      return; 
+    }
+
+    // Map-Daten vorbereiten
+    const mapData = {
+      name: mapName.value,
+      //aus dem 2darray zeilenweise durchitteriert und in einem String konvertiert bsp. "*", "weg","*"--> *weg*
+      tiles: grid.value.map(row => row.join(""))
+    };
+
+  //in diesem Block werden die Daten vom Browser eingelesen und vorbereitet für backend
+    try {
+      //axious.post  ist eine Post Request an das Backend-Endpunkt "/api/maps/" gesendet 
+      const response = await axios.post("/api/maps", mapData); // Axios konvertiert das mapData-Objekt automatisch in JSON
+      alert(response.data); // Backend-Antwort anzeigen wenn alles gut läuft
+    } catch (error) {
+      console.error("Somethink went Wrong :( ", error);
+      alert("Somethink went Wrong :( ");
+    }
   }
+
+
 </script>
 
 <style scoped>
