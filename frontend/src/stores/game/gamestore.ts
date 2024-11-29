@@ -70,6 +70,7 @@ export const useGameStore = defineStore('gameStore', () => {
       if (!stompClient.connected) {
         stompClient.activate()
       }
+      sessionStorage.setItem("myName", gamemaster.name);
 
     } catch (error) {
       handleGameStateError()
@@ -101,6 +102,7 @@ export const useGameStore = defineStore('gameStore', () => {
           });
   
           sendMessage(`/topic/game/${lobbyId}/join`, newPlayer);
+          sessionStorage.setItem("myName", newPlayer.name);
         }
       };
   
