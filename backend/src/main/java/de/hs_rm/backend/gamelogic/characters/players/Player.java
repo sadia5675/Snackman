@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore; // Korrektes Import für Jso
  *  
  */
 
-import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 public class Player{
     //@Id

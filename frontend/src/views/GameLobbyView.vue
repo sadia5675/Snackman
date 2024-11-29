@@ -160,8 +160,6 @@ async function startGame() {
     onMounted(async () => {
         try {
             await gamestore.fetchGameStatus();
-            //Log zum testen
-            gamestore.joinLobby(lobbyId);
 
         } catch (error) {
             console.error("Error fetching game status:", error);

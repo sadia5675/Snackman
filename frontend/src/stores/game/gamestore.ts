@@ -1,10 +1,12 @@
-import { defineStore } from 'pinia'
-import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket'
-import { type Reactive, reactive } from 'vue'
-import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
-import type { GameResponse } from '@/stores/game/responses/GameResponse'
-import type { IGameDTD } from '@/stores/game/dtd/IGameDTD'
-import { emptyGame, type IGameState } from '@/stores/game/IGameState'
+import { defineStore } from "pinia";
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { type Reactive, reactive } from "vue";
+import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
+import type { GameResponse } from "@/stores/game/responses/GameResponse";
+import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
+import { emptyGame, type IGameState } from "@/stores/game/IGameState";
+import type { Message } from "./dtd/IMessageDTD";
+import { useModalStore } from "../modalstore";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -13,6 +15,7 @@ export const useGameStore = defineStore('gameStore', () => {
 
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
+  const modal = useModalStore();
 
   function handleGameStateError() {
     resetGameState()
@@ -52,32 +55,59 @@ export const useGameStore = defineStore('gameStore', () => {
         body: JSON.stringify(gamemaster),
       })
 
-      const gameResponse = await handleResponse(response)
-      setGameStateFromResponse(gameResponse)
+      const gameResponse = await handleResponse(response);
+      setGameStateFromResponse(gameResponse);
+
+      stompClient.onConnect = () => {
+        if(gameState.gamedata?.players){
+          subscribeToLobby(gameState.gamedata.id, (message: Message) => { gameState.gamedata.players = message.feedback as IPlayerDTD[]})
+        }
+      }
+
+      if (!stompClient.connected) {
+        stompClient.activate()
+      }
+
     } catch (error) {
       handleGameStateError()
       console.error('Error creating game:', error)
     }
   }
 
-  function joinLobby(lobbyId: string) {
-    stompClient.onConnect = () => {
-      if (gameState.gamedata?.players) {
-        subscribeToLobby(lobbyId, (message) => {
-          gameState.gamedata.players = message
-        })
-        sendMessage(`${topicUrl}/${lobbyId}/join`, {
-          name: 'Berhan',
-          email: 'Test MAIL',
-          userId: 123,
-        })
-      }
-    }
+  function joinLobby(lobbyId: string, newPlayer: IPlayerDTD): Promise<boolean> {
+    return new Promise((resolve) => {
+      stompClient.onConnect = () => {
+        stompClient.unsubscribe(`/topic/game/${lobbyId}`);
+        
+        if (gameState.gamedata?.players) {
 
-    if (!stompClient.connected) {
-      stompClient.activate()
-    }
+          subscribeToLobby(lobbyId, (message: Message) => {
+
+            if (message.status === 'ok') {
+              console.log(message.feedback)
+              gameState.gamedata.players = message.feedback as IPlayerDTD[];
+              modal.setErrorMessage(''); 
+              
+              resolve(true); 
+            } else {
+
+              modal.setErrorMessage(message.feedback as string); 
+              stompClient.deactivate();
+              resolve(false);
+            }
+          });
+  
+          sendMessage(`/topic/game/${lobbyId}/join`, newPlayer);
+        }
+      };
+  
+      if (!stompClient.connected) {
+
+        stompClient.activate();
+      }
+    });
   }
+  
 
   async function startGame() {
     try {
