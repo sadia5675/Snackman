@@ -50,18 +50,18 @@
 
 
 <script setup lang="ts">
-import { ref } from "vue";
-import axios from "axios";
+import { ref,onMounted } from "vue";
+import axios, { all } from "axios";
 
-
-//ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI aktualisiert
+//onMounted? nachschauen
+//ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
 const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
 const mapName = ref<string>(""); // Map-Name
-
+const allMaps= ref<string[][]>([]);//alle maps
   //funktion um Raster zu erstellen
-  function createGrid() {
+function createGrid() {
   // Sicherstellung, dass die Eingaben valide sind spricht nicht unter 0
   if (rows.value <= 0 || cols.value <= 0) {
     alert("Bitte gültige Werte für Reihen und Spalten eingeben.");
@@ -85,18 +85,35 @@ const mapName = ref<string>(""); // Map-Name
     }
   }
   console.log(`Erstelle ein Spielfeld mit ${rows.value} Reihen und ${cols.value} Spalten.`);
-  }
+}
+
+
 
   function updateCell(rowIndex:number,colIndex:number){
     if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
-    return; // um das klicken zu ignorieren
-   }
+      return; // um das klicken zu ignorieren
+    }
     // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
     //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
     grid.value[rowIndex][colIndex] =
       grid.value[rowIndex][colIndex] === "wall" ? "weg" : "wall";
       
   }
+
+//onMounted mit Dom ????? und lädt alle Komponenten bei Seitenaufruf 
+  onMounted(async()=>{
+    //sendet eine http get_anfrage an den Endpunkt und dieser Antwortet mit einer Liste
+    //awiat wartet solange bis der get request abgeschloss ist 
+    try{
+      const respone = await axios.get("/api/maps");
+      allMaps.value=respone.data; 
+      console.log("Maps:"+ allMaps.value);
+    }catch(error){
+      console.error("es gab Fehler beim abrufen von den Maps:", error);
+    }
+  })
+
+
   /*
   * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um 
   */
@@ -124,6 +141,12 @@ const mapName = ref<string>(""); // Map-Name
     if(valideCell){
       alert("Pleas fill the Map at first!");
       return; 
+    }
+    const allMapsString= allMaps.value.join(",");
+
+    if (allMapsString.includes(mapName.value.trim())) {
+      alert("The name is not available, you are too late :(");
+      return;
     }
 
     // Map-Daten vorbereiten

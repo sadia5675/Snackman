@@ -10,8 +10,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -60,5 +64,21 @@ public class MapController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity <List<String>> allMaps() {
+
+    // Der Pfad zum Map-Ordner
+    File mapFolder = new File("src/main/resources/maps");
+    String[] files = mapFolder.list();
+
+    //Liste zur maps wird erstellt 
+    List<String> mapNames = new ArrayList<>();
+    for (String file : files) {
+        if (file.endsWith(".txt")) {
+            mapNames.add(file.replace(".txt", " "));
+        }
+    }
+    return ResponseEntity.ok(mapNames); // Map-Namen zurückgeben
     
+    }
 }
