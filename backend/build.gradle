@@ -22,8 +22,38 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+def isWindows = System.getProperty("os.name").toLowerCase().contains("win")
+def npmCommand = isWindows ? "C:\\Program Files\\nodejs\\npm.cmd" : "npm"
+
+//Von Weitz Projekt SpringVueVerknotung
+task build_frontend {
+	doLast {
+		// JS-Pakete in Vue-Projekt installieren
+		exec {
+			workingDir "${projectDir}/../frontend"
+			commandLine npmCommand, "install"
+		}
+		// Vue-Frontend bauen
+		exec {
+			workingDir "${projectDir}/../frontend"
+			commandLine npmCommand,"run", "build"
+		}
+		// eventuell vorhandenes public/fe (Frontend)-Verzeichnis loeschen
+		delete files("${projectDir}/src/main/resources/public/")
+
+		// dist-Ordner aus Vue-Projekt als Spring "public"-Ordner in src/main/resources kopieren
+		copy {
+			from "${projectDir}/../frontend/dist"
+			into "${projectDir}/src/main/resources/public/"
+		}
+	}
+}
+bootJar.dependsOn build_frontend
+

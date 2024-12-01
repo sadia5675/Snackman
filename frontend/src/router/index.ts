@@ -1,22 +1,42 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Index from '../views/Index.vue'
+import LobbyList from '../views/LobbyList.vue'
+import GameLobbyView from '@/views/GameLobbyView.vue'
+import Game from "@/views/Game.vue";
+import MapCreator from "@/views/MapCreator.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: HomeView,
+      path: "/",
+      redirect: "/index"
+    }, // Hier wird direkt zur Hauptseite weitergeleitet
+    {
+      path: '/index',
+      name: 'index',
+      component: Index
+    }, // Hier wird die Hauptseite angezeigt
+    {
+      path: '/lobby/:id',
+      name: 'lobbyWithId',
+      component: GameLobbyView
+    },  // Hier wird die Lobby mit Id angezeigt
+    {
+      path: '/lobby',
+      name: 'lobbyList',
+      component: LobbyList
+    }, // Hier wird die Lobby Liste angezeigt
+    {
+      path: '/lobby/:id/ingame',
+      name: 'game',
+      component: Game
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
+      path: '/createmap',
+      name: 'createmap',
+      component: MapCreator
+    }, // Hier wird die Lobby Liste angezeigt
   ],
 })
 
