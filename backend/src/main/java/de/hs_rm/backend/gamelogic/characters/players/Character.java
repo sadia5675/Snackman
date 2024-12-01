@@ -10,6 +10,10 @@ public abstract class Character{
     // PlayerPosition playerposition;
     // Player player;
     private int posX, posY;
+    private int currentcalorie;
+    //private int life;
+    private Item item; 
+
 
 
     public Character(double speed, int posX, int posY){
@@ -21,8 +25,11 @@ public abstract class Character{
         //this.player = player;
         this.posX=posX;
         this.posY=posY;
-
+        //this.life = life; 
+        this.currentcalorie= 0;
+        //this.item = item; 
     }
+
     //Getter udn Setter 
     // public long getId() {
     //     return id;
@@ -60,12 +67,35 @@ public abstract class Character{
     public void setPosY(int posY) {
         this.posY = posY;
     }
-    public void move(int x, int y){
-        this.posX = x;
-        this.posY = y;
+    public Item getItems() {
+        return item;
     }
-    //Abstrakte Methoden 
 
-    public abstract void pickUpItem(Item item); 
+    public void setItem(Item item) {
+        this.item=item; 
+    }
+    
+    //Methode: addieren der Kalorien
+    public void mycurrentItem(){
+      Item currentItem= item;
+        if (currentItem instanceof FoodItems foodItem) {
+            currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
+    }
+
+    //Abstrakte Methoden 
+    public abstract PlayerPosition move(); 
+    
+    // Methode: Sammeln von Items
+    public void pickUpItemLogic(Item item) {
+        setItem(item);
+            System.out.println(item.getName() + "is picked up");
+    }
+    
+    //TODO: muss noch ausgearbietet werden
+    // Methode: Leben verloren
+    public void caught() {
+       // life--;
+    }
+
     
 }
