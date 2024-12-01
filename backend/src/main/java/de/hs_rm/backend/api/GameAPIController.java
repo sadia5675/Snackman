@@ -120,6 +120,18 @@ public class GameAPIController {
         }
     }
 
+    @MessageMapping("/topic/game/{lobbyid}/leave")
+    @SendTo("/topic/game/{lobbyid}")
+    public void leaveLobby(Player player, @DestinationVariable String lobbyid) {
+        // #63 NEW: gameService now handles Player join
+        Game existingGame = gameService.leaveGame(lobbyid, player);
+
+        logger.info("Player: {}, leaved game: {}", player.getName(), lobbyid);
+
+        messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
+
+    }
+
     // Method to end the game
     @PostMapping("/end/{gameId}")
     public ResponseEntity<?> endGame(@PathVariable String gameId) {

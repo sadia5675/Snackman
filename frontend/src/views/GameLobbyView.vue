@@ -67,6 +67,15 @@
                 @click="startGame()">
                 {{ isHost ? 'Start Game' : '---' }}
             </button>
+            <button
+                :class="{
+                    'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
+                    'bg-gray-600': !isHost
+                }"
+                class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+                @click="leaveGame(lobbyId)">
+               leave
+            </button>
         </div>
     </div>
 </template>
@@ -75,12 +84,14 @@
     import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
     import { PlayerType } from '@/stores/game/dtd/PlayerType';
     import { useGameStore } from '@/stores/game/gamestore';
-    import { onMounted, computed, ref , watch} from 'vue';
-    import { useRoute } from 'vue-router';
-    import router from "@/router";
+    import { onMounted, computed, ref , watch, onUnmounted} from 'vue';
+    import {useRoute, useRouter} from 'vue-router';
+
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
     const route = useRoute();
+
+    const router = useRouter();
 
     const gamestore = useGameStore();
     const jsonString = '{"employee":{ "name":"John", "age":30, "city":"New York" }}';
@@ -152,15 +163,33 @@ async function startGame() {
 
     }
 
+async function leaveGame(lobbyId:string) {
+    try {
+        await gamestore.leaveGame(lobbyId);
+        //Log zum testen
+        console.log(gamestore.gameState);
+
+        router.push({name : 'index'});
+    } catch (error) {
+        console.log(error);
+    }
+    }
+
     //Um Lobby Code kopieren zu können
     function copyToClipboard(){
         alert("Copied to Clipboard!")
         navigator.clipboard.writeText(lobbyId);
     }
 
+    window.addEventListener('beforeunload', (event) => {
+        leaveGame(lobbyId);
+    });
+
     onMounted(async () => {
         try {
             await gamestore.fetchGameStatus();
+            //Log zum testen
+            //gamestore.joinLobby(lobbyId);
 
         } catch (error) {
             console.error("Error fetching game status:", error);
