@@ -64,4 +64,10 @@ public class Snackman extends Character {
             System.out.println("Snackman has been caught and has no more lives.");
         }
     }
+
+    @Override
+    public PlayerPosition move() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'move'");
+    }
 }

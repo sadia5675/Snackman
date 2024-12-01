@@ -50,4 +50,10 @@ public class Ghost extends Character {
         System.out.println("Player " + playerId + " has been hit by the ghost.");
         touchcount++; 
     }
+
+    @Override
+    public PlayerPosition move() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'move'");
+    }
 }
