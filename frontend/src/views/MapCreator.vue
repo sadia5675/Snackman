@@ -1,8 +1,6 @@
 <template>
   <div>
     <h1>Map Creator</h1>
-    <p>Gib einen Namen für die Map ein:</p>
-    <input type="text" v-model="mapName" placeholder="Map Name" />
     <p>Definiere die Größe des Spielfelds:</p>
     <p> Zeilen:</p>
     <input type="number" v-model="rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
@@ -14,7 +12,7 @@
   <br>
   <!-- Raster des Spielfelds -->
   <!-- um dynamischer zur sein inline style verwendet (sofort Änderungen gezeigt)
-   Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit) 
+   Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit)
   -->
   <div
     class="grid-container"
@@ -24,9 +22,9 @@
     }"
     v-if="grid.length > 0"
   >
-  <!-- .flat wandelt das "2Darray" in eindimensionalen array um direkt durchzuiterieren (sonst Probleme mit spalte größer als zeile)
-   
-  -->
+    <!-- .flat wandelt das "2Darray" in eindimensionalen array um direkt durchzuiterieren (sonst Probleme mit spalte größer als zeile)
+
+    -->
     <div
       v-for="(cell, index) in grid.flat()"
       :key="'cell-' + index"
@@ -36,31 +34,27 @@
     >
       {{ cell }}
     </div>
-     <!--Math.floor berechnet die Zeile, in der sich die aktuelle Zelle befindet
-     bsp.index = 5, cols = 3, 5 / 3 = 1.66 -> Math.floor rundet runter d.h. Zeile 1
-     bsp.index = 5, cols = 3, 5 % 3 = 2 -> Spalte 2.
-     -->
+    <!--Math.floor berechnet die Zeile, in der sich die aktuelle Zelle befindet
+    bsp.index = 5, cols = 3, 5 / 3 = 1.66 -> Math.floor rundet runter d.h. Zeile 1
+    bsp.index = 5, cols = 3, 5 % 3 = 2 -> Spalte 2.
+    -->
   </div>
   <br>
   <br>
-  <button class="buttons-top-bottom"@click="saveMap">Create</button>
+  <button class="buttons-top-bottom"@click="finishMap">Create</button>
 
 </template>
 
 
 
 <script setup lang="ts">
-import { ref,onMounted } from "vue";
-import axios, { all } from "axios";
-
-//onMounted? nachschauen
-//ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
+import { ref } from "vue";
+//ref = reagitives Objekt dass direkt auf Änderungen reagiert und an die UI aktualisiert
 const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
-const mapName = ref<string>(""); // Map-Name
-const allMaps= ref<string[][]>([]);//alle maps
-  //funktion um Raster zu erstellen
+
+//funktion um Raster zu erstellen
 function createGrid() {
   // Sicherstellung, dass die Eingaben valide sind spricht nicht unter 0
   if (rows.value <= 0 || cols.value <= 0) {
@@ -69,105 +63,37 @@ function createGrid() {
   }
   // Raster als 2D-Array erstellen
   grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-    Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
+    Array.from({ length: cols.value }, () => " ")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
   );
   for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
     for (let colIndex = 0; colIndex < cols.value; colIndex++) {
       if (
-        //Minus 1 wegen Arrayindex und Grid 
+        //Minus 1 wegen Arrayindex und Grid
         rowIndex === 0 || // Erste Zeile
         rowIndex === rows.value - 1 || // Letzte Zeile
         colIndex === 0 || // Erste Spalte
         colIndex === cols.value - 1 // Letzte Spalte
       ) {
-        grid.value[rowIndex][colIndex] = "wall";
+        grid.value[rowIndex][colIndex] = "*";
       }
     }
   }
   console.log(`Erstelle ein Spielfeld mit ${rows.value} Reihen und ${cols.value} Spalten.`);
 }
 
-
-
-  function updateCell(rowIndex:number,colIndex:number){
-    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
-      return; // um das klicken zu ignorieren
-    }
-    // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
-    //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
-    grid.value[rowIndex][colIndex] =
-      grid.value[rowIndex][colIndex] === "wall" ? "weg" : "wall";
-      
+function updateCell(rowIndex:number,colIndex:number){
+  if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
+    return; // um das klicken zu ignorieren
   }
+  // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
+  //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
+  grid.value[rowIndex][colIndex] =
+    grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
 
-//onMounted mit Dom ????? und lädt alle Komponenten bei Seitenaufruf 
-  onMounted(async()=>{
-    //sendet eine http get_anfrage an den Endpunkt und dieser Antwortet mit einer Liste
-    //awiat wartet solange bis der get request abgeschloss ist 
-    try{
-      const respone = await axios.get("/api/maps");
-      allMaps.value=respone.data; 
-      console.log("Maps:"+ allMaps.value);
-    }catch(error){
-      console.error("es gab Fehler beim abrufen von den Maps:", error);
-    }
-  })
-
-
-  /*
-  * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um 
-  */
-  //
-  async function saveMap(){
-    //Überprüfung zur eingabe des Namens der Map, ob der Benutzer hier etwas eingegebn hat
-    if (!mapName.value.trim()){
-      alert("Please Enter the a name for the Map!");
-      return;
-    }
-    //Validierung zu den Values damit diese nicht null sind, ob diese wirklich gefüllt sind
-    //!rows.value||!cols.value|| !grid.value.length
-    let valideCell=false;
-    for (let row of grid.value){
-      for (let cell of row){
-        //3= weil er denn wert des Strings überprüft ob er wirklich
-        if (cell == "null"){
-          valideCell=true;
-          break; 
-        }
-      }if(valideCell){
-        break; // wenn schon in der äußeren Schleife eine ungültige eingabe gefunden wurde also null
-      }
-    }
-    if(valideCell){
-      alert("Pleas fill the Map at first!");
-      return; 
-    }
-    const allMapsString= allMaps.value.join(",");
-
-    if (allMapsString.includes(mapName.value.trim())) {
-      alert("The name is not available, you are too late :(");
-      return;
-    }
-
-    // Map-Daten vorbereiten
-    const mapData = {
-      name: mapName.value,
-      //aus dem 2darray zeilenweise durchitteriert und in einem String konvertiert bsp. "*", "weg","*"--> *weg*
-      tiles: grid.value.map(row => row.join(""))
-    };
-
-  //in diesem Block werden die Daten vom Browser eingelesen und vorbereitet für backend
-    try {
-      //axious.post  ist eine Post Request an das Backend-Endpunkt "/api/maps/" gesendet 
-      const response = await axios.post("/api/maps", mapData); // Axios konvertiert das mapData-Objekt automatisch in JSON
-      alert(response.data); // Backend-Antwort anzeigen wenn alles gut läuft
-    } catch (error) {
-      console.error("Somethink went Wrong :( ", error);
-      alert("Somethink went Wrong :( ");
-    }
-  }
-
-
+}
+function finishMap(){
+  console.log(`Fertigstellung der Map`);
+}
 </script>
 
 <style scoped>
@@ -192,14 +118,14 @@ function createGrid() {
 }
 
 /* Wand (Stern '*') */
-.grid-cell[data-value="wall"] {
-  background-color: #444; 
+.grid-cell[data-value="*"] {
+  background-color: #444;
   color: #fff;
 }
 
 /* Weg ("weg") */
 .grid-cell[data-value="weg"] {
-  background-color: #fff; 
+  background-color: #fff;
   color: #000;
 }
 
@@ -210,9 +136,9 @@ function createGrid() {
 }
 
 .buttons-top-bottom {
-    background-color:bisque;
-    border-radius: 10px;
-    padding: 10px;
+  background-color:bisque;
+  border-radius: 10px;
+  padding: 10px;
 }
 .buttons-top-bottom:hover {
   background-color: rgb(247, 194, 130);
