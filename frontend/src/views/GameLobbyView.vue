@@ -35,6 +35,11 @@
                             <option :value="Playerrole.GHOST">Ghost</option>
                         </select>
                         <button
+                            class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
+                            @click="randomizeRole(player.name)">
+                            Randomize Role
+                        </button>
+                        <button
                             class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
                             @click="kickPlayer(player.name)">
                             Kick
@@ -125,6 +130,14 @@ function setPlayerRole(playerName: string, role: number) {
         player.playerrole = role; // Rolle des Spielers setzen
         console.log(`Player ${player} role updated to ${role}`);
     }
+}
+
+// Funktion, um die Rolle des Spielers zufällig zu setzen
+function randomizeRole(playerName: string) {
+    const roles = [Playerrole.SNACKMAN, Playerrole.GHOST]; 
+    const randomRole = roles[Math.floor(Math.random() * roles.length)]; // math.floor --> Rundet das Ergebis
+    setPlayerRole(playerName, randomRole); // Rolle dem Spieler zuweisen
+    console.log(`Assigned random role ${randomRole} to player ${playerName}`);
 }
 
 //Methode wenn Host Spieler kicken will
