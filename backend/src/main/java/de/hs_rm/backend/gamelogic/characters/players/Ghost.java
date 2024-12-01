@@ -12,21 +12,22 @@ import java.util.Set;
 public class Ghost extends Character {
     //Initialisierung 
     private int touchcount; 
-    private List <Item> items;
+    private Item item;
     
     public Ghost(double speed, int posX, int posY){
         super(speed,posX,posY);
         this.touchcount=0; 
-        this.items= new ArrayList<>();  
+        this.item= item;  
     }
 
-    //Getter und Setter
-    public List<Item> getItems() {
-        return items;
+    public Item getItems() {
+        return item;
     }
-    public void setItems(List<Item> items) {
-        this.items = items;
+
+    public void setItem(Item item) {
+        this.item=item; 
     }
+    
 
     public int getTouchcount() {
         return touchcount;
@@ -34,19 +35,14 @@ public class Ghost extends Character {
     public void setTouchcount(int touchcount) {
         this.touchcount = touchcount;
     }
+
+    //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln= die Methode ist doch im Charackter??
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
     @Override
     public PlayerPosition move(){
         System.out.println("the ghost is moving");
         return null; 
-    }
-
-    //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln
-    @Override
-    public void pickUpItem(Item item){
-        items.add(item); 
-        System.out.println(item + "was successfully added to the list");
     }
 
     //Reglung bei Kontakt mit Snackman--> Logik fehlt noch

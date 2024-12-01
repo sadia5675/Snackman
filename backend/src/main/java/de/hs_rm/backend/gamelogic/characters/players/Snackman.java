@@ -10,22 +10,23 @@ public class Snackman extends Character {
     //Initialisierung
     private int life; 
     private double nutriscore; 
-    private List <Item> items;
+    private Item item;
 
     public Snackman(double speed, int posX, int posY, int life){
         super(speed,posX,posY);
         this.life=life; 
         this.nutriscore=0; 
-        this.items=new ArrayList<>(); 
+        this.item= item; 
     }
 
-    //Getter und Setter
-    public List<Item> getItems() {
-        return items;
+    public Item getItems() {
+        return item;
     }
-    public void setItems(List<Item> items) {
-        this.items = items;
+
+    public void setItem(Item item) {
+        this.item=item; 
     }
+    
 
     public int getLife() {
         return life;
@@ -48,12 +49,7 @@ public class Snackman extends Character {
         return null; 
     }
 
-    //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln
-    @Override
-    public void pickUpItem(Item item){
-        items.add(item); 
-        System.out.println(item + "was successfully added to the list");
-    }
+    //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln= die Methode ist doch im Charackter??
     
 
     public double increaseNutriScore(double amount){
