@@ -2,13 +2,13 @@
   <div>
     <h1>Map Creator</h1>
     <p>Gib einen Namen für die Map ein:</p>
-    <input type="text" v-model="mapName" placeholder="Map Name" />
+    <input type="text" v-model="mapStore.mapName" placeholder="Map Name" />
     <p>Definiere die Größe des Spielfelds:</p>
     <p> Zeilen:</p>
-    <input type="number" v-model="rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
+    <input type="number" v-model="mapStore.rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
     <p>Spalten</p>
-    <input type="number" v-model="cols" placeholder="Anzahl der Spalten" min="1" max="15" />
-    <button class="buttons-top-bottom" @click="createGrid">Spielfeld erstellen</button>
+    <input type="number" v-model="mapStore.cols" placeholder="Anzahl der Spalten" min="1" max="15" />
+    <button class="buttons-top-bottom" @click="mapStore.createGrid">Spielfeld erstellen</button>
   </div>
   <br>
   <br>
@@ -19,19 +19,19 @@
   <div
     class="grid-container"
     :style="{
-      gridTemplateColumns: `repeat(${cols}, 50px)`,
-      gridTemplateRows: `repeat(${rows}, 50px)`
+      gridTemplateColumns: `repeat(${mapStore.cols}, 50px)`,
+      gridTemplateRows: `repeat(${mapStore.rows}, 50px)`
     }"
-    v-if="grid.length > 0"
+    v-if="mapStore.grid.length > 0"
   >
   <!-- .flat wandelt das "2Darray" in eindimensionalen array um direkt durchzuiterieren (sonst Probleme mit spalte größer als zeile)
    
   -->
     <div
-      v-for="(cell, index) in grid.flat()"
+      v-for="(cell, index) in mapStore.grid.flat()"
       :key="'cell-' + index"
       class="grid-cell"
-      @click="updateCell(Math.floor(index / cols), index % cols)"
+      @click="mapStore.updateCell(Math.floor(index / mapStore.cols), index % mapStore.cols)"
       :data-value="cell"
     >
       {{ cell }}
@@ -43,130 +43,23 @@
   </div>
   <br>
   <br>
-  <button class="buttons-top-bottom"@click="saveMap">Create</button>
+  <button class="buttons-top-bottom"@click="mapStore.saveMap">Create</button>
 
 </template>
 
 
 
 <script setup lang="ts">
-import { ref,onMounted } from "vue";
-import axios, { all } from "axios";
-
-//onMounted? nachschauen
-//ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
-const rows = ref<number>(0); // Anzahl Reihen
-const cols = ref<number>(0); // Anzahl Spalten
-const grid = ref<string[][]>([]); // 2D-Array für das Raster
-const mapName = ref<string>(""); // Map-Name
-const allMaps= ref<string[][]>([]);//alle maps
-  //funktion um Raster zu erstellen
-function createGrid() {
-  // Sicherstellung, dass die Eingaben valide sind spricht nicht unter 0
-  if (rows.value <= 0 || cols.value <= 0) {
-    alert("Bitte gültige Werte für Reihen und Spalten eingeben.");
-    return;
-  }
-  // Raster als 2D-Array erstellen
-  grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-    Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
-  );
-  for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
-    for (let colIndex = 0; colIndex < cols.value; colIndex++) {
-      if (
-        //Minus 1 wegen Arrayindex und Grid 
-        rowIndex === 0 || // Erste Zeile
-        rowIndex === rows.value - 1 || // Letzte Zeile
-        colIndex === 0 || // Erste Spalte
-        colIndex === cols.value - 1 // Letzte Spalte
-      ) {
-        grid.value[rowIndex][colIndex] = "wall";
-      }
-    }
-  }
-  console.log(`Erstelle ein Spielfeld mit ${rows.value} Reihen und ${cols.value} Spalten.`);
-}
+import { onMounted } from "vue";
+import { useMapStore } from "@/stores/map/MapStore";
 
 
-
-  function updateCell(rowIndex:number,colIndex:number){
-    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
-      return; // um das klicken zu ignorieren
-    }
-    // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
-    //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
-    grid.value[rowIndex][colIndex] =
-      grid.value[rowIndex][colIndex] === "wall" ? "weg" : "wall";
-      
-  }
-
-//onMounted mit Dom ????? und lädt alle Komponenten bei Seitenaufruf 
-  onMounted(async()=>{
-    //sendet eine http get_anfrage an den Endpunkt und dieser Antwortet mit einer Liste
-    //awiat wartet solange bis der get request abgeschloss ist 
-    try{
-      const respone = await axios.get("/api/maps");
-      allMaps.value=respone.data; 
-      console.log("Maps:"+ allMaps.value);
-    }catch(error){
-      console.error("es gab Fehler beim abrufen von den Maps:", error);
-    }
-  })
-
-
-  /*
-  * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um 
-  */
-  //
-  async function saveMap(){
-    //Überprüfung zur eingabe des Namens der Map, ob der Benutzer hier etwas eingegebn hat
-    if (!mapName.value.trim()){
-      alert("Please Enter the a name for the Map!");
-      return;
-    }
-    //Validierung zu den Values damit diese nicht null sind, ob diese wirklich gefüllt sind
-    //!rows.value||!cols.value|| !grid.value.length
-    let valideCell=false;
-    for (let row of grid.value){
-      for (let cell of row){
-        //3= weil er denn wert des Strings überprüft ob er wirklich
-        if (cell == "null"){
-          valideCell=true;
-          break; 
-        }
-      }if(valideCell){
-        break; // wenn schon in der äußeren Schleife eine ungültige eingabe gefunden wurde also null
-      }
-    }
-    if(valideCell){
-      alert("Pleas fill the Map at first!");
-      return; 
-    }
-    const allMapsString= allMaps.value.join(",");
-
-    if (allMapsString.includes(mapName.value.trim())) {
-      alert("The name is not available, you are too late :(");
-      return;
-    }
-
-    // Map-Daten vorbereiten
-    const mapData = {
-      name: mapName.value,
-      //aus dem 2darray zeilenweise durchitteriert und in einem String konvertiert bsp. "*", "weg","*"--> *weg*
-      tiles: grid.value.map(row => row.join(""))
-    };
-
-  //in diesem Block werden die Daten vom Browser eingelesen und vorbereitet für backend
-    try {
-      //axious.post  ist eine Post Request an das Backend-Endpunkt "/api/maps/" gesendet 
-      const response = await axios.post("/api/maps", mapData); // Axios konvertiert das mapData-Objekt automatisch in JSON
-      alert(response.data); // Backend-Antwort anzeigen wenn alles gut läuft
-    } catch (error) {
-      console.error("Somethink went Wrong :( ", error);
-      alert("Somethink went Wrong :( ");
-    }
-  }
-
+const mapStore = useMapStore(); 
+//sorgt dafür das vorhandene Maps aus dem Backend sofort geladen und in mapStore.allmaps gespeichert
+onMounted (async() => {
+  await mapStore.fetchMaps(); 
+  console.log("Aktuelle Maps:", mapStore.allMaps); 
+})
 
 </script>
 
