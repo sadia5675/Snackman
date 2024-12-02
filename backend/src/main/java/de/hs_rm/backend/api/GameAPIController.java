@@ -1,5 +1,6 @@
 package de.hs_rm.backend.api;
 
+import de.hs_rm.backend.exception.SetRoleException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -7,14 +8,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.messaging.GameMessagingService;
-import main.java.de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -97,12 +100,25 @@ public class GameAPIController {
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
         // #63 NEW: gameService now handles Player join
-        Game existingGame = gameService.joinGame(lobbyid, player);
+        HashMap<String,Object> response = new HashMap<>();
 
-        logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
+        try{
+            Game existingGame = gameService.joinGame(lobbyid, player);
+            logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
 
-        messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
 
+            messagingService.sendPlayerList(lobbyid, response);
+
+        }catch(GameJoinException e){
+            response.put("feedback", e.getMessage());
+            response.put("status", "error");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyid, response);
+        }
     }
 
     // Method to end the game
@@ -187,6 +203,34 @@ public class GameAPIController {
         return createOkResponse(existingGame);
     }
 
+    @MessageMapping("/topic/game/{lobbyId}/setRole/{nameOfPlayerToSetRole}/{role}")
+    @SendTo("/topic/game/{lobbyId}")
+    public void setRoleViaStomp(
+            Player actingPlayer,
+            @DestinationVariable String lobbyId,
+            @DestinationVariable String nameOfPlayerToSetRole,
+            @DestinationVariable String role
+    ) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Game existingGame = gameService.setRole(lobbyId, nameOfPlayerToSetRole, role);
+            logger.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role, nameOfPlayerToSetRole);
+
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyId, response);
+        } catch (SetRoleException e) {
+            response.put("feedback", e.getMessage());
+            response.put("status", "error");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyId, response);
+        }
+    }
+
     @PostMapping("/addPlayer/{gameId}")
     public ResponseEntity<?> kickUser(@RequestBody Player playerFromFrontend, @PathVariable String gameId) {
         Game existingGame = gameService.getGameById(gameId);
@@ -201,6 +245,18 @@ public class GameAPIController {
         return createErrorResponse("can not add "+ player.getName() +"!");
         
                 
+    }
+
+    @GetMapping("/games")
+    public ResponseEntity<Map<String, Object>> getMethodName() {
+        Collection<?> gameList = gameService.getGameList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("feedback", gameList);
+        response.put("status", "ok");
+        response.put("time", LocalDateTime.now().toString());
+
+        return ResponseEntity.ok(response);
     }
 
 
