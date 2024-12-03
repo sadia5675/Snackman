@@ -172,6 +172,7 @@ function loadMap(map: String[]) {
           const groundCube = new THREE.Mesh(groundGeometry,groundMaterial)
           groundCube.position.set(rowCounter,0,i)
           scene.add(groundCube)
+          break;
       }
     }
     rowCounter++
