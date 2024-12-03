@@ -1,5 +1,6 @@
 package de.hs_rm.backend.api;
 
+import de.hs_rm.backend.exception.SetRoleException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -203,6 +204,34 @@ public class GameAPIController {
         return createOkResponse(existingGame);
     }
 
+    @MessageMapping("/topic/game/{lobbyId}/setRole/{nameOfPlayerToSetRole}/{role}")
+    @SendTo("/topic/game/{lobbyId}")
+    public void setRoleViaStomp(
+            Player actingPlayer,
+            @DestinationVariable String lobbyId,
+            @DestinationVariable String nameOfPlayerToSetRole,
+            @DestinationVariable String role
+    ) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Game existingGame = gameService.setRole(lobbyId, nameOfPlayerToSetRole, role);
+            logger.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role, nameOfPlayerToSetRole);
+
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyId, response);
+        } catch (SetRoleException e) {
+            response.put("feedback", e.getMessage());
+            response.put("status", "error");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyId, response);
+        }
+    }
+
     @PostMapping("/addPlayer/{gameId}")
     public ResponseEntity<?> kickUser(@RequestBody Player playerFromFrontend, @PathVariable String gameId) {
         Game existingGame = gameService.getGameById(gameId);
@@ -259,21 +288,4 @@ public class GameAPIController {
 
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
-
-
-    /* @PostMapping("/loadMap/{mapName}")
-    public ResponseEntity<?> loadMap(@PathVariable String mapName) {
-        /*if (game == null) {
-            return createErrorResponse("No game found to load a map into.");
-        }
-
-        try {
-            PlayMap newMap = new PlayMap();
-          
-        } catch (Exception e) {
-            return createErrorResponse("Failed to load map: " + e.getMessage());
-        }
-    }*/
-
-
 }
