@@ -46,12 +46,19 @@
             />
         </div>
 
+        <br>
+        
         <button
             class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
             @click="openMapPopup()"
         >
         Select Map
         </button>
+        <div
+        class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+        >
+        <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
+        </div>
      </div>
 
       <button
@@ -69,30 +76,37 @@
   </div>
  
    <!--Pop up-->
-  <div
-    v-if="isMapPopupVisible"
-    class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
-    >
-    <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
-        <ul class="space-y-2">
-            <li
-                v-for="(map, index) in maps"
-                :key="index"
-                class="bg-gray-700 p-3 rounded-lg cursor-pointer hover:bg-gray-600 text-zinc-200"
-                @click="selectMap(map)"
-                >
-                {{ map.name }}
-            </li>
-      </ul>
-      <button
-        class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4 self-end"
-        @click="closeMapPopup()"
+   <div
+  v-if="isMapPopupVisible"
+  class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
+>
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select:</h2>
+    
+    <!-- Dropdown for map selection -->
+    <div class="mt-3">
+      <select
+        v-model="selectedMap"
+        class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg"
       >
-      Close
-      </button>
+        <option
+          v-for="map in maps"
+          :key="map.id"
+          :value="map"
+        >
+          {{ map.name }}
+        </option>
+      </select>
     </div>
+
+    <button
+      class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
+      @click="closeMapPopup()"
+    >
+      Close
+    </button>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -189,12 +203,5 @@ function openMapPopup() {
 function closeMapPopup() {
   isMapPopupVisible.value = false
 }
-
-// Speichert die ausgewählte Map, zeigt Betsätigung und schließt Pop-up
-//function selectMap(map) {
-//  selectedMap.value = map
-//  alert(`Selected map: ${map.name}`)
-//  closeMapPopup()
-//}
 
 </script>
