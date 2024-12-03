@@ -3,21 +3,22 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from "three"
 import {ref, onMounted} from "vue";
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js';
 import {WebGLRenderer} from "three";
 import ground from "@/assets/game/realistic/ground.png"
 import wall from "@/assets/game/realistic/wall.png"
 
 
-let movingForward:boolean, movingBackward:boolean, movingLeft:boolean, movingRight:boolean = false
-const slowMovementSpeed = 5
-const fastMovementSpeed = 10
+let movingForward: boolean, movingBackward: boolean, movingLeft: boolean, movingRight: boolean = false
+const slowMovementSpeed = 2
+const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
+
 function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000);
-  camera.position.set(0, 2, 2);
+  camera.position.set(0, 1, 2);
 
   const renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -28,10 +29,10 @@ function createSceneCameraRendererControlsClock() {
   pointerLockControls.pointerSpeed = 1;
 
   const clock = new THREE.Clock()
-  return{scene, camera, renderer, pointerLockControls, clock}
+  return {scene, camera, renderer, pointerLockControls, clock}
 }
 
-function registerListeners(window: Window, renderer: WebGLRenderer){
+function registerListeners(window: Window, renderer: WebGLRenderer) {
   renderer.domElement.addEventListener("click", (e) => {
     renderer.domElement.requestPointerLock();
   })
@@ -79,31 +80,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer){
 }
 
 const {scene, camera, renderer, pointerLockControls, clock} = createSceneCameraRendererControlsClock()
-registerListeners(window,renderer)
+registerListeners(window, renderer)
 
 const threeContainer = ref<null | HTMLElement>(null)
-
-//Einfacher Boden mit wiederholenden Texturen
-const groundGeometry = new THREE.PlaneGeometry(50, 50)
-const groundTexture = new THREE.TextureLoader().load(ground)
-groundTexture.wrapS = THREE.MirroredRepeatWrapping;
-groundTexture.wrapT = THREE.MirroredRepeatWrapping;
-groundTexture.repeat.set(20,20)
-const groundMaterial = new THREE.MeshLambertMaterial({map: groundTexture});
-const groundObj = new THREE.Mesh(groundGeometry, groundMaterial);
-groundObj.rotation.x = -Math.PI / 2;
-
-//Einfacher Wand mit wiederholenden Texturen
-const wallGeometry = new THREE.PlaneGeometry(50, 3)
-const wallTexture = new THREE.TextureLoader().load(wall)
-wallTexture.wrapS = THREE.MirroredRepeatWrapping;
-wallTexture.wrapT = THREE.MirroredRepeatWrapping;
-wallTexture.repeat.set(5,1)
-const wallMaterial = new THREE.MeshLambertMaterial({map: wallTexture});
-const wallObj = new THREE.Mesh(wallGeometry, wallMaterial);
-wallObj.material.side = THREE.DoubleSide
-wallObj.position.set(2,1.5,0)
-
 
 
 //Ball
@@ -118,7 +97,7 @@ sphere.position.y = 2;
 sphere.position.x = 3;
 sphere.position.z = -4;
 
-scene.add(groundObj, wallObj, sphere);
+scene.add(sphere);
 
 //lightning
 const ambientLight = new THREE.AmbientLight(0x404040, 10);
@@ -136,7 +115,7 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
-function cameraPositionBewegen(delta:number) {
+function cameraPositionBewegen(delta: number) {
   let cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
@@ -172,10 +151,58 @@ function cameraPositionBewegen(delta:number) {
   }
 }
 
+function loadMap(map: String[]) {
+  const groundGeometry = new THREE.BoxGeometry(1,1,1)
+  const wallGeometry = new THREE.BoxGeometry(1,2,1)
+  const groundTexture = new THREE.TextureLoader().load(ground)
+  const wallTexture = new THREE.TextureLoader().load(wall)
+  const groundMaterial = new THREE.MeshStandardMaterial({map: groundTexture})
+  const wallMaterial = new THREE.MeshStandardMaterial({map: wallTexture})
+
+  let rowCounter = 0
+  map.forEach((e)=>{
+    for(let i = 0; i<e.length;i++){
+      switch (e[i]){
+        case ('*'):
+          const wallCube = new THREE.Mesh(wallGeometry,wallMaterial)
+          wallCube.position.set(rowCounter,1.5,i)
+          scene.add(wallCube)
+          break;
+        case (' '):
+          const groundCube = new THREE.Mesh(groundGeometry,groundMaterial)
+          groundCube.position.set(rowCounter,0,i)
+          scene.add(groundCube)
+      }
+    }
+    rowCounter++
+  })
+}
+
 onMounted(() => {
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement);
   }
+  const map = ["********************",
+    "*    *     *       *",
+    "* ** * ***** * *** *",
+    "*    *     * *   * *",
+    "* ** ***** * *** * *",
+    "*    *   * *     * *",
+    "* ** * * * ******* *",
+    "*    * * *         *",
+    "****** * ***********",
+    "*      *           *",
+    "* **** * ********* *",
+    "* *    *         * *",
+    "* * ** ********* * *",
+    "* *              * *",
+    "* * **************  ",
+    "* *                *",
+    "* **************** *",
+    "*                * *",
+    "****************** *",
+    "********************"]
+  loadMap(map)
   animate();
 });
 
