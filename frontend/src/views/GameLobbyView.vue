@@ -36,44 +36,6 @@
         </li>
       </ul>
 
-                <li v-for="player in players" :key="player.name"
-                    class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
-                    <div class="flex flex-col flex-grow">
-                        <p class="text-sm font-medium text-gray-900">Name</p>
-                        <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
-                    </div>
-                    <p :class="{
-                        'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !true,
-                        'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded': true
-                    }" class="transition text-center w-32">
-                        {{ true ? 'Ready' : 'Not Ready' }}
-                    </p>
-                    <div class="flex items-center space-x-2">
-                        <select v-model="player.playerrole"
-                        @change="setPlayerRole(player.name, player.playerrole)"
-                            class="w-28 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option :value="Playerrole.SNACKMAN">Snackman</option>
-                            <option :value="Playerrole.GHOST">Ghost</option>
-                        </select>
-                        <button
-                            class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
-                            @click="randomizeRole(player.name)">
-                            Randomize Role
-                        </button>
-                        <button
-                            class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
-                            @click="kickPlayer(player.name)">
-                            Kick
-                        </button>
-                    </div>
-                </li>
-                <li v-for="placeholder in placeholderCount"
-                    class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
-                    Empty
-                </li>
-            </ul>
-
-
       <div class="flex items-center space-x-2 mt-3">
         <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
         <input
