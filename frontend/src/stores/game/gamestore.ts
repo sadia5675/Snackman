@@ -179,48 +179,6 @@ export const useGameStore = defineStore('gameStore', () => {
       }
     });
   }
-  
-  
-
-  /*function leaveGame(lobbyId: string,leavingPlayer: IPlayerDTD):Promise<boolean> {
-    return new Promise((resolve) => {
-      stompClient.onConnect = () => {
-        stompClient.unsubscribe(`/topic/game/${lobbyId}`);
-
-        if (gameState.gamedata?.players) {
-
-          subscribeToLobby(lobbyId, (message: Message) => {
-            console.log(message)
-
-            if (message.status === 'ok') {
-              console.log(message.feedback)
-              gameState.gamedata.players = message.feedback as IPlayerDTD[];
-              modal.setErrorMessage('');
-
-              resolve(true);
-            } else {
-
-              modal.setErrorMessage(message.feedback as string);
-              stompClient.deactivate();
-              resolve(false);
-            }
-          });
-
-          console.log("Sending leave message:", {
-            endpoint: `/topic/game/${lobbyId}/leave`,
-            payload: leavingPlayer
-          });
-
-          sendMessage(`/topic/game/${lobbyId}/leave`, leavingPlayer);
-        }
-      };
-
-      if (!stompClient.connected) {
-        stompClient.activate();
-      }
-    });
-  }*/
-
 
   async function closeTab() {
     stompClient.onDisconnect = () => {
