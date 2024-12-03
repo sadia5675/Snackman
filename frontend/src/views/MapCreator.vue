@@ -12,7 +12,7 @@
   <br>
   <!-- Raster des Spielfelds -->
   <!-- um dynamischer zur sein inline style verwendet (sofort Änderungen gezeigt)
-   Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit) 
+   Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit)
   -->
   <div
     class="grid-container"
@@ -22,9 +22,9 @@
     }"
     v-if="grid.length > 0"
   >
-  <!-- .flat wandelt das "2Darray" in eindimensionalen array um direkt durchzuiterieren (sonst Probleme mit spalte größer als zeile)
-   
-  -->
+    <!-- .flat wandelt das "2Darray" in eindimensionalen array um direkt durchzuiterieren (sonst Probleme mit spalte größer als zeile)
+
+    -->
     <div
       v-for="(cell, index) in grid.flat()"
       :key="'cell-' + index"
@@ -34,10 +34,10 @@
     >
       {{ cell }}
     </div>
-     <!--Math.floor berechnet die Zeile, in der sich die aktuelle Zelle befindet
-     bsp.index = 5, cols = 3, 5 / 3 = 1.66 -> Math.floor rundet runter d.h. Zeile 1
-     bsp.index = 5, cols = 3, 5 % 3 = 2 -> Spalte 2.
-     -->
+    <!--Math.floor berechnet die Zeile, in der sich die aktuelle Zelle befindet
+    bsp.index = 5, cols = 3, 5 / 3 = 1.66 -> Math.floor rundet runter d.h. Zeile 1
+    bsp.index = 5, cols = 3, 5 % 3 = 2 -> Spalte 2.
+    -->
   </div>
   <br>
   <br>
@@ -54,8 +54,8 @@ const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
 
-  //funktion um Raster zu erstellen
-  function createGrid() {
+//funktion um Raster zu erstellen
+function createGrid() {
   // Sicherstellung, dass die Eingaben valide sind spricht nicht unter 0
   if (rows.value <= 0 || cols.value <= 0) {
     alert("Bitte gültige Werte für Reihen und Spalten eingeben.");
@@ -63,12 +63,12 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
   }
   // Raster als 2D-Array erstellen
   grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-    Array.from({ length: cols.value }, () => " ")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
+    Array.from({ length: cols.value }, () => " ")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
   );
   for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
     for (let colIndex = 0; colIndex < cols.value; colIndex++) {
       if (
-        //Minus 1 wegen Arrayindex und Grid 
+        //Minus 1 wegen Arrayindex und Grid
         rowIndex === 0 || // Erste Zeile
         rowIndex === rows.value - 1 || // Letzte Zeile
         colIndex === 0 || // Erste Spalte
@@ -79,21 +79,21 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
     }
   }
   console.log(`Erstelle ein Spielfeld mit ${rows.value} Reihen und ${cols.value} Spalten.`);
-  }
+}
 
-  function updateCell(rowIndex:number,colIndex:number){
-    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
+function updateCell(rowIndex:number,colIndex:number){
+  if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
     return; // um das klicken zu ignorieren
-   }
-    // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
-    //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
-    grid.value[rowIndex][colIndex] =
-      grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
-      
   }
-  function finishMap(){
-    console.log(`Fertigstellung der Map`);
-  }
+  // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
+  //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
+  grid.value[rowIndex][colIndex] =
+    grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
+
+}
+function finishMap(){
+  console.log(`Fertigstellung der Map`);
+}
 </script>
 
 <style scoped>
@@ -119,13 +119,13 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
 
 /* Wand (Stern '*') */
 .grid-cell[data-value="*"] {
-  background-color: #444; 
+  background-color: #444;
   color: #fff;
 }
 
 /* Weg ("weg") */
 .grid-cell[data-value="weg"] {
-  background-color: #fff; 
+  background-color: #fff;
   color: #000;
 }
 
@@ -136,9 +136,9 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
 }
 
 .buttons-top-bottom {
-    background-color:bisque;
-    border-radius: 10px;
-    padding: 10px;
+  background-color:bisque;
+  border-radius: 10px;
+  padding: 10px;
 }
 .buttons-top-bottom:hover {
   background-color: rgb(247, 194, 130);
