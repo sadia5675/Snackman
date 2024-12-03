@@ -1,20 +1,41 @@
 <template>
-    <div class="h-screen bg-zinc-900">
-        <div class="max-w-lg mx-auto mt-0">
-            <h1 class="text-2xl font-semibold text-center text-zinc-200 mb-10">Game Lobby</h1>
-            <div class="mb-4">
-                <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
-                <div class="flex items-center space-x-2">
-                    <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" disabled="true"
-                        v-model="lobbyId" />
-                    <button class="bg-yellow-500  text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
-                        @click="copyToClipboard()">
-                        Copy
-                    </button>
-                </div>
-            </div>
+  <div class="h-screen bg-zinc-900">
+    <div class="max-w-lg mx-auto mt-0">
+      <h1 class="text-2xl font-semibold text-center text-zinc-200 mb-10">Game Lobby</h1>
+      <div class="mb-4">
+        <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
+        <div class="flex items-center space-x-2">
+          <input
+            type="text"
+            class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300"
+            disabled="true"
+            v-model="lobbyId"
+          />
+          <button
+            class="bg-yellow-500 text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
+            @click="copyToClipboard()"
+          >
+            Copy
+          </button>
+        </div>
+      </div>
 
-            <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
+      <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
+        <li
+          v-for="(player, i) in players"
+          :key="player.name"
+          class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors"
+        >
+          <PlayerTile v-model="players[i]" />
+        </li>
+        <li
+          v-for="placeholder in placeholderCount"
+          class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors"
+        >
+          Empty
+        </li>
+      </ul>
+
                 <li v-for="player in players" :key="player.name"
                     class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
                     <div class="flex flex-col flex-grow">
@@ -53,68 +74,75 @@
             </ul>
 
 
-            <div class="flex items-center space-x-2 mt-3">
-                <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-                <input
-                    type="number"
-                    v-model="chickenCount"
-                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-                />
-            </div>
+      <div class="flex items-center space-x-2 mt-3">
+        <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
+        <input
+          type="number"
+          v-model="chickenCount"
+          class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+        />
+      </div>
 
-            <button
-                :class="{
-                    'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
-                    'bg-gray-600': !isHost
-                }"
-                :disabled="!isHost"
-                class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
-                @click="startGame()">
-                {{ isHost ? 'Start Game' : '---' }}
-            </button>
-        </div>
+      <button
+        :class="{
+          'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
+          'bg-gray-600': !isHost,
+        }"
+        :disabled="!isHost"
+        class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+        @click="startGame()"
+      >
+        {{ isHost ? 'Start Game' : '---' }}
+      </button>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-    import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
-    import { PlayerType } from '@/stores/game/dtd/PlayerType';
-    import { useGameStore } from '@/stores/game/gamestore';
-    import { onMounted, computed, ref , watch} from 'vue';
-    import { useRoute } from 'vue-router';
-    import router from "@/router";
-import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import { useGameStore } from '@/stores/game/gamestore'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import router from '@/router'
+import PlayerTile from '@/components/PlayerTile.vue'
 
-    const route = useRoute();
+const route = useRoute()
 
-    const gamestore = useGameStore();
-    const jsonString = '{"employee":{ "name":"John", "age":30, "city":"New York" }}';
+const gamestore = useGameStore()
 
-    // TODO: gamemaster.id mit clientplayer.id vergleichen
-    const isHost = ref(true);
+// TODO: gamemaster.id mit clientplayer.id vergleichen
+const isHost = ref(true)
 
-    // Eventuell erst starten wenn alle Ready
-    const isReady = ref(false);
+// Eventuell erst starten wenn alle Ready
+const isReady = ref(false)
 
-    //ID in der aktuellen Lobby
-    const lobbyId = route.params.id.toString();
+//ID in der aktuellen Lobby
+const lobbyId = route.params.id.toString()
 
-    // Maximale Anzahl an Spielern in der Lobby
-    const maxPlayers = 7;
+// Maximale Anzahl an Spielern in der Lobby
+const maxPlayers = 7
 
-    // Spieler-Liste aus dem Store oder leeres Array
-    const players = computed(() => gamestore.gameState.gamedata?.players || []);
+// Spieler-Liste aus dem Store oder leeres Array
+const players = computed(() => gamestore.gameState.gamedata?.players || [])
 
-    // Anzahl der Platzhalter
-    const placeholderCount = computed(() => maxPlayers - players.value.length);
+// Anzahl der Platzhalter
+const placeholderCount = computed(() => maxPlayers - players.value.length)
 
-    //Anzahl der festgelegten Chickens im Game
-    const chickenCount = computed({
-        get: () => gamestore.gameState.gamedata?.chickens.length || 0,
-        set: async (value: number) => {
-            await gamestore.setChickenCount(value);
-        },
-    });
+//Anzahl der festgelegten Chickens im Game
+const chickenCount = computed({
+  get: () => gamestore.gameState.gamedata?.chickens.length || 0,
+  set: async (value: number) => {
+    await gamestore.setChickenCount(value)
+  },
+})
+
+watch(
+  () => gamestore.gameState.gamedata?.started,
+  (newValue) => {
+    if (newValue) {
+      router.push({ name: 'game' })
+    }
+  },
+)
 
     watch(()=> gamestore.gameState.gamedata?.started,
       (newValue) => {
@@ -154,30 +182,27 @@ async function kickPlayer(username: string) {
 
 //Funktion um das Game zu starten
 async function startGame() {
-    //startGame request and backend
-    try {
-        await gamestore.startGame();
-        //Log zum testen
-        console.log(gamestore.gameState);
-    } catch (error) {
-        console.log(error);
-    }
+  //startGame request and backend
+  try {
+    await gamestore.startGame()
+    //Log zum testen
+    console.log(gamestore.gameState)
+  } catch (error) {
+    console.log(error)
+  }
+}
 
-    }
+//Um Lobby Code kopieren zu können
+function copyToClipboard() {
+  alert('Copied to Clipboard!')
+  navigator.clipboard.writeText(lobbyId)
+}
 
-    //Um Lobby Code kopieren zu können
-    function copyToClipboard(){
-        alert("Copied to Clipboard!")
-        navigator.clipboard.writeText(lobbyId);
-    }
-
-    onMounted(async () => {
-        try {
-            await gamestore.fetchGameStatus();
-
-        } catch (error) {
-            console.error("Error fetching game status:", error);
-        }
-
-    });
+onMounted(async () => {
+  try {
+    await gamestore.fetchGameStatus()
+  } catch (error) {
+    console.error('Error fetching game status:', error)
+  }
+})
 </script>
