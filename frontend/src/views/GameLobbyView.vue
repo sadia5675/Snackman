@@ -112,36 +112,7 @@ watch(
         router.push({name:"game"})
       }
       })
-
-// Funktion, um die Rolle des Spielers zu setzen
-function setPlayerRole(playerName: string, role: number) {
-    const player = players.value.find(p => p.name === playerName);
-    if (player) {
-        player.playerrole = role; // Rolle des Spielers setzen
-        console.log(`Player ${player} role updated to ${role}`);
-    }
-}
-
-// Funktion, um die Rolle des Spielers zufällig zu setzen
-function randomizeRole(playerName: string) {
-    const roles = [Playerrole.SNACKMAN, Playerrole.GHOST]; 
-    const randomRole = roles[Math.floor(Math.random() * roles.length)]; // math.floor --> Rundet das Ergebis
-    setPlayerRole(playerName, randomRole); // Rolle dem Spieler zuweisen
-    console.log(`Assigned random role ${randomRole} to player ${playerName}`);
-}
-
-//Methode wenn Host Spieler kicken will
-async function kickPlayer(username: string) {
-    try {
-        await gamestore.kickUser(username);
-
-        //log zum testen
-        console.log(gamestore.gameState);
-    } catch (error) {
-        console.log(error);
-    }
-}
-
+      
 //Funktion um das Game zu starten
 async function startGame() {
   //startGame request and backend
