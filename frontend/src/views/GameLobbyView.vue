@@ -28,8 +28,7 @@
                         {{ true ? 'Ready' : 'Not Ready' }}
                     </p>
                     <div class="flex items-center space-x-2">
-                        <select v-model="player.playerrole"
-                        @change="setPlayerRole(player.name, player.playerrole)"
+                        <select v-model="player.playerrole" @change="setPlayerRole(player.name, player.playerrole)"
                             class="w-28 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             <option :value="Playerrole.SNACKMAN">Snackman</option>
                             <option :value="Playerrole.GHOST">Ghost</option>
@@ -50,84 +49,76 @@
 
             <div class="flex items-center space-x-2 mt-3">
                 <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-                <input
-                    type="number"
-                    v-model="chickenCount"
-                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-                />
+                <input type="number" v-model="chickenCount"
+                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600" />
             </div>
 
-            <button
-                :class="{
-                    'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
-                    'bg-gray-600': !isHost
-                }"
-                :disabled="!isHost"
-                class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+            <button :class="{
+                'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
+                'bg-gray-600': !isHost
+            }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
                 @click="startGame()">
                 {{ isHost ? 'Start Game' : '---' }}
             </button>
-            <button
-                :class="{
-                    'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
-                    'bg-gray-600': !isHost
-                }"
-                class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+            <button :class="{
+                'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
+                'bg-gray-600': !isHost
+            }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
                 @click="leaveGame(lobbyId)">
-               leave
+                leave
             </button>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
-    import { PlayerType } from '@/stores/game/dtd/PlayerType';
-    import { useGameStore } from '@/stores/game/gamestore';
-    import { onMounted, computed, ref , watch, onUnmounted} from 'vue';
-    import {useRoute, useRouter} from 'vue-router';
-
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { PlayerType } from '@/stores/game/dtd/PlayerType';
+import { useGameStore } from '@/stores/game/gamestore';
+import { onMounted, computed, ref, watch, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
+import { EmitFlags } from 'typescript';
 
-    const route = useRoute();
+const route = useRoute();
 
-    const router = useRouter();
+const router = useRouter();
 
-    const gamestore = useGameStore();
-    const jsonString = '{"employee":{ "name":"John", "age":30, "city":"New York" }}';
+const gamestore = useGameStore();
 
-    // TODO: gamemaster.id mit clientplayer.id vergleichen
-    const isHost = ref(true);
+// TODO: gamemaster.id mit clientplayer.id vergleichen
+const isHost = ref(true);
 
-    // Eventuell erst starten wenn alle Ready
-    const isReady = ref(false);
+// Eventuell erst starten wenn alle Ready
+const isReady = ref(false);
 
-    //ID in der aktuellen Lobby
-    const lobbyId = route.params.id.toString();
+//ID in der aktuellen Lobby
+const lobbyId = route.params.id.toString();
 
-    // Maximale Anzahl an Spielern in der Lobby
-    const maxPlayers = 7;
+// Maximale Anzahl an Spielern in der Lobby
+const maxPlayers = 7;
 
-    // Spieler-Liste aus dem Store oder leeres Array
-    const players = computed(() => gamestore.gameState.gamedata?.players || []);
+// Spieler-Liste aus dem Store oder leeres Array
+const players = computed(() => gamestore.gameState.gamedata?.players || []);
 
-    // Anzahl der Platzhalter
-    const placeholderCount = computed(() => maxPlayers - players.value.length);
+// Anzahl der Platzhalter
+const placeholderCount = computed(() => maxPlayers - players.value.length);
 
-    //Anzahl der festgelegten Chickens im Game
-    const chickenCount = computed({
-        get: () => gamestore.gameState.gamedata?.chickens.length || 0,
-        set: async (value: number) => {
-            await gamestore.setChickenCount(value);
-        },
-    });
+//Anzahl der festgelegten Chickens im Game
+const chickenCount = computed({
+    get: () => gamestore.gameState.gamedata?.chickens.length || 0,
+    set: async (value: number) => {
+        await gamestore.setChickenCount(value);
+    },
+});
 
-    watch(()=> gamestore.gameState.gamedata?.started,
-      (newValue) => {
-      if(newValue){
-        router.push({name:"game"})
-      }
-      })
+watch(() => gamestore.gameState.gamedata?.started,
+    (newValue) => {
+        if (newValue) {
+            router.push({ name: "game" })
+        }
+    })
 
 // Funktion, um die Rolle des Spielers zu setzen
 function setPlayerRole(playerName: string, role: number) {
@@ -161,39 +152,51 @@ async function startGame() {
         console.log(error);
     }
 
-    }
+}
 
-async function leaveGame(lobbyId:string) {
+async function leaveGame(lobbyId: string) {
     try {
-        await gamestore.leaveGame(lobbyId);
-        //Log zum testen
-        console.log(gamestore.gameState);
 
-        router.push({name : 'index'});
-    } catch (error) {
-        console.log(error);
-    }
-    }
+        const playerName = sessionStorage.getItem("myName");
 
-    //Um Lobby Code kopieren zu können
-    function copyToClipboard(){
-        alert("Copied to Clipboard!")
-        navigator.clipboard.writeText(lobbyId);
-    }
-
-    window.addEventListener('beforeunload', (event) => {
-        leaveGame(lobbyId);
-    });
-
-    onMounted(async () => {
-        try {
-            await gamestore.fetchGameStatus();
-            //Log zum testen
-            //gamestore.joinLobby(lobbyId);
-
-        } catch (error) {
-            console.error("Error fetching game status:", error);
+        if (!playerName) {
+            console.error("nicht gefunden");
+            return;
         }
 
-    });
+        const leavingPlayer = players.value.find(p => p.name === playerName);
+
+        if (!leavingPlayer) {
+            console.error("Spieler nicht in der Liste gefunden!");
+            return;
+        }
+
+        const success = await gamestore.leaveGame(lobbyId, leavingPlayer);
+
+    } catch (error) {
+        console.log("Fehler beim ausfueren des leaven", error);
+    }
+}
+
+//Um Lobby Code kopieren zu können
+function copyToClipboard() {
+    alert("Copied to Clipboard!")
+    navigator.clipboard.writeText(lobbyId);
+}
+
+window.addEventListener('beforeunload', (event) => {
+    leaveGame(lobbyId);
+});
+
+onMounted(async () => {
+    try {
+        await gamestore.fetchGameStatus();
+        //Log zum testen
+        //gamestore.joinLobby(lobbyId,);
+
+    } catch (error) {
+        console.error("Error fetching game status:", error);
+    }
+
+});
 </script>

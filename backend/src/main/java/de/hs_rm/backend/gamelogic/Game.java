@@ -158,11 +158,12 @@ public class Game {
         }
         for(int i=0;i< players.size();i++){
             if(players.get(i).getName().equals(player.getName())){
+                LOGGER.info("Hier der kickende Spieler " + player.getName());
                 players.remove(i);
-                LOGGER.info("Player {} has left the game",player.getName());
                 break;
             }
         } 
+        LOGGER.info(players.toString());
         LOGGER.info(String.valueOf(players.size()));
     }
 

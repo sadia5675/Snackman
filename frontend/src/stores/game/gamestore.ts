@@ -9,6 +9,7 @@ import type { Message } from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { PlayerType } from "./dtd/PlayerType";
+import {useRoute, useRouter} from 'vue-router';
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -18,6 +19,8 @@ export const useGameStore = defineStore('gameStore', () => {
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore();
+
+  const router = useRouter();
 
   function handleGameStateError() {
     resetGameState()
@@ -135,23 +138,88 @@ export const useGameStore = defineStore('gameStore', () => {
       console.error('Error ending game:', error)
     }
   }
-
-  function leaveGame(lobbyId: string) {
-    try {
-      sendMessage(`/topic/game/${lobbyId}/leave`, {
-        name: 'Berhan',
-        email: 'Test MAIL',
-        userId: 123
-      });
-      stompClient.unsubscribe(`/topic/game/${gameState.gamedata.id}`);
-      stompClient.deactivate();
-      subscribeToLobby(lobbyId, (message) => { gameState.gamedata.players = message })
-
-      console.log("Ich bin geleaved")
-    } catch (error) {
-      console.log(error)
-    }
+  
+  function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (!stompClient.connected) {
+          stompClient.activate();
+  
+          stompClient.onConnect = () => {
+            sendLeaveMessage();
+          };
+        } else {
+          sendLeaveMessage();
+        }
+  
+        function sendLeaveMessage() {
+          console.log("Sending leave message for:", leavingPlayer.name);
+          sendMessage(`/topic/game/${lobbyId}/leave`, { name: leavingPlayer.name });
+  
+          subscribeToLobby(lobbyId, (message: Message) => {
+            if (message.status === 'ok') {              
+  
+              const myName = sessionStorage.getItem("myName");
+              console.log("Hier mein NAme ",leavingPlayer.name);
+              console.log("Hier mein NAme ",myName)
+              if (myName === leavingPlayer.name) {
+                router.push({ name: "index" });
+              }
+  
+              resolve(true);
+            } else {
+              console.error("Leave error:", message.feedback);
+              resolve(false);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error in leaveGame:", error);
+        reject(false);
+      }
+    });
   }
+  
+  
+
+  /*function leaveGame(lobbyId: string,leavingPlayer: IPlayerDTD):Promise<boolean> {
+    return new Promise((resolve) => {
+      stompClient.onConnect = () => {
+        stompClient.unsubscribe(`/topic/game/${lobbyId}`);
+
+        if (gameState.gamedata?.players) {
+
+          subscribeToLobby(lobbyId, (message: Message) => {
+            console.log(message)
+
+            if (message.status === 'ok') {
+              console.log(message.feedback)
+              gameState.gamedata.players = message.feedback as IPlayerDTD[];
+              modal.setErrorMessage('');
+
+              resolve(true);
+            } else {
+
+              modal.setErrorMessage(message.feedback as string);
+              stompClient.deactivate();
+              resolve(false);
+            }
+          });
+
+          console.log("Sending leave message:", {
+            endpoint: `/topic/game/${lobbyId}/leave`,
+            payload: leavingPlayer
+          });
+
+          sendMessage(`/topic/game/${lobbyId}/leave`, leavingPlayer);
+        }
+      };
+
+      if (!stompClient.connected) {
+        stompClient.activate();
+      }
+    });
+  }*/
 
 
   async function closeTab() {
