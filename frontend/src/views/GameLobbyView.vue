@@ -36,14 +36,23 @@
         </li>
       </ul>
 
-      <div class="flex items-center space-x-2 mt-3">
-        <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
-        <input
-          type="number"
-          v-model="chickenCount"
-          class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-        />
-      </div>
+      <div class="flex items-center space-x-6 mt-3">
+        <div class="flex items-center space-x-2">
+            <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
+            <input
+                type="number"
+                v-model="chickenCount"
+                class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+            />
+        </div>
+
+        <button
+            class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+            @click="openMapPopup()"
+        >
+        Select Map
+        </button>
+     </div>
 
       <button
         :class="{
@@ -55,6 +64,32 @@
         @click="startGame()"
       >
         {{ isHost ? 'Start Game' : '---' }}
+      </button>
+    </div>
+  </div>
+ 
+   <!--Pop up-->
+  <div
+    v-if="isMapPopupVisible"
+    class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
+    >
+    <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
+        <ul class="space-y-2">
+            <li
+                v-for="(map, index) in maps"
+                :key="index"
+                class="bg-gray-700 p-3 rounded-lg cursor-pointer hover:bg-gray-600 text-zinc-200"
+                @click="selectMap(map)"
+                >
+                {{ map.name }}
+            </li>
+      </ul>
+      <button
+        class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4 self-end"
+        @click="closeMapPopup()"
+      >
+      Close
       </button>
     </div>
   </div>
@@ -70,6 +105,19 @@ import PlayerTile from '@/components/PlayerTile.vue'
 const route = useRoute()
 
 const gamestore = useGameStore()
+
+//um die Sichtbarkeit des Pop-ups zusteuern
+const isMapPopupVisible = ref(false) 
+
+//Liste der Maps
+const maps = ref([
+  { name: 'Map 1', id: 'map1' },
+  { name: 'Map 2', id: 'map2' },
+  { name: 'Map 3', id: 'map3' },
+])
+
+//aktuell ausgewählte Map
+const selectedMap = ref(maps.value[0]) //Standard immmer erste map wählen
 
 // TODO: gamemaster.id mit clientplayer.id vergleichen
 const isHost = ref(true)
@@ -131,4 +179,22 @@ onMounted(async () => {
     console.error('Error fetching game status:', error)
   }
 })
+
+// Öffnet das Pop-up
+function openMapPopup() {
+  isMapPopupVisible.value = true
+}
+
+// Schließt das Pop-up
+function closeMapPopup() {
+  isMapPopupVisible.value = false
+}
+
+// Speichert die ausgewählte Map, zeigt Betsätigung und schließt Pop-up
+//function selectMap(map) {
+//  selectedMap.value = map
+//  alert(`Selected map: ${map.name}`)
+//  closeMapPopup()
+//}
+
 </script>
