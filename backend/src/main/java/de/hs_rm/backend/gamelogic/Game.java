@@ -138,7 +138,6 @@ public class Game {
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getName().equals(usernameKicked)) {
                 players.remove(i); 
-                System.err.println();
                 LOGGER.info("Player with unique name {} has been kicked.", usernameKicked);
                 return true;
             }
@@ -273,4 +272,11 @@ public class Game {
         this.playmap = playmap;
     }
     
+    public Map<String, Character> getCharacters() {
+        return characters;
+    }
+
+    public void setCharacters(Map<String, Character> characters) {
+        this.characters = characters;
+    }
 }

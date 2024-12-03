@@ -243,7 +243,7 @@ public class GameAPIController {
             if (success) {
                 return createOkResponse(existingGame);
             } else {
-                return ResponseEntity.badRequest().body("Failed to move player --> TileTyp is WALL.");
+                return ResponseEntity.badRequest().body("Failed to move player --> Tile is Wall, Invalid Coordinates or OutOfBounds");
             }
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());

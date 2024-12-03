@@ -104,4 +104,9 @@ public class GameService {
         throw new IllegalArgumentException("Player not found in any game.");
     }
 
+    public void setGameList(Map<String, Game> gameList) {
+        this.gameList = gameList;
+    }
+
+    
 }
