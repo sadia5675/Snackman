@@ -140,7 +140,7 @@ export const useGameStore = defineStore('gameStore', () => {
   }
   
   function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       try {
         if (!stompClient.connected) {
           stompClient.activate();
@@ -175,7 +175,6 @@ export const useGameStore = defineStore('gameStore', () => {
         }
       } catch (error) {
         console.error("Error in leaveGame:", error);
-        reject(false);
       }
     });
   }
