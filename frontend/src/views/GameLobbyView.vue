@@ -29,12 +29,14 @@
                     </p>
                     <div class="flex items-center space-x-2">
                         <select v-model="player.playerrole"
-                        @change="setPlayerRole(player.name, player.playerrole)"
+                            @change="setPlayerRole(player.name, player.playerrole)"
+                            :disabled="!isGamemaster"
                             class="w-28 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             <option :value="Playerrole.SNACKMAN">Snackman</option>
                             <option :value="Playerrole.GHOST">Ghost</option>
                         </select>
                         <button
+                            v-if="isGamemaster"
                             class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
                             @click="randomizeRole(player.name)">
                             Randomize Role
@@ -89,6 +91,14 @@ import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
     const gamestore = useGameStore();
     const jsonString = '{"employee":{ "name":"John", "age":30, "city":"New York" }}';
+
+    // Überprüfung, ob aktueller Spieler Gamemaster ist
+    const isGamemaster = computed(() => {
+        const currentPlayerName = sessionStorage.getItem("myName"); // Spielername aus sessionStorage
+        const gamemaster = gamestore.gameState.gamedata?.gamemaster;
+
+        return gamemaster?.name === currentPlayerName && gamemaster?.gamemaster; // Vergleich mit Gamemaster
+    });
 
     // TODO: gamemaster.id mit clientplayer.id vergleichen
     const isHost = ref(true);
