@@ -28,6 +28,13 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+sonar {
+	properties {
+		property "sonar.token", "sqa_4690ab313c40251fff0c56eb36dca8f942bea298"
+		property "sonar.host.url", "http://localhost:9000/sonar"
+	}	
+}
+
 def isWindows = System.getProperty("os.name").toLowerCase().contains("win")
 def npmCommand = isWindows ? "C:\\Program Files\\nodejs\\npm.cmd" : "npm"
 
