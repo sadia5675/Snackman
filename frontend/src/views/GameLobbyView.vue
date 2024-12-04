@@ -57,7 +57,7 @@
         <div
         class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
         >
-        <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
+        <p class="text-sm text-gray-400 mt-2">Selected: {{ gamestore.selectedMap }}</p>
         </div>
      </div>
 
@@ -94,17 +94,15 @@
           :key="map"
           :value="map"
         >
-        <p>haloooootesttttt</p>
           {{ map }}
         </option>
       </select>
     </div>
-
     <button
       class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
       @click="closeMapPopup()"
     >
-      Close
+      ok
     </button>
   </div>
 </div>
@@ -198,6 +196,7 @@ function openMapPopup() {
 // Schließt das Pop-up
 function closeMapPopup() {
   isMapPopupVisible.value = false
+  gamestore.saveSelectetMaps();
 }
 
 </script>

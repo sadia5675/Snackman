@@ -43,6 +43,28 @@ export const useGameStore = defineStore('gameStore', () => {
   }
 
   async function saveSelectetMaps() {
+    if (!selectedMap.value) {
+      console.error("No map is selected to save.");
+      return;
+    }
+    try {
+      const response = await fetch("/api/maps/selected", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ selectedMap: selectedMap.value }), // Map als JSON senden
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to save selected map ${response.statusText}');
+      }
+  
+      console.log('Selected map "${selectedMap.value}" saved successfully.');
+    } catch (error) {
+      console.error("Error saving selected map:", error);
+    }
+
     
   }
 
@@ -275,6 +297,7 @@ export const useGameStore = defineStore('gameStore', () => {
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
+    saveSelectetMaps
 
   }
 })
