@@ -137,7 +137,6 @@ public class GameAPIController {
 
             messagingService.sendPlayerList(lobbyid, response);
 
-            messagingService.sendPlayerList(lobbyid, existingGame.getPlayers());
         } catch (GameLeaveException e) {
             response.put("feedback", e.getMessage());
             response.put("status", "error");

@@ -63,8 +63,7 @@
             <button :class="{
                 'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
                 'bg-gray-600': !isHost
-            }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
-                @click="leaveGame(lobbyId)">
+            }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
                 leave
             </button>
         </div>
@@ -171,7 +170,10 @@ async function leaveGame(lobbyId: string) {
             return;
         }
 
+        console.log("Lobby-Daten vor leaveGame:", players.value);
         const success = await gamestore.leaveGame(lobbyId, leavingPlayer);
+        console.log("Lobby-Daten nach leaveGame:", players.value);
+
 
     } catch (error) {
         console.log("Fehler beim ausfueren des leaven", error);
@@ -185,7 +187,15 @@ function copyToClipboard() {
 }
 
 window.addEventListener('beforeunload', (event) => {
-    leaveGame(lobbyId);
+    event.preventDefault(); 
+
+    const playerName = sessionStorage.getItem("myName");
+    if (playerName) {
+        const leavingPlayer = players.value.find(p => p.name === playerName);
+        if (leavingPlayer) {
+            leaveGame(lobbyId);
+        }
+    }
 });
 
 onMounted(async () => {

@@ -81,6 +81,7 @@ class GameServiceTests {
     void testEndGame() {
         Player gamemaster = new Player("Gamemaster");
         Game game = gameService.createGame(gamemaster);
+        
 
         gameService.startGame(game.getId());
         Game endedGame = gameService.endGame(game.getId());
