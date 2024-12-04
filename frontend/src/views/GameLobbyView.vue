@@ -26,7 +26,7 @@
           :key="player.name"
           class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors"
         >
-          <PlayerTile v-model="players[i]" />
+          <PlayerTile v-model="players[i]" :lobby-id="lobbyId"/>
         </li>
         <li
           v-for="placeholder in placeholderCount"
