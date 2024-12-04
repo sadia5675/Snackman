@@ -20,6 +20,7 @@ export const useGameStore = defineStore('gameStore', () => {
   const selectedMap =ref<string | null>(null) // Aktuell ausgewählter Map-Name
 
 
+
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore()
