@@ -94,7 +94,7 @@ public class Game {
                 }
                 case SNACKMAN -> {
 
-                     characters.put(player.getName(), new Snackman(1.0, index%playmap.getWidth(),index/playmap.getWidth(), 3));
+                     characters.put(player.getName(), new Snackman(1.0, index%playmap.getWidth(),index/playmap.getWidth(), 3, 3));
                      randomTile.addCharacter(characters.get(player.getName()));
                 }
                 default ->{

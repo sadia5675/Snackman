@@ -14,11 +14,22 @@ const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
 
+//#für HuD
+const life = ref(2);//startlife
+const maxLife = ref(3);
+const collectedItems=ref<string[]>([]); //Gesammelte Items
+
+function addItem(itemName: string){
+  collectedItems.value.push(itemName);
+}
+
+
 function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000);
   camera.position.set(0, 1, 2);
+
 
   const renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -179,6 +190,7 @@ function loadMap(map: String[]) {
   })
 }
 
+
 onMounted(() => {
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement);
@@ -212,7 +224,27 @@ onMounted(() => {
 
 <template>
 
-  <div ref="threeContainer" id="app" class="gameContainer"></div>
+  <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
+    <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
+  <div id="items" class=" ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
+    <!-- Items anzeigen, wenn vorhanden -->
+
+    <div v-if="collectedItems.length > 0">
+      {{ collectedItems.join(', ') }}
+    </div>
+    <div v-else>
+
+    </div>
+  </div>
+      <div id="hud" class="hud absoute text-white font-bold">
+        <div class="flex gap-2">
+          <div v-for="index in maxLife" :key="index">
+            <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40"/>
+            <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40"/>
+          </div>
+        </div>
+      </div>
+    </div>
 
 </template>
 
