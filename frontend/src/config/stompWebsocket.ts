@@ -1,6 +1,6 @@
 import { Client, type Message } from '@stomp/stompjs';
 
-const protocol = window.location.protocol === 'http' ? 'wss' : 'ws'
+const protocol = window.location.protocol === 'http' ? 'ws' : 'wss'
 
 const stompClient = new Client({
   brokerURL: `${protocol}://${window.location.host}/ws`,
