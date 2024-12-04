@@ -88,8 +88,6 @@ export const useGameStore = defineStore('gameStore', () => {
           subscribeToLobby(lobbyId, (message: Message) => {
             if (message.status === 'ok') {
               console.log(message.feedback)
-              // TODO: Players werden geupdated mit `gameState.gamedata.players`, aber nicht ganzer gameState wie sonst mit `setGameStateFromResponse`,
-              //  So fehlt z.B. die ID der Lobby für den Spieler der joint
               gameState.gamedata.players = message.feedback as IPlayerDTD[]
               modal.setErrorMessage('')
 
@@ -194,7 +192,11 @@ export const useGameStore = defineStore('gameStore', () => {
     return gameState.gamedata?.players?.find((player) => player.name === actingPlayerName)
   }
 
-  function setPlayerRoleViaStomp(username: string, role: Playerrole): Promise<Result> {
+  function setPlayerRoleViaStomp(
+    username: string,
+    role: Playerrole,
+    lobbyId: string,
+  ): Promise<Result> {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>
@@ -206,16 +208,16 @@ export const useGameStore = defineStore('gameStore', () => {
       )
     }
 
-    const lobbyId = gameState.gamedata.id
-    if (!lobbyId) {
-      return new Promise((resolve) =>
-        resolve({
-          ok: false,
-          message: 'No lobby ID found',
-          data: null,
-        }),
-      )
-    }
+    // const lobbyId = gameState.gamedata.id
+    // if (!lobbyId) {
+    //   return new Promise((resolve) =>
+    //     resolve({
+    //       ok: false,
+    //       message: 'No lobby ID found',
+    //       data: null,
+    //     }),
+    //   )
+    // }
 
     console.log('Setting role of ' + username + ' to ' + Playerrole[role])
 
