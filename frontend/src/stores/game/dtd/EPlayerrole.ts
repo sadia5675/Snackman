@@ -1,4 +1,4 @@
-export enum Playerrole{
-    SNACKMAN,
-    GHOST,
+export enum Playerrole {
+  SNACKMAN,
+  GHOST,
 }
