@@ -1,14 +1,14 @@
-import { defineStore } from 'pinia'
-import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket'
-import { type Reactive, reactive } from 'vue'
-import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
-import type { GameResponse } from '@/stores/game/responses/GameResponse'
-import type { IGameDTD } from '@/stores/game/dtd/IGameDTD'
-import { emptyGame, type IGameState } from '@/stores/game/IGameState'
-import type { Message } from './dtd/IMessageDTD'
-import { useModalStore } from '../modalstore'
-import { Playerrole } from './dtd/EPlayerrole'
-import type { Result } from '@/stores/game/responses/Result'
+import { defineStore } from "pinia";
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { type Reactive, reactive } from "vue";
+import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
+import type { GameResponse } from "@/stores/game/responses/GameResponse";
+import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
+import { emptyGame, type IGameState } from "@/stores/game/IGameState";
+import type { Message } from "./dtd/IMessageDTD";
+import { useModalStore } from "../modalstore";
+import { Playerrole } from "./dtd/EPlayerrole";
+import { useRouter } from 'vue-router';
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -18,6 +18,8 @@ export const useGameStore = defineStore('gameStore', () => {
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore()
+
+  const router = useRouter();
 
   function handleGameStateError() {
     resetGameState()
@@ -72,7 +74,9 @@ export const useGameStore = defineStore('gameStore', () => {
       if (!stompClient.connected) {
         stompClient.activate()
       }
-      sessionStorage.setItem('myName', gamemaster.name)
+      sessionStorage.setItem("myName", gamemaster.name);
+      sessionStorage.setItem("playerInfo", JSON.stringify(gamemaster));
+
     } catch (error) {
       handleGameStateError()
       console.error('Error creating game:', error)
@@ -110,6 +114,7 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
+
   async function startGame() {
     try {
       const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: 'POST' })
@@ -129,6 +134,61 @@ export const useGameStore = defineStore('gameStore', () => {
     } catch (error) {
       handleGameStateError()
       console.error('Error ending game:', error)
+    }
+  }
+
+  function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        if (!stompClient.connected) {
+          stompClient.activate();
+
+          stompClient.onConnect = () => {
+            sendLeaveMessage();
+          };
+        } else {
+          sendLeaveMessage();
+        }
+
+        function sendLeaveMessage() {
+          console.log("Sending leave message for:", leavingPlayer.name);
+          sendMessage(`/topic/game/${lobbyId}/leave`, { name: leavingPlayer.name });
+
+          subscribeToLobby(lobbyId, (message: Message) => {
+            if (message.status === 'ok') {
+              console.log(`${leavingPlayer.name} erfolgreich verlassen.`);
+
+              const updatedPlayers = message.feedback as IPlayerDTD[];
+              gameState.gamedata.players.splice(0, gameState.gamedata.players.length, ...updatedPlayers);
+
+              const myName = sessionStorage.getItem("myName");
+              if (myName === leavingPlayer.name) {
+                sessionStorage.removeItem("myName");
+                router.push({ name: "index" });
+              }
+
+              resolve(true);
+            } else {
+              console.error("Leave error:", message.feedback);
+              resolve(false);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error in leaveGame:", error);
+      }
+    });
+  }
+
+
+  async function closeTab() {
+    stompClient.onDisconnect = () => {
+      if (window.closed) {
+        if (stompClient.connected) {
+          console.log("ich wurde gelöscht");
+          stompClient.deactivate;
+        }
+      }
     }
   }
 
@@ -244,11 +304,13 @@ export const useGameStore = defineStore('gameStore', () => {
     createGame,
     startGame,
     endGame,
+    leaveGame,
     kickUser,
     joinLobby,
     setChickenCount,
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
+    closeTab
   }
 })

@@ -59,6 +59,18 @@ public class GameService {
     
     }
 
+    public Game leaveGame(String gameId,Player player){
+        Game game = gameList.get(gameId);
+
+        if(game == null){
+            return null;
+        }
+
+        game.leaveGame(player);
+
+        return game;
+    }
+    
     public Game joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 

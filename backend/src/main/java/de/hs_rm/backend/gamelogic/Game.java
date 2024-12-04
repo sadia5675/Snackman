@@ -151,6 +151,22 @@ public class Game {
         players.add(player);
     }
 
+    public void leaveGame(Player player){
+        LOGGER.info(String.valueOf(players.size()));
+        if(player.getName().contentEquals(gamemaster.getName())){
+            throw new IllegalStateException("Gamemaster cannot leave the game.");
+        }
+        for(int i=0;i< players.size();i++){
+            if(players.get(i).getName().equals(player.getName())){
+                LOGGER.info("Hier der kickende Spieler " + player.getName());
+                players.remove(i);
+                break;
+            }
+        } 
+        LOGGER.info(players.toString());
+        LOGGER.info(String.valueOf(players.size()));
+    }
+
     public boolean addPlayer(Player newPlayer) {
         // Überprüfen, ob der Spieler bereits in der Liste ist
         for (Player player : players) {
