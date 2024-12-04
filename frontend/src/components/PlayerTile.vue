@@ -28,6 +28,11 @@
       <option :value="Playerrole.GHOST">Ghost</option>
     </select>
     <button
+        class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
+        @click="randomizeRole(player.name)">
+      Randomize Role
+    </button>
+    <button
       class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
       @click="kickPlayer(player.name)"
     >
@@ -50,6 +55,17 @@ const { setPlayerRoleViaStomp, kickUser } = gameStore
 
 async function onPlayerRoleChanged(player: IPlayerDTD) {
   await setPlayerRoleViaStomp(player.name, player.playerrole).then((result: Result) => {
+    console.log(result)
+  })
+}
+
+// Funktion, um die Rolle des Spielers zufällig zu setzen
+async function randomizeRole(playerName: string) {
+  const roles = [Playerrole.SNACKMAN, Playerrole.GHOST];
+  const randomRole: Playerrole = roles[Math.floor(Math.random() * roles.length)]; // math.floor --> Rundet das Ergebis
+  player.value.playerrole = randomRole; // Rolle dem Spieler zuweisen
+  console.log(`Assigning random role ${randomRole} to player ${playerName}`);
+  await setPlayerRoleViaStomp(playerName, randomRole).then((result: Result) => {
     console.log(result)
   })
 }
