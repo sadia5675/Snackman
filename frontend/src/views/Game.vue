@@ -7,6 +7,8 @@ import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
 import {WebGLRenderer} from "three";
 import ground from "@/assets/game/realistic/ground.png"
 import wall from "@/assets/game/realistic/wall.png"
+import type {IPlayerpositionDTD} from "@/stores/game/dtd/IPlayerpositionDTD";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 
 let movingForward: boolean, movingBackward: boolean, movingLeft: boolean, movingRight: boolean = false
@@ -151,6 +153,20 @@ function cameraPositionBewegen(delta: number) {
   }
 }
 
+function renderCharacters(playerPositions: IPlayerpositionDTD[]){
+  const modelLoader = new GLTFLoader()
+  playerPositions.forEach((playerPosition)=>{
+    modelLoader.load("/src/assets/game/realistic/snackman/snackman.gltf", (objekt)=>{
+      const model = objekt.scene
+      model.position.set(playerPosition.x,1,playerPosition.y)
+      model.scale.set(0.5,0.5,0.5)
+      model.rotateY(playerPosition.angle)
+      scene.add(model)
+    })
+  })
+
+}
+
 function loadMap(map: String[]) {
   const groundGeometry = new THREE.BoxGeometry(1,1,1)
   const wallGeometry = new THREE.BoxGeometry(1,2,1)
@@ -204,6 +220,18 @@ onMounted(() => {
     "****************** *",
     "********************"]
   loadMap(map)
+  const mockPositions: IPlayerpositionDTD[] = [
+  {
+    x:1,
+    y:1,
+    angle:Math.PI
+  },{
+      x:2,
+      y:2,
+      angle:2*Math.PI
+    }
+  ]
+  renderCharacters(mockPositions)
   animate();
 });
 
