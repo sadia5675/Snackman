@@ -73,11 +73,14 @@ public class MapController {
 
     //Liste zur maps wird erstellt 
     List<String> mapNames = new ArrayList<>();
-    for (String file : files) {
-        if (file.endsWith(".txt")) {
-            mapNames.add(file.replace(".txt", " "));
+    if (files != null) {
+        for (String file : files) {
+            if (file.endsWith(".txt")) {
+                mapNames.add(file.replace(".txt", " "));
+            }
         }
     }
+    System.out.println("Available Maps: " + mapNames); 
     return ResponseEntity.ok(mapNames); // Map-Namen zurückgeben
     
     }

@@ -36,14 +36,30 @@
         </li>
       </ul>
 
-      <div class="flex items-center space-x-2 mt-3">
-        <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
-        <input
-          type="number"
-          v-model="chickenCount"
-          class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-        />
-      </div>
+      <div class="flex items-center space-x-6 mt-3">
+        <div class="flex items-center space-x-2">
+            <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
+            <input
+                type="number"
+                v-model="chickenCount"
+                class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+            />
+        </div>
+
+        <br>
+        
+        <button
+            class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+            @click="openMapPopup()"
+        >
+        Select Map
+        </button>
+        <div
+        class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+        >
+        <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
+        </div>
+     </div>
 
       <button
         :class="{
@@ -58,6 +74,39 @@
       </button>
     </div>
   </div>
+ 
+   <!--Pop up-->
+   <div
+  v-if="isMapPopupVisible"
+  class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
+>
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select:</h2>
+    
+    <!-- Dropdown for map selection -->
+    <div class="mt-3">
+      <select
+        v-model="selectedMap"
+        class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg"
+      >
+        <option
+          v-for="map in maps"
+          :key="map.id"
+          :value="map"
+        >
+          {{ map.name }}
+        </option>
+      </select>
+    </div>
+
+    <button
+      class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
+      @click="closeMapPopup()"
+    >
+      Close
+    </button>
+  </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -70,6 +119,19 @@ import PlayerTile from '@/components/PlayerTile.vue'
 const route = useRoute()
 
 const gamestore = useGameStore()
+
+//um die Sichtbarkeit des Pop-ups zusteuern
+const isMapPopupVisible = ref(false) 
+
+//Liste der Maps
+const maps = ref([
+  { name: 'Map 1', id: 'map1' },
+  { name: 'Map 2', id: 'map2' },
+  { name: 'Map 3', id: 'map3' },
+])
+
+//aktuell ausgewählte Map
+const selectedMap = ref(maps.value[0]) //Standard immmer erste map wählen
 
 // TODO: gamemaster.id mit clientplayer.id vergleichen
 const isHost = ref(true)
@@ -131,4 +193,15 @@ onMounted(async () => {
     console.error('Error fetching game status:', error)
   }
 })
+
+// Öffnet das Pop-up
+function openMapPopup() {
+  isMapPopupVisible.value = true
+}
+
+// Schließt das Pop-up
+function closeMapPopup() {
+  isMapPopupVisible.value = false
+}
+
 </script>
