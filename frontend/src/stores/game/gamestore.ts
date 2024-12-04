@@ -132,13 +132,14 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-  async function kickUser(username: string) {
+  async function kickUser(username: string,kickedusername: string) {
     try {
-      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username}`, {
+      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username}/${kickedusername}`, {
         method: 'POST',
       })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
+      console.log("User {} got kicked from {}",kickedusername,username)
     } catch (error) {
       handleGameStateError()
       console.error('Error kicking user:', error)
