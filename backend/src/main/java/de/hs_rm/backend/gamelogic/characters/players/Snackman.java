@@ -8,15 +8,17 @@ import java.util.List;
  */
 public class Snackman extends Character {
     //Initialisierung
+    private int maxLife;
     private int life; 
     private double nutriscore; 
     private Item item;
 
-    public Snackman(double speed, int posX, int posY, int life){
+    public Snackman(double speed, int posX, int posY, int life,int maxLife){
         super(speed,posX,posY);
         this.life=life; 
         this.nutriscore=0; 
-        this.item= item; 
+        this.item= null;
+        this.maxLife=maxLife;
     }
 
     public Item getItems() {

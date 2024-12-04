@@ -11,7 +11,10 @@ public abstract class Character{
     // Player player;
     private int posX, posY;
     private int currentcalorie;
-    //private int life;
+    //private static final int MAX_LIFE =3;
+
+
+
     private Item item; 
 
 
@@ -25,7 +28,6 @@ public abstract class Character{
         //this.player = player;
         this.posX=posX;
         this.posY=posY;
-        //this.life = life; 
         this.currentcalorie= 0;
         //this.item = item; 
     }
@@ -70,6 +72,7 @@ public abstract class Character{
     public Item getItems() {
         return item;
     }
+
 
     public void setItem(Item item) {
         this.item=item; 
