@@ -9,11 +9,16 @@ import type { Message } from './dtd/IMessageDTD'
 import { useModalStore } from '../modalstore'
 import { Playerrole } from './dtd/EPlayerrole'
 import type { Result } from '@/stores/game/responses/Result'
+import { ref } from "vue";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
   const apiUrl: string = '/api/game'
   const topicUrl: string = '/topic/game'
+
+  const maps= ref<string[]>([]) // Liste der Map-Namen
+  const selectedMap =ref<string | null>(null) // Aktuell ausgewählter Map-Name
+
 
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
@@ -21,6 +26,23 @@ export const useGameStore = defineStore('gameStore', () => {
 
   function handleGameStateError() {
     resetGameState()
+  }
+
+  async function fetchMaps(){
+    try{
+      // GetAnfrage an den Backend 
+        const response = await fetch ("/api/maps"); 
+        //D Json wird dann in allmaps gespeichert --> also die Mapnamen
+        maps.value= await response.json(); 
+        console.log("Fetched Maps:", maps.value);
+    }catch(error){
+        console.error("Error fetching maps:", error);
+        maps.value=[]; 
+    }
+  }
+
+  async function saveSelectetMaps() {
+    
   }
 
   function resetGameState() {
@@ -32,6 +54,7 @@ export const useGameStore = defineStore('gameStore', () => {
     gameState.ok = true
     gameState.gamedata = gameResponse.feedback as IGameDTD
   }
+
 
   // Helper function to handle API responses
   async function handleResponse(response: Response): Promise<GameResponse> {
@@ -239,6 +262,9 @@ export const useGameStore = defineStore('gameStore', () => {
 
   return {
     gameState,
+    maps,
+    selectedMap,
+    fetchMaps,
     createGame,
     startGame,
     endGame,
@@ -248,5 +274,6 @@ export const useGameStore = defineStore('gameStore', () => {
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
+
   }
 })

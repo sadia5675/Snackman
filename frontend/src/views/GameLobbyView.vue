@@ -86,15 +86,15 @@
     <!-- Dropdown for map selection -->
     <div class="mt-3">
       <select
-        v-model="selectedMap"
+        v-model="gamestore.selectedMap"
         class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg"
       >
         <option
-          v-for="map in maps"
-          :key="map.id"
+          v-for="map in gamestore.maps"
+          :key="map"
           :value="map"
         >
-          {{ map.name }}
+          {{ map }}
         </option>
       </select>
     </div>
@@ -123,15 +123,6 @@ const gamestore = useGameStore()
 //um die Sichtbarkeit des Pop-ups zusteuern
 const isMapPopupVisible = ref(false) 
 
-//Liste der Maps
-const maps = ref([
-  { name: 'Map 1', id: 'map1' },
-  { name: 'Map 2', id: 'map2' },
-  { name: 'Map 3', id: 'map3' },
-])
-
-//aktuell ausgewählte Map
-const selectedMap = ref(maps.value[0]) //Standard immmer erste map wählen
 
 // TODO: gamemaster.id mit clientplayer.id vergleichen
 const isHost = ref(true)
@@ -167,6 +158,10 @@ watch(
     }
   },
 )
+onMounted(async()=> {
+    await gamestore.fetchMaps();
+  console.log("Aktuelle Maps:", gamestore.maps);
+})
 
 //Funktion um das Game zu starten
 async function startGame() {
