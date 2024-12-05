@@ -72,15 +72,6 @@
       >
         {{ isHost ? 'Start Game' : '---' }}
       </button>
-      <!--
-            Button to navigate to the EndView 
-            <button
-        class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
-        @click="goToGameEnd"
-      >
-        Go to End View
-      </button>
-      -->
     </div>
   </div>
  
@@ -212,10 +203,4 @@ function openMapPopup() {
 function closeMapPopup() {
   isMapPopupVisible.value = false
 }
-
-// Navigiere zur GameEnd-Seite
-//function goToGameEnd() {
- // router.push({ name: 'GameEnd' })
-//}
-
 </script>
