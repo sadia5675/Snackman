@@ -26,12 +26,13 @@
   <div class="min-h-screen flex flex-col items-center justify-center">
     <!-- :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }" -->
     
-    <video autoplay loop muted class="absolute top-0 left-0 w-full object-cover -z-10">
+    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video>
 
-    <h1 class="text-4xl lg:text-8xl mb-20">Snackman</h1>
+    <h1 class="font-namaku text-4xl lg:text-8xl mb-20">Snackman</h1>
+    <!-- <h1>Test: Namaku Font</h1> -->
     
     <div class="flex flex-col gap-3">
       <button class="button-small" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
@@ -92,6 +93,5 @@ function toMapCreator() {
 
 
 <style>
-@media (min-width: 1024px) {
-}
+
 </style>

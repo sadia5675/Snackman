@@ -8,6 +8,10 @@ export default {
     extend: {
       colors: {
         bisque: '#ffe4c4',
+      },
+      fontFamily: {
+        mickey: ['MickeyMouse'],
+        namaku: ['Namaku']
       }
     },
   },
