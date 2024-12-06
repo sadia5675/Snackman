@@ -2,7 +2,8 @@
 
   <Modal v-if="modal.isModalOpen">
     <template #titel>
-      <h2 class="font-bold text-3xl text-center">{{ modal.modalType === ModalType.JOIN_GAME ? "Join Game" : "New Game" }}</h2>
+      <h2 class="font-bold text-3xl text-center">{{ modal.modalType === ModalType.JOIN_GAME ? "Join Game" : "New Game"
+        }}</h2>
     </template>
     <template #content>
       <input v-model="newPlayer.name" type="text" name="name" id="name"
@@ -10,10 +11,11 @@
         placeholder="Username eingeben" />
       <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
-       <div class="flex space-x-4">
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click=" modal.modalType === ModalType.NEW_GAME ? modal.newGame(newPlayer) : modal.joinGame(newPlayer)">Weiter</button>
+      <div class="flex space-x-4">
+        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3"
+          @click=" modal.modalType === ModalType.NEW_GAME ? modal.newGame(newPlayer) : modal.joinGame(newPlayer)">Weiter</button>
         <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
-       </div>
+      </div>
 
     </template>
 
@@ -21,19 +23,28 @@
   </Modal>
 
 
-  <div class="homeMenue" :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }">
+  <div class="homeMenue">
+    <!-- :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }" -->
+    
+    <video autoplay loop muted class="background-video">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
+    </video>
     <h1>Snackman</h1>
     <div class="form-container">
-      <button class="buttons-top-bottom" @click="modal.openModal(ModalType.NEW_GAME,'')">New Game</button>
+      <button class="buttons-top-bottom" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
       <div>
         <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="gameid-input-field">
         <!-- @click="game.joinGame()"-->
-        <button class="button-middle" @click="modal.openModal(ModalType.JOIN_GAME,gameId)">Join</button>
+        <button class="button-middle" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join</button>
       </div>
       <!-- @click="game.findLobbies()"-->
       <button class="buttons-top-bottom" @click="router.push('/lobby')">Find Lobbies/Games</button>
       <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
     </div>
+
+
+    
   </div>
 
 </template>
@@ -86,12 +97,22 @@ function toMapCreator() {
   }
 
   .homeMenue {
-    background-color: grey;
+    /* background-color: grey; */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+  }
+
+  .background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
   }
 
   .form-container {
