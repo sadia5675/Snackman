@@ -42,13 +42,14 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
+
   async function saveSelectetMaps() {
     if (!selectedMap.value) {
       console.error("No map is selected to save.");
       return;
     }
     try {
-      const response = await fetch("/api/maps/selected", {
+      const response = await fetch(`${apiUrl}/selectedMap/${gameState.gamedata.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +61,7 @@ export const useGameStore = defineStore('gameStore', () => {
         throw new Error('Failed to save selected map ${response.statusText}');
       }
   
-      console.log('Selected map "${selectedMap.value}" saved successfully.');
+      console.log('Selected map was saved successfully.');
     } catch (error) {
       console.error("Error saving selected map:", error);
     }

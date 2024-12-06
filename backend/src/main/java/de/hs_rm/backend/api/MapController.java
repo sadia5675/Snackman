@@ -2,6 +2,7 @@ package de.hs_rm.backend.api;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,21 +68,24 @@ public class MapController {
     @GetMapping
     public ResponseEntity <List<String>> allMaps() {
 
-    // Der Pfad zum Map-Ordner
-    File mapFolder = new File("src/main/resources/maps");
-    String[] files = mapFolder.list();
+        // Der Pfad zum Map-Ordner
+        File mapFolder = new File("src/main/resources/maps");
+        String[] files = mapFolder.list();
 
-    //Liste zur maps wird erstellt 
-    List<String> mapNames = new ArrayList<>();
-    if (files != null) {
-        for (String file : files) {
-            if (file.endsWith(".txt")) {
-                mapNames.add(file.replace(".txt", " "));
+        //Liste zur maps wird erstellt 
+        List<String> mapNames = new ArrayList<>();
+        if (files != null) {
+            for (String file : files) {
+                if (file.endsWith(".txt")) {
+                    mapNames.add(file.replace(".txt", " "));
+                }
             }
         }
+        System.out.println("Available Maps: " + mapNames); 
+        return ResponseEntity.ok(mapNames); // Map-Namen zurückgeben
+        
     }
-    System.out.println("Available Maps: " + mapNames); 
-    return ResponseEntity.ok(mapNames); // Map-Namen zurückgeben
+
+   
     
-    }
 }

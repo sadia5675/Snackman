@@ -106,6 +106,7 @@
     </button>
   </div>
 </div>
+
 </template>
 
 <script setup lang="ts">
@@ -167,8 +168,10 @@ async function startGame() {
   //startGame request and backend
   try {
     await gamestore.startGame()
+    //await gamestore.saveSelectetMaps();
     //Log zum testen
     console.log(gamestore.gameState)
+    router.push({ name: 'game' }); // Weiterleitung zur Spielansicht
   } catch (error) {
     console.log(error)
   }
@@ -195,8 +198,17 @@ function openMapPopup() {
 
 // Schließt das Pop-up
 function closeMapPopup() {
-  isMapPopupVisible.value = false
-  gamestore.saveSelectetMaps();
+  if (!gamestore.selectedMap) {
+    alert("Bitte wählen Sie eine Karte aus, bevor Sie das Fenster schließen.");
+    return;
+  }
+  isMapPopupVisible.value = false; 
+  gamestore.saveSelectetMaps().then(() => {
+    console.log('Ausgewählte Karte erfolgreich gespeichert!');
+  }).catch((error) => {
+    console.error('Fehler beim Speichern der ausgewählten Karte:', error);
+  });
 }
+
 
 </script>

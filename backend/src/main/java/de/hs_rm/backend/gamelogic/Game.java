@@ -24,7 +24,7 @@ public class Game {
     private boolean started;
     private PlayMap playmap;
     private int chickenNum;
-
+    private String selectedMap; 
     
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
@@ -39,9 +39,16 @@ public class Game {
         this.gamemaster = gamemaster;      
         this.players.add(this.gamemaster);             
         this.started = false;     
-        this.characters = new HashMap<>();                                   
+        this.characters = new HashMap<>();
+        this.selectedMap= selectedMap;                                    
     }
 
+    public String getSelectedMap() {
+        return selectedMap;
+    }
+    public void setSelectedMap(String selectedMap) {
+        this.selectedMap = selectedMap;
+    }
     // Generiert eindeutige ID
     // Synchronisieren --> verhindert, dass mehrere Threads gleichzeitig doppelte IDs erzeugen
     private synchronized String generateId(int length) {
@@ -67,10 +74,11 @@ public class Game {
 
     public boolean start(){
         this.started = true;
-        LOGGER.info("started: {} gameid: {}", this.started, this.id);
+        LOGGER.info("started: {} gameid: {} selectedMap:{}", this.started, this.id, this.selectedMap);
 
         // TODO: hier sollte random name als param übergeben werden
-        this.playmap = new PlayMap("map1");
+       // this.playmap = new PlayMap("map1");
+       this.playmap = new PlayMap(selectedMap);
 
         Random random = new Random();
         
