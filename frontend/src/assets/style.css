@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.button-small {
+    @apply bg-bisque px-4 py-2 rounded-lg hover:bg-orange-300
+}
+
+.button-next-to-form {
+    @apply bg-bisque px-4 py-2 rounded-r-lg hover:bg-orange-300
+}
+
+.form-next-to-button {
+    @apply px-4 py-2 rounded-l-lg
+}

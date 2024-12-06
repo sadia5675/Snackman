@@ -23,24 +23,26 @@
   </Modal>
 
 
-  <div class="homeMenue">
+  <div class="min-h-screen flex flex-col items-center justify-center">
     <!-- :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }" -->
     
-    <video autoplay loop muted class="background-video">
+    <video autoplay loop muted class="absolute top-0 left-0 w-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video>
-    <h1>Snackman</h1>
-    <div class="form-container">
-      <button class="buttons-top-bottom" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
+
+    <h1 class="text-4xl lg:text-8xl mb-20">Snackman</h1>
+    
+    <div class="flex flex-col gap-3">
+      <button class="button-small" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
       <div>
-        <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="gameid-input-field">
+        <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="form-next-to-button">
         <!-- @click="game.joinGame()"-->
-        <button class="button-middle" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join</button>
+        <button class="button-next-to-form" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join</button>
       </div>
       <!-- @click="game.findLobbies()"-->
-      <button class="buttons-top-bottom" @click="router.push('/lobby')">Find Lobbies/Games</button>
-      <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
+      <button class="button-small" @click="router.push('/lobby')">Find Lobbies/Games</button>
+      <button class="button-small" v-on:click="toMapCreator">Map Creator</button>
     </div>
 
 
@@ -91,61 +93,5 @@ function toMapCreator() {
 
 <style>
 @media (min-width: 1024px) {
-  h1 {
-    font-size: 50px;
-    margin-bottom: 80px;
-  }
-
-  .homeMenue {
-    /* background-color: grey; */
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .background-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
-  }
-
-  .form-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .buttons-top-bottom {
-    background-color: bisque;
-    border-radius: 10px;
-    padding: 10px;
-  }
-
-  .button-middle {
-    background-color: bisque;
-    border-radius: 0 10px 10px 0;
-    padding: 10px;
-  }
-
-  .button-middle:hover,
-  .buttons-top-bottom:hover {
-    background-color: rgb(247, 194, 130);
-  }
-
-  .gameid-input-field {
-    height: 44px;
-    border-radius: 10px 0 0 10px;
-    text-align: center;
-  }
-
-
-
-
 }
 </style>
