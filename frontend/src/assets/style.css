@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 @font-face {
     font-family: "MickeyMouse";
@@ -16,14 +20,19 @@
     font-style: normal;
 }
 
+body{
+    font-family: "Shantell Sans", cursive;
+}
+
+
 .button-small {
-    @apply bg-bisque px-4 py-2 rounded-lg hover:bg-orange-300
+    @apply bg-hellbeige text-grau px-4 py-2 rounded-lg hover:bg-gold
 }
 
 .button-next-to-form {
-    @apply bg-bisque px-4 py-2 rounded-r-lg hover:bg-orange-300
+    @apply bg-hellbeige text-grau px-4 py-2 rounded-r-lg hover:bg-gold 
 }
 
 .form-next-to-button {
-    @apply px-4 py-2 rounded-l-lg
+    @apply bg-beige text-hellgrau px-4 py-2 rounded-l-lg text-center  outline-gold
 }

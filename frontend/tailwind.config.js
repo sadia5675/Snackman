@@ -6,12 +6,17 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        bisque: '#ffe4c4',
+      colors: { 
+        beige: '#f0e8d8',
+        hellbeige: '#f1ddb8',
+        gold: '#d5ac37',
+        grau: '#9aa2ae',
+        hellgrau: '#c7cdd7',
       },
       fontFamily: {
         mickey: ['MickeyMouse'],
-        namaku: ['Namaku']
+        namaku: ['Namaku'],
+        knewave: ['Knewave']
       }
     },
   },

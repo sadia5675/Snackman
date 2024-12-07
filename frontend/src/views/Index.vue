@@ -31,7 +31,7 @@
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video>
 
-    <h1 class="font-namaku text-4xl lg:text-8xl mb-20">Snackman</h1>
+    <h1 class="font-knewave text-4xl text-gold lg:text-8xl mb-20">Snackman</h1>
     <!-- <h1>Test: Namaku Font</h1> -->
     
     <div class="flex flex-col gap-3">
