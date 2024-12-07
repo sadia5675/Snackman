@@ -36,3 +36,7 @@ body{
 .form-next-to-button {
     @apply bg-beige text-hellgrau px-4 py-2 rounded-l-lg text-center  outline-gold
 }
+
+.input-form {
+   @apply  bg-beige text-hellgrau px-4 py-2 rounded-lg text-center  outline-gold
+}
