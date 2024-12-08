@@ -12,6 +12,9 @@ export default {
         gold: '#d5ac37',
         grau: '#9aa2ae',
         hellgrau: '#c7cdd7',
+        graulila: '#2C2738',
+        hellesgraulila: '#3B364B',
+        lila: '#6E54B5'
       },
       fontFamily: {
         mickey: ['MickeyMouse'],

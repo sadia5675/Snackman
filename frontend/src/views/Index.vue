@@ -23,21 +23,21 @@
   </Modal>
 
 
-  <div class="min-h-screen flex flex-col items-center justify-center">
+  <div class="  min-h-screen flex flex-col items-center justify-center">
     <!-- :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }" -->
     
-    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full object-cover -z-10">
+    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video>
 
-    <h1 class="font-knewave text-4xl text-gold lg:text-8xl mb-20">Snackman</h1>
+    <h1 class="header1">Snackman</h1>
     <!-- <h1>Test: Namaku Font</h1> -->
     
     <div class="flex flex-col gap-3">
       <button class="button-small" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
       <div>
-        <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="form-next-to-button">
+        <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="form-next-to-button text-gray-800">
         <!-- @click="game.joinGame()"-->
         <button class="button-next-to-form" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join</button>
       </div>

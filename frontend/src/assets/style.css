@@ -24,19 +24,26 @@ body{
     font-family: "Shantell Sans", cursive;
 }
 
+.header1 {
+    @apply font-knewave text-4xl text-gold lg:text-8xl mb-20 text-center
+}
 
 .button-small {
-    @apply bg-hellbeige text-grau px-4 py-2 rounded-lg hover:bg-gold
+    @apply bg-lila text-grau px-4 py-2 rounded-lg hover:bg-gold
 }
 
 .button-next-to-form {
-    @apply bg-hellbeige text-grau px-4 py-2 rounded-r-lg hover:bg-gold 
+    @apply bg-lila text-grau px-4 py-2 rounded-r-lg hover:bg-gold 
 }
 
 .form-next-to-button {
-    @apply bg-beige text-hellgrau px-4 py-2 rounded-l-lg text-center  outline-gold
+    @apply bg-hellesgraulila text-gray-800 px-4 py-2 rounded-l-lg text-center  outline-gold
 }
 
 .input-form {
    @apply  bg-beige text-hellgrau px-4 py-2 rounded-lg text-center  outline-gold
+}
+
+.centered {
+    @apply fixed flex items-center justify-center w-full h-full
 }
