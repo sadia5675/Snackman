@@ -100,11 +100,23 @@
         <p class="text-center text-zinc-200 font-semibold">{{ map.name }}</p>
       </div>
     </div>
+    
+    <div class="flex justify-between mt-4">
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-zinc-200 py-1 px-4 rounded-lg transition"
+        @click="selectRandomMap()"
+      >
+        Random Map
+      </button>
+  
+      <button
+        class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition"
+        @click="closeMapPopup()"
+      >
+        OK
+      </button>
+    </div>
 
-    <!-- Schließen-Button -->
-    <button class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4" @click="closeMapPopup()">
-      Close
-    </button>
   </div>
 </div>
 </template>
@@ -242,14 +254,12 @@ watch(
   }
 );
 
-
 async function drawAllMaps() { // Tteriert durch die Maps damit man alle Maps zeichen kann
   mapStore.mapsDTD.maps.forEach((map) => {
     console.log(`Drawing map with ID: ${map.id}`);
     drawMapCanvas(map);
   });
 }
-
 
 // Öffnet das Pop-up
 function openMapPopup() {
@@ -259,6 +269,19 @@ function openMapPopup() {
 // Schließt das Pop-up
 function closeMapPopup() {
   isMapPopupVisible.value = false
+}
+
+function selectRandomMap() {
+  const maps = mapStore.mapsDTD.maps;
+  if (maps.length > 0) {
+    const randomIndex = Math.floor(Math.random() * maps.length);
+    const randomMap = maps[randomIndex];
+    selectedMap.value = randomMap; // Die zufällig ausgewählte Karte zuweisen
+    mapStore.mapsDTD.selectedMap = randomMap; // Im Map-Store setzen
+    console.log("Randomly selected map:", randomMap.name);
+  } else {
+    alert("No maps available to select.");
+  }
 }
 
 function selectMap(map: MapDTD) {
