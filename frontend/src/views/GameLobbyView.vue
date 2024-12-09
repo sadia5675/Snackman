@@ -79,35 +79,31 @@
     </div>
   </div>
  
-   <!--Pop up-->
-   <div
-  v-if="isMapPopupVisible"
-  class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
->
-  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select:</h2>
-    
-    <!-- Dropdown for map selection -->
-    <div class="mt-3">
-      <select
-        v-model="selectedMap"
-        class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg"
+    <!--Pop up-->
+    <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full">
+    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
+
+    <!-- Grid mit Map-Bildern -->
+    <div class="grid grid-cols-2 gap-4">
+      <div
+        v-for="map in mapStore.mapsDTD.maps"
+        :key="map.id"
+        :class="[
+    'p-4 rounded-lg shadow-lg transition cursor-pointer',
+    map.id === selectedMap?.id ? 'bg-blue-700 border-blue-400' : 'bg-gray-800 hover:bg-gray-700'
+     ]"
+        @click="selectMap(map)"
       >
-        <option
-          v-for="map in mapStore.mapsDTD.maps"
-          :key="map.id"
-          :value="map"
-        >
-          {{ map.name }}
-        </option>
-      </select>
+        <!-- Canvas für die Map -->
+        <canvas :id="'mapCanvas-' + map.id" class="w-full h-40 border border-zinc-500 bg-blue-600"></canvas>
+        <p class="text-center text-zinc-200 font-semibold">{{ map.name }}</p>
+      </div>
     </div>
 
-    <button
-      class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
-      @click="closeMapPopup()"
-    >
-      ok
+    <!-- Schließen-Button -->
+    <button class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4" @click="closeMapPopup()">
+      Close
     </button>
   </div>
 </div>
@@ -123,6 +119,8 @@ import PlayerTile from '@/components/PlayerTile.vue'
 import type { Result } from '@/stores/game/responses/Result'
 import { useMapStore } from '@/stores/map/MapStore'
 import type { MapDTD } from '@/stores/game/dtd/MapsDTD'
+import { nextTick } from 'vue';
+
 
 const gameStore = useGameStore()
 const { setPlayerRoleViaStomp} = gameStore
@@ -233,11 +231,25 @@ onMounted(async () => {
 });
 
 // Watch für Map-Auswahl
-watch(selectedMap, (newSelectedMap) => {
-  if (newSelectedMap) {
-    mapStore.mapsDTD.selectedMap = newSelectedMap;
+watch(
+  () => isMapPopupVisible.value,
+  async (visible) => {
+    if (visible) {
+      console.log('Popup is now visible. Drawing maps...');
+      await nextTick(); // Wartet bis das DOM aktualisiert wurde
+      drawAllMaps();
+    }
   }
-})
+);
+
+
+async function drawAllMaps() { // Tteriert durch die Maps damit man alle Maps zeichen kann
+  mapStore.mapsDTD.maps.forEach((map) => {
+    console.log(`Drawing map with ID: ${map.id}`);
+    drawMapCanvas(map);
+  });
+}
+
 
 // Öffnet das Pop-up
 function openMapPopup() {
@@ -247,6 +259,46 @@ function openMapPopup() {
 // Schließt das Pop-up
 function closeMapPopup() {
   isMapPopupVisible.value = false
+}
+
+function selectMap(map: MapDTD) {
+  selectedMap.value = map;
+  mapStore.mapsDTD.selectedMap = map;
+  //alert("You selected:" ${map.name});
+}
+
+
+function drawMapCanvas(map: MapDTD) {
+  const canvas = document.getElementById('mapCanvas-' + map.id) as HTMLCanvasElement;
+  if (!canvas) {
+    console.error(`Canvas with ID 'mapCanvas-${map.id}' not found in the DOM.`);
+    return;
+  }
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    console.error(`2D context for canvas 'mapCanvas-${map.id}' not available.`);
+    return;
+  }
+
+  const tileSize = 20;
+  const rows = map.map.length;
+  const cols = map.map[0].length;
+
+  canvas.width = cols * tileSize;
+  canvas.height = rows * tileSize;
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const tile = map.map[y][x];
+      context.fillStyle = tile === '*' ? 'black' : 'blue';
+      context.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+      context.strokeStyle = 'black';
+      context.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+    }
+  }
+
+  console.log(`Map ${map.id} drawn successfully.`);
 }
 
 </script>
