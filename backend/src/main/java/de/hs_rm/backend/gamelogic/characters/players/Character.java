@@ -49,6 +49,12 @@ public abstract class Character{
     // public void setGamiId(String gamiId) {
     //     this.gameId = gamiId;
     // }
+
+    public void move(int x, int y){
+        this.posX = x;
+        this.posY = y;
+    }
+    
     public double getSpeed() {
         return speed;
     }
@@ -82,9 +88,6 @@ public abstract class Character{
             currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
     }
 
-    //Abstrakte Methoden 
-    public abstract PlayerPosition move(); 
-    
     // Methode: Sammeln von Items
     public void pickUpItemLogic(Item item) {
         setItem(item);
