@@ -52,6 +52,14 @@ public class Tile {
     //     return true;
     // }
 
+    public boolean removeCharacter(Character character) {
+        if (characterList != null && characterList.contains(character)) {
+            characterList.remove(character);
+            return true; 
+        }
+        return false; 
+    }
+
     // public List<Item> getItemList() {
     //     return itemList;
     // }

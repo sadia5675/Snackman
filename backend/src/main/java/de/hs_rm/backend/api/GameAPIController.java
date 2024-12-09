@@ -269,8 +269,8 @@ public class GameAPIController {
             return createOkResponse(existingGame);
         }
 
-        return createErrorResponse("can not add " + player.getName() + "!");
-
+        return createErrorResponse("can not add "+ player.getName() +"!");
+             
     }
 
     @GetMapping("/games")
@@ -283,6 +283,29 @@ public class GameAPIController {
         response.put("time", LocalDateTime.now().toString());
 
         return ResponseEntity.ok(response);
+    }
+
+
+    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}")
+    public ResponseEntity<?> movePlayer( @PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
+
+        Game existingGame = gameService.getGameById(gameId);
+        
+        if (existingGame == null) {
+            return createErrorResponse("No game found.");
+        }
+        try {
+            boolean success = gameService.move(username, coordinateX, coordinateY);
+            if (success) {
+                return createOkResponse(existingGame);
+            } else {
+                return ResponseEntity.badRequest().body("Failed to move player --> TileTyp is WALL.");
+            }
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e.getMessage());
+        } catch (Exception e) {
+            return createErrorResponse("An unexpected error occurred.");
+        }
     }
 
     // Helper method for standardized error response
@@ -308,7 +331,6 @@ public class GameAPIController {
             e.printStackTrace();
             feedbackData.put("feedback", "something in backend went wrong!");
         }
-
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
 }
