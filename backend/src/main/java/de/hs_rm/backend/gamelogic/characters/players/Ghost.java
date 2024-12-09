@@ -39,15 +39,21 @@ public class Ghost extends Character {
     //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln= die Methode ist doch im Charackter??
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
-    @Override
-    public PlayerPosition move(){
-        System.out.println("the ghost is moving");
-        return null; 
-    }
+    // @Override
+    // public PlayerPosition move(){
+    //     System.out.println("the ghost is moving");
+    //     return null; 
+    // }
 
     //Reglung bei Kontakt mit Snackman--> Logik fehlt noch
     public void hit(String playerId){
         System.out.println("Player " + playerId + " has been hit by the ghost.");
         touchcount++; 
+    }
+
+    @Override
+    public PlayerPosition move() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'move'");
     }
 }

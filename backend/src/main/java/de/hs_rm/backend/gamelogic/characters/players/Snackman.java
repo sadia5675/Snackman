@@ -43,11 +43,11 @@ public class Snackman extends Character {
     }
 
      //abstrakte Methode zum fortbewegen--> Logik fehlt noch
-    @Override
-    public PlayerPosition move(){
-        System.out.println("Snackman is moving");
-        return null; 
-    }
+    // @Override
+    // public PlayerPosition move(){
+    //     System.out.println("Snackman is moving");
+    //     return null; 
+    // }
 
     //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln= die Methode ist doch im Charackter??
     
@@ -63,5 +63,11 @@ public class Snackman extends Character {
         if(this.life <= 0 ){
             System.out.println("Snackman has been caught and has no more lives.");
         }
+    }
+
+    @Override
+    public PlayerPosition move() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'move'");
     }
 }

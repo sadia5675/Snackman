@@ -36,6 +36,20 @@
         </li>
       </ul>
 
+      <div class="flex items-center space-x-2 mt-3">
+        <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
+        <input
+          type="number"
+          v-model="chickenCount"
+          class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+        />
+        <button
+    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+    @click="randomizeRoles"
+      >
+        Randomize Roles
+      </button>
+    </div>
       <div class="flex items-center space-x-6 mt-3">
         <div class="flex items-center space-x-2">
             <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
@@ -110,11 +124,16 @@
 </template>
 
 <script setup lang="ts">
+import { Playerrole } from '@/stores/game/dtd/EPlayerrole.js'
 import { useGameStore } from '@/stores/game/gamestore'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 import PlayerTile from '@/components/PlayerTile.vue'
+import type { Result } from '@/stores/game/responses/Result'
+
+const gameStore = useGameStore()
+const { setPlayerRoleViaStomp} = gameStore
 
 const route = useRoute()
 
@@ -150,19 +169,19 @@ const chickenCount = computed({
   },
 })
 
-watch(
-  () => gamestore.gameState.gamedata?.started,
-  (newValue) => {
-    if (newValue) {
-      router.push({ name: 'game' })
-    }
-  },
-)
-onMounted(async()=> {
+
+    watch(()=> gamestore.gameState.gamedata?.started,
+      (newValue) => {
+      if(newValue){
+        router.push({name:"game"})
+      }
+      })
+
+      onMounted(async()=> {
     await gamestore.fetchMaps();
   console.log("Aktuelle Maps:", gamestore.maps);
 })
-
+      
 //Funktion um das Game zu starten
 async function startGame() {
   //startGame request and backend
@@ -190,6 +209,21 @@ onMounted(async () => {
     console.error('Error fetching game status:', error)
   }
 })
+
+async function randomizeRoles() {
+  const roles = [Playerrole.SNACKMAN, Playerrole.GHOST];
+  for (const player of players.value) {
+    const randomRole: Playerrole = roles[Math.floor(Math.random() * roles.length)];
+    player.playerrole = randomRole; // Lokal setzen
+    console.log(`Assigning random role ${randomRole} to player ${player.name}`);
+    
+    // Rolle auf dem Server setzen
+    await setPlayerRoleViaStomp(player.name, randomRole).then((result: Result) => {
+      console.log(result);
+    });
+  }
+}
+
 
 // Öffnet das Pop-up
 function openMapPopup() {

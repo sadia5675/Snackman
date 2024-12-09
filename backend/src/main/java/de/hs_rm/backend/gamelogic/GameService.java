@@ -115,5 +115,24 @@ public class GameService {
         return game;
     }
 
+    public boolean move(String username, int targetX, int targetY) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username and direction must not be empty.");
+        }
+
+        // Iteriert über alle Games, um den Spieler zu finden
+        for (Game game : gameList.values()) {
+            Player player = game.findPlayerByUsername(username);
+            if (player != null) {
+                return game.move(username, targetX, targetY);
+            }
+        }
+        throw new IllegalArgumentException("Player not found in any game.");
+    }
+
+    public void setGameList(Map<String, Game> gameList) {
+        this.gameList = gameList;
+    }
+
     
 }

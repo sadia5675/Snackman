@@ -146,7 +146,6 @@ public class Game {
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getName().equals(usernameKicked)) {
                 players.remove(i); 
-                System.err.println();
                 LOGGER.info("Player with unique name {} has been kicked.", usernameKicked);
                 return true;
             }
@@ -179,6 +178,27 @@ public class Game {
         this.chickenNum=total;
 
     }
+    public boolean move(String username, int posX, int posY) {
+        // DONE: Tile obj von x und y überprüfen
+        int targetIndex = posY * playmap.getWidth() + posX;
+        Tile targetTile = playmap.getTilesList().get(targetIndex);
+        Character curCharacter = characters.get(username);
+
+        int curIndex = curCharacter.getPosY() * playmap.getWidth() + curCharacter.getPosX();
+        Tile curTile = playmap.getTilesList().get(curIndex);
+
+        if (targetTile.getType() == TileType.WALL) {
+            return false;
+        }
+        // DONE: position von character aktualisieren für frontend
+        curCharacter.move(posX, posY);
+        // TODO: hier fehlt noch Kollision in addCharacter
+        curTile.removeCharacter(curCharacter);
+        targetTile.addCharacter(curCharacter);
+
+        return true;
+
+    }
 
     public Player findPlayerByUsername(String username) {
         if(players==null || players.isEmpty()){
@@ -192,8 +212,6 @@ public class Game {
         LOGGER.info("Player with username {} not found.", username);
         return null;
     }
-
-
 
     public String getId() {
         return id;
@@ -261,6 +279,12 @@ public class Game {
     public void setPlaymap(PlayMap playmap) {
         this.playmap = playmap;
     }
-
     
+    public Map<String, Character> getCharacters() {
+        return characters;
+    }
+
+    public void setCharacters(Map<String, Character> characters) {
+        this.characters = characters;
+    }
 }

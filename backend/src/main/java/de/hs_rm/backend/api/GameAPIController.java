@@ -299,8 +299,7 @@ public class GameAPIController {
         }
 
         return createErrorResponse("can not add "+ player.getName() +"!");
-        
-                
+             
     }
 
     @GetMapping("/games")
@@ -316,6 +315,27 @@ public class GameAPIController {
     }
 
 
+    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}")
+    public ResponseEntity<?> movePlayer( @PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
+
+        Game existingGame = gameService.getGameById(gameId);
+        
+        if (existingGame == null) {
+            return createErrorResponse("No game found.");
+        }
+        try {
+            boolean success = gameService.move(username, coordinateX, coordinateY);
+            if (success) {
+                return createOkResponse(existingGame);
+            } else {
+                return ResponseEntity.badRequest().body("Failed to move player --> Tile is Wall, Invalid Coordinates or OutOfBounds");
+            }
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e.getMessage());
+        } catch (Exception e) {
+            return createErrorResponse("An unexpected error occurred.");
+        }
+    }
 
     // Helper method for standardized error response
     private ResponseEntity<Map<String, Object>> createErrorResponse(String feedbackMessage) {
@@ -340,7 +360,6 @@ public class GameAPIController {
             e.printStackTrace();
             feedbackData.put("feedback", "something in backend went wrong!");
         }
-
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
 }
