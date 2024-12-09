@@ -12,6 +12,6 @@ public class TestCharacter extends Character {
     @Override
     public PlayerPosition move() {
         // TODO Auto-generated method stub
-        return new PlayerPosition(getPosX() + 1, getPosY() + 1);
-    }
+        return new PlayerPosition(getPosX() + 1, getPosY() + 1);
+    }
 }

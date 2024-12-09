@@ -21,7 +21,7 @@ public class CharacterTest {
     public void testPickUpItem() {
         // Mock
         Item testItem = new FoodItems("Apple", 0, 0,NutriScore.A);
-        testCharacter.pickUpItem(testItem);
+        testCharacter.pickUpItemLogic(testItem);
         
         assertNotNull(testCharacter.getItems());
         assertEquals("Apple", testCharacter.getItems().getName());
@@ -30,13 +30,13 @@ public class CharacterTest {
     @Test
     public void testUseItem() {
         Item testItem = new FoodItems("Apple", 0, 1, NutriScore.A);
-        testCharacter.pickUpItem(testItem);
+        testCharacter.pickUpItemLogic(testItem);
 
         // Kalorien vorher
         int initialCalories = testCharacter.getCurrentcalorie();
         
         // Kalorien nacher
-        testCharacter.useItem();
+        testCharacter.mycurrentItem();
         assertEquals(initialCalories + 10, testCharacter.getCurrentcalorie());
     }
 
@@ -49,7 +49,7 @@ public class CharacterTest {
 
     @Test // Test, wenn kein Item gesetzt wird
     public void testPickUpItemLogicWithNullItem() {
-        testCharacter.pickUpItem(null);
+        testCharacter.pickUpItemLogic(null);
         assertNull(testCharacter.getItems());
     }
 
