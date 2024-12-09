@@ -51,9 +51,4 @@ public class Ghost extends Character {
         touchcount++; 
     }
 
-    @Override
-    public PlayerPosition move() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'move'");
-    }
 }

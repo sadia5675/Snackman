@@ -88,9 +88,6 @@ public abstract class Character{
             currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
     }
 
-    //Abstrakte Methoden 
-    public abstract PlayerPosition move(); 
-    
     // Methode: Sammeln von Items
     public void pickUpItemLogic(Item item) {
         setItem(item);

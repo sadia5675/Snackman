@@ -70,8 +70,9 @@ public class Game {
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
 
         // TODO: hier sollte random name als param übergeben werden
-        this.playmap = new PlayMap("map1");
-
+        if (this.playmap == null) {
+            this.playmap = new PlayMap("map1"); // Use default only if not already set
+        }
         Random random = new Random();
         
 
@@ -272,5 +273,19 @@ public class Game {
     public void setPlaymap(PlayMap playmap) {
         this.playmap = playmap;
     }
+
+    public Map<String, Character> getCharacters() {
+        return characters;
+    }
+
+    public void setCharacters(Map<String, Character> characters) {
+        this.characters = characters;
+    }
+
+    public void addCharacter(String username, Character character){
+        this.characters.put(username, character);
+    }
+
+    
     
 }
