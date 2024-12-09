@@ -13,6 +13,8 @@ public abstract class Character{
     private int currentcalorie;
     //private int life;
     private Item item; 
+    private double angleInDegrees; //der Winkel info, die von FE bekommt
+    
 
 
 
@@ -97,5 +99,26 @@ public abstract class Character{
        // life--;
     }
 
+    public int getCurrentcalorie() {
+        return currentcalorie;
+    }
+
+    public void setCurrentcalorie(int currentcalorie) {
+        this.currentcalorie = currentcalorie;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public double getAngleInDegrees() {
+        return angleInDegrees;
+    }
+
+    public void setAngleInDegrees(double angleInDegrees) {
+        this.angleInDegrees = angleInDegrees;
+    }
+
+    
     
 }
