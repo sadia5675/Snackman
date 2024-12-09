@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.hs_rm.backend.exception.SetRoleException;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,18 @@ public class GameService {
     
     }
 
+    public Game leaveGame(String gameId,Player player){
+        Game game = gameList.get(gameId);
+
+        if(game == null){
+            return null;
+        }
+
+        game.leaveGame(player);
+
+        return game;
+    }
+    
     public Game joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 
@@ -74,6 +88,30 @@ public class GameService {
             throw new GameJoinException("Name already in Lobby!");
         }
         
+        return game;
+    }
+
+    public Game setRole(String gameId, String nameOfPlayerToSetRole, String role) {
+        PlayerRole playerRoleToSet;
+
+        try {
+            playerRoleToSet = PlayerRole.valueOf(role);
+        } catch (IllegalArgumentException e) {
+            throw new SetRoleException("Role " + role + " not found!");
+        }
+
+        Game game = gameList.get(gameId);
+        if (game == null) {
+            throw new SetRoleException("Game not found!");
+        }
+
+        Player playerToSetRole = game.findPlayerByUsername(nameOfPlayerToSetRole);
+        if (playerToSetRole == null) {
+            throw new SetRoleException("Player to set role not found!");
+        }
+
+        playerToSetRole.setPlayerrole(playerRoleToSet);
+
         return game;
     }
 

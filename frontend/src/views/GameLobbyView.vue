@@ -1,94 +1,147 @@
 <template>
-    <div class="h-screen bg-zinc-900">
-        <div class="max-w-lg mx-auto mt-0">
-            <h1 class="text-2xl font-semibold text-center text-zinc-200 mb-10">Game Lobby</h1>
-            <div class="mb-4">
-                <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
-                <div class="flex items-center space-x-2">
-                    <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" disabled="true"
-                        v-model="lobbyId" />
-                    <button class="bg-yellow-500  text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
-                        @click="copyToClipboard()">
-                        Copy
-                    </button>
-                </div>
-            </div>
-
-            <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-                <li v-for="player in players" :key="player.name"
-                    class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
-                    <div class="flex flex-col flex-grow">
-                        <p class="text-sm font-medium text-gray-900">Name</p>
-                        <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
-                    </div>
-                    <p :class="{
-                        'text-gray-500 bg-darkgray border border-gray-300 px-4 py-2 rounded': !true,
-                        'text-green-500 bg-darkgray border border-green-500 px-4 py-2 rounded': true
-                    }" class="transition text-center w-32">
-                        {{ true ? 'Ready' : 'Not Ready' }}
-                    </p>
-                    <div class="flex items-center space-x-2">
-                        <select v-model="player.playerrole"
-                        @change="setPlayerRole(player.name, player.playerrole)"
-                            class="w-28 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option :value="Playerrole.SNACKMAN">Snackman</option>
-                            <option :value="Playerrole.GHOST">Ghost</option>
-                        </select>
-                        <button
-                            class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
-                            @click="randomizeRole(player.name)">
-                            Randomize Role
-                        </button>
-                        <button
-                            class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
-                            @click="kickPlayer(player.name)">
-                            Kick
-                        </button>
-                    </div>
-                </li>
-                <li v-for="placeholder in placeholderCount"
-                    class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
-                    Empty
-                </li>
-            </ul>
-
-
-            <div class="flex items-center space-x-2 mt-3">
-                <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-                <input
-                    type="number"
-                    v-model="chickenCount"
-                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-                />
-            </div>
-
-            <button
-                :class="{
-                    'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
-                    'bg-gray-600': !isHost
-                }"
-                :disabled="!isHost"
-                class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
-                @click="startGame()">
-                {{ isHost ? 'Start Game' : '---' }}
-            </button>
+  <div class="h-screen bg-zinc-900">
+    <div class="max-w-lg mx-auto mt-0">
+      <h1 class="text-2xl font-semibold text-center text-zinc-200 mb-10">Game Lobby</h1>
+      <div class="mb-4">
+        <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
+        <div class="flex items-center space-x-2">
+          <input
+            type="text"
+            class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300"
+            disabled="true"
+            v-model="lobbyId"
+          />
+          <button
+            class="bg-yellow-500 text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
+            @click="copyToClipboard()"
+          >
+            Copy
+          </button>
         </div>
+      </div>
+
+      <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
+        <li
+          v-for="(player, i) in players"
+          :key="player.name"
+          class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors"
+        >
+          <PlayerTile v-model="players[i]" :lobby-id="lobbyId"/>
+        </li>
+        <li
+          v-for="placeholder in placeholderCount"
+          class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors"
+        >
+          Empty
+        </li>
+      </ul>
+
+      <div class="flex items-center space-x-6 mt-3">
+        <div class="flex items-center space-x-2">
+            <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
+            <input
+                type="number"
+                v-model="chickenCount"
+                class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+            />
+        </div>
+
+        <br>
+
+        <button
+            class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+            @click="openMapPopup()"
+        >
+        Select Map
+        </button>
+        <div
+        class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+        >
+        <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
+        </div>
+     </div>
+
+      <button
+        :class="{
+          'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
+          'bg-gray-600': !isHost,
+        }"
+        :disabled="!isHost"
+        class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+        @click="startGame()"
+      >
+        {{ isHost ? 'Start Game' : '---' }}
+      </button>
+      <button :class="{
+                'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
+                'bg-gray-600': !isHost
+            }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
+        leave
+      </button>
     </div>
+  </div>
+
+   <!--Pop up-->
+   <div
+  v-if="isMapPopupVisible"
+  class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
+>
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select:</h2>
+
+    <!-- Dropdown for map selection -->
+    <div class="mt-3">
+      <select
+        v-model="selectedMap"
+        class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg"
+      >
+        <option
+          v-for="map in maps"
+          :key="map.id"
+          :value="map"
+        >
+          {{ map.name }}
+        </option>
+      </select>
+      <button
+        class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
+        >
+        Kick
+      </button>
+    </div>
+    <button
+      class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
+      @click="closeMapPopup()"
+    >
+      Close
+    </button>
+  </div>
+</div>
 </template>
 
 <script setup lang="ts">
-    import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
-    import { PlayerType } from '@/stores/game/dtd/PlayerType';
-    import { useGameStore } from '@/stores/game/gamestore';
-    import { onMounted, computed, ref , watch} from 'vue';
-    import { useRoute } from 'vue-router';
-    import router from "@/router";
-import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import { useGameStore } from '@/stores/game/gamestore'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import PlayerTile from '@/components/PlayerTile.vue'
 
-    const route = useRoute();
+const route = useRoute()
+const router = useRouter();
 
-    const gamestore = useGameStore();
-    const jsonString = '{"employee":{ "name":"John", "age":30, "city":"New York" }}';
+const gamestore = useGameStore()
+
+//um die Sichtbarkeit des Pop-ups zusteuern
+const isMapPopupVisible = ref(false)
+
+//Liste der Maps
+const maps = ref([
+  { name: 'Map 1', id: 'map1' },
+  { name: 'Map 2', id: 'map2' },
+  { name: 'Map 3', id: 'map3' },
+])
+
+//aktuell ausgewählte Map
+const selectedMap = ref(maps.value[0]) //Standard immmer erste map wählen
 
     // TODO: gamemaster.id mit clientplayer.id vergleichen
     const isHost = ref(true);
@@ -116,41 +169,14 @@ import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
         },
     });
 
-    watch(()=> gamestore.gameState.gamedata?.started,
-      (newValue) => {
-      if(newValue){
-        router.push({name:"game"})
-      }
-      })
-
-// Funktion, um die Rolle des Spielers zu setzen
-function setPlayerRole(playerName: string, role: number) {
-    const player = players.value.find(p => p.name === playerName);
-    if (player) {
-        player.playerrole = role; // Rolle des Spielers setzen
-        console.log(`Player ${player} role updated to ${role}`);
+watch(
+  () => gamestore.gameState.gamedata?.started,
+  (newValue) => {
+    if (newValue) {
+      router.push({ name: 'game' })
     }
-}
-
-// Funktion, um die Rolle des Spielers zufällig zu setzen
-function randomizeRole(playerName: string) {
-    const roles = [Playerrole.SNACKMAN, Playerrole.GHOST]; 
-    const randomRole = roles[Math.floor(Math.random() * roles.length)]; // math.floor --> Rundet das Ergebis
-    setPlayerRole(playerName, randomRole); // Rolle dem Spieler zuweisen
-    console.log(`Assigned random role ${randomRole} to player ${playerName}`);
-}
-
-//Methode wenn Host Spieler kicken will
-async function kickPlayer(username: string) {
-    try {
-        await gamestore.kickUser(username);
-
-        //log zum testen
-        console.log(gamestore.gameState);
-    } catch (error) {
-        console.log(error);
-    }
-}
+  },
+)
 
 //Funktion um das Game zu starten
 async function startGame() {
@@ -165,19 +191,78 @@ async function startGame() {
 
     }
 
-    //Um Lobby Code kopieren zu können
-    function copyToClipboard(){
-        alert("Copied to Clipboard!")
-        navigator.clipboard.writeText(lobbyId);
-    }
+//Um Lobby Code kopieren zu können
+function copyToClipboard() {
+  alert('Copied to Clipboard!')
+  navigator.clipboard.writeText(lobbyId)
+}
 
-    onMounted(async () => {
-        try {
-            await gamestore.fetchGameStatus();
+async function leaveGame(lobbyId: string) {
+    try {
 
-        } catch (error) {
-            console.error("Error fetching game status:", error);
+        const playerName = sessionStorage.getItem("myName");
+
+        if (!playerName) {
+            console.error("nicht gefunden");
+            return;
         }
+
+        const leavingPlayer = players.value.find(p => p.name === playerName);
+
+        if (!leavingPlayer) {
+            console.error("Spieler nicht in der Liste gefunden!");
+            return;
+        }
+
+        console.log("Lobby-Daten vor leaveGame:", players.value);
+        const success = await gamestore.leaveGame(lobbyId, leavingPlayer);
+        console.log("Lobby-Daten nach leaveGame:", players.value);
+
+
+    } catch (error) {
+        console.log("Fehler beim ausfueren des leaven", error);
+    }
+}
+
+
+onMounted(async () => {
+  try {
+    await gamestore.fetchGameStatus()
+  } catch (error) {
+    console.error('Error fetching game status:', error)
+  }
+})
+
+// Öffnet das Pop-up
+function openMapPopup() {
+  isMapPopupVisible.value = true
+}
+
+// Schließt das Pop-up
+function closeMapPopup() {
+  isMapPopupVisible.value = false
+}
+window.addEventListener('beforeunload', (event) => {
+    event.preventDefault();
+
+    const playerName = sessionStorage.getItem("myName");
+    if (playerName) {
+        const leavingPlayer = players.value.find(p => p.name === playerName);
+        if (leavingPlayer) {
+            leaveGame(lobbyId);
+        }
+    }
+});
+
+onMounted(async () => {
+    try {
+        await gamestore.fetchGameStatus();
+        //Log zum testen
+        //gamestore.joinLobby(lobbyId,);
+
+    } catch (error) {
+        console.error("Error fetching game status:", error);
+    }
 
     });
 </script>
