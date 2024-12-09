@@ -36,7 +36,7 @@
         </li>
       </ul>
 
-      <div class="flex items-center space-x-2 mt-3">
+      <div class="flex items-center space-x-6 mt-3">
         <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
         <input
           type="number"
@@ -44,23 +44,13 @@
           class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
         />
         <button
-    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+    class="w-80 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
     @click="randomizeRoles"
       >
         Randomize Roles
       </button>
     </div>
-      <div class="flex items-center space-x-6 mt-3">
-        <div class="flex items-center space-x-2">
-            <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
-            <input
-                type="number"
-                v-model="chickenCount"
-                class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-            />
-        </div>
-
-        <br>
+      <div class="flex items-center space-x-2 mt-3">
         
         <button
             class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
@@ -71,7 +61,7 @@
         <div
         class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
         >
-        <p class="text-sm text-gray-400 mt-2">Selected: {{ gamestore.selectedMap }}</p>
+        <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
         </div>
      </div>
 
@@ -100,18 +90,19 @@
     <!-- Dropdown for map selection -->
     <div class="mt-3">
       <select
-        v-model="gamestore.selectedMap"
+        v-model="selectedMap"
         class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg"
       >
         <option
-          v-for="map in gamestore.maps"
-          :key="map"
+          v-for="map in mapStore.mapsDTD.maps"
+          :key="map.id"
           :value="map"
         >
-          {{ map }}
+          {{ map.name }}
         </option>
       </select>
     </div>
+
     <button
       class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
       @click="closeMapPopup()"
@@ -120,17 +111,18 @@
     </button>
   </div>
 </div>
-
 </template>
 
 <script setup lang="ts">
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole.js'
 import { useGameStore } from '@/stores/game/gamestore'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch} from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 import PlayerTile from '@/components/PlayerTile.vue'
 import type { Result } from '@/stores/game/responses/Result'
+import { useMapStore } from '@/stores/map/MapStore'
+import type { MapDTD } from '@/stores/game/dtd/MapsDTD'
 
 const gameStore = useGameStore()
 const { setPlayerRoleViaStomp} = gameStore
@@ -138,10 +130,13 @@ const { setPlayerRoleViaStomp} = gameStore
 const route = useRoute()
 
 const gamestore = useGameStore()
+const mapStore = useMapStore()
 
 //um die Sichtbarkeit des Pop-ups zusteuern
 const isMapPopupVisible = ref(false) 
 
+// Die ausgewählte Map
+const selectedMap = ref<MapDTD | null>(null);
 
 // TODO: gamemaster.id mit clientplayer.id vergleichen
 const isHost = ref(true)
@@ -169,28 +164,26 @@ const chickenCount = computed({
   },
 })
 
+watch(
+  () => gamestore.gameState.gamedata?.started,
+  (newValue) => {
+    if (newValue) {
+      router.push({ name: 'game' })
+    }
+  },
+)
 
-    watch(()=> gamestore.gameState.gamedata?.started,
-      (newValue) => {
-      if(newValue){
-        router.push({name:"game"})
-      }
-      })
-
-      onMounted(async()=> {
-    await gamestore.fetchMaps();
-  console.log("Aktuelle Maps:", gamestore.maps);
-})
-      
 //Funktion um das Game zu starten
 async function startGame() {
   //startGame request and backend
   try {
-    await gamestore.startGame()
-    //await gamestore.saveSelectetMaps();
+    if (!mapStore.mapsDTD.selectedMap?.map) {
+      throw new Error("No map selected!");
+    }
+    await gamestore.startGame(mapStore.mapsDTD.selectedMap?.name)// muss ins backend gesendet werden, da die Tiles erstellt werden müssen
     //Log zum testen
     console.log(gamestore.gameState)
-    router.push({ name: 'game' }); // Weiterleitung zur Spielansicht
+    console.log("playMap: ",gamestore.gameState.gamedata.playmap)// gamestate hat jetzt auch die aktuelle map
   } catch (error) {
     console.log(error)
   }
@@ -224,6 +217,27 @@ async function randomizeRoles() {
   }
 }
 
+onMounted(async () => {
+  try {
+    await mapStore.fetchMaps(); //mapStore.mapsDTD erhält alle Karten vom Backend
+    // default auswahl
+    if (mapStore.mapsDTD.maps.length > 0) {
+      mapStore.mapsDTD.selectedMap = mapStore.mapsDTD.maps[0];
+      selectedMap.value = mapStore.mapsDTD.selectedMap;
+      console.log("Default:",selectedMap.value.name);
+    }
+       
+    } catch (error) {
+    console.error("Error during setup:", error);
+  }
+});
+
+// Watch für Map-Auswahl
+watch(selectedMap, (newSelectedMap) => {
+  if (newSelectedMap) {
+    mapStore.mapsDTD.selectedMap = newSelectedMap;
+  }
+})
 
 // Öffnet das Pop-up
 function openMapPopup() {
@@ -232,17 +246,7 @@ function openMapPopup() {
 
 // Schließt das Pop-up
 function closeMapPopup() {
-  if (!gamestore.selectedMap) {
-    alert("Bitte wählen Sie eine Karte aus, bevor Sie das Fenster schließen.");
-    return;
-  }
-  isMapPopupVisible.value = false; 
-  gamestore.saveSelectetMaps().then(() => {
-    console.log('Ausgewählte Karte erfolgreich gespeichert!');
-  }).catch((error) => {
-    console.error('Fehler beim Speichern der ausgewählten Karte:', error);
-  });
+  isMapPopupVisible.value = false
 }
-
 
 </script>

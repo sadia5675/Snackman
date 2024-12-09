@@ -158,6 +158,7 @@ class GameTest {
 
         // Lade Karte und erstelle Spiel
         PlayMap playmap = new PlayMap("tempMap");
+        playmap.createTiles();
         Player player = new Player("testPlayer");
         player.setPlayerrole(PlayerRole.SNACKMAN);
         Game game = new Game(player);

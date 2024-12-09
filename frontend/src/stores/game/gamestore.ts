@@ -9,17 +9,11 @@ import type { Message } from './dtd/IMessageDTD'
 import { useModalStore } from '../modalstore'
 import { Playerrole } from './dtd/EPlayerrole'
 import type { Result } from '@/stores/game/responses/Result'
-import { ref } from "vue";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
   const apiUrl: string = '/api/game'
   const topicUrl: string = '/topic/game'
-
-  const maps= ref<string[]>([]) // Liste der Map-Namen
-  const selectedMap =ref<string | null>(null) // Aktuell ausgewählter Map-Name
-
-
 
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
@@ -27,46 +21,6 @@ export const useGameStore = defineStore('gameStore', () => {
 
   function handleGameStateError() {
     resetGameState()
-  }
-
-  async function fetchMaps(){
-    try{
-      // GetAnfrage an den Backend 
-        const response = await fetch ("/api/maps"); 
-        //D Json wird dann in allmaps gespeichert --> also die Mapnamen
-        maps.value= await response.json(); 
-        console.log("Fetched Maps:", maps.value);
-    }catch(error){
-        console.error("Error fetching maps:", error);
-        maps.value=[]; 
-    }
-  }
-
-
-  async function saveSelectetMaps() {
-    if (!selectedMap.value) {
-      console.error("No map is selected to save.");
-      return;
-    }
-    try {
-      const response = await fetch(`${apiUrl}/selectedMap/${gameState.gamedata.id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ selectedMap: selectedMap.value }), // Map als JSON senden
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to save selected map ${response.statusText}');
-      }
-  
-      console.log('Selected map was saved successfully.');
-    } catch (error) {
-      console.error("Error saving selected map:", error);
-    }
-
-    
   }
 
   function resetGameState() {
@@ -78,7 +32,6 @@ export const useGameStore = defineStore('gameStore', () => {
     gameState.ok = true
     gameState.gamedata = gameResponse.feedback as IGameDTD
   }
-
 
   // Helper function to handle API responses
   async function handleResponse(response: Response): Promise<GameResponse> {
@@ -159,17 +112,24 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
-  async function startGame() {
+  async function startGame(selectedMap: string) {
     try {
-      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: 'POST' })
+      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({selectedMap}),
+      })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
-    } catch (error) {
+  } catch (error) {
       handleGameStateError()
       console.error('Error starting game:', error)
     }
   }
 
+  
   async function endGame() {
     try {
       const response = await fetch(`${apiUrl}/end/${gameState.gamedata.id}`, { method: 'POST' })
@@ -286,9 +246,6 @@ export const useGameStore = defineStore('gameStore', () => {
 
   return {
     gameState,
-    maps,
-    selectedMap,
-    fetchMaps,
     createGame,
     startGame,
     endGame,
@@ -298,7 +255,5 @@ export const useGameStore = defineStore('gameStore', () => {
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
-    saveSelectetMaps
-
   }
 })

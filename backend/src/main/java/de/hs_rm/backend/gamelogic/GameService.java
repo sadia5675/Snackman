@@ -6,6 +6,8 @@ import java.util.Map;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,14 +36,14 @@ public class GameService {
         return newGame;
     }
 
-    public Game startGame(String gameId) {
+    public Game startGame(String gameId, PlayMap playMap) {
         Game game = gameList.get(gameId);
         
         if(game == null){
             return null;
         }
 
-        game.start();
+        game.start(playMap);
 
         return game;
     }

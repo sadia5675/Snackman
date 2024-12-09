@@ -72,13 +72,12 @@ public class Game {
         return sb.toString();
     }
 
-    public boolean start(){
+    public boolean start(PlayMap playMap){
         this.started = true;
-        LOGGER.info("started: {} gameid: {} selectedMap:{}", this.started, this.id, this.selectedMap);
+        LOGGER.info("started: {} gameid: {}", this.started, this.id);
 
         // TODO: hier sollte random name als param übergeben werden
-       // this.playmap = new PlayMap("map1");
-       this.playmap = new PlayMap(selectedMap);
+        this.playmap = playMap;
 
         Random random = new Random();
         
@@ -178,6 +177,7 @@ public class Game {
         this.chickenNum=total;
 
     }
+
     public boolean move(String username, int posX, int posY) {
         // DONE: Tile obj von x und y überprüfen
         int targetIndex = posY * playmap.getWidth() + posX;
@@ -197,7 +197,6 @@ public class Game {
         targetTile.addCharacter(curCharacter);
 
         return true;
-
     }
 
     public Player findPlayerByUsername(String username) {

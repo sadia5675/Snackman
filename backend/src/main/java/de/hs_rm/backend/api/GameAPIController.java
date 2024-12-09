@@ -2,6 +2,7 @@ package de.hs_rm.backend.api;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,21 +14,13 @@ import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +50,9 @@ public class GameAPIController {
 
     @Autowired
     GameService gameService;
+
+    @Autowired
+    PlayMapService playMapService;
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
 
@@ -93,63 +89,23 @@ public class GameAPIController {
     // }
 
     // Method to start the game
-    @PostMapping("/selectedMap/{gameId}")
-    public ResponseEntity<String> saveSelectedMap(@PathVariable String gameId, @RequestBody Map<String, String> request) {
-        String selectedMap = request.get("selectedMap");
-    
-        if (selectedMap == null || selectedMap.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Selected map is missing.");
-        }
-
-        Game game = gameService.getGameById(gameId);
-        if (game == null) {
-            return ResponseEntity.badRequest().body("Game ID not found.");
-        }
-        game.setSelectedMap(selectedMap);
-        logger.info("Selected map '{}' saved for game '{}'", selectedMap, gameId);
-        return ResponseEntity.ok("Selected map " + selectedMap + " was saved successfully for the Game "+ gameId+ " .");
-    }
-
     @PostMapping("/start/{gameId}")
-    public ResponseEntity<?> startGame(@PathVariable String gameId) {
+    public ResponseEntity<?> startGame(@PathVariable String gameId, @RequestBody Map<String, String> payload) {
+        String selectedMap = payload.get("selectedMap").trim();
+        logger.info("Starting game with ID: {} and selected map: {}", gameId, selectedMap);
 
+        if (selectedMap == null || selectedMap.isEmpty()) {
+            return createErrorResponse("Invalid request: 'selectedMap' is required.");
+        }
+        PlayMap playMap = playMapService.createPlayMap(selectedMap);
         // #63 NEW: gameService now starts the game
-        Game existingGame = gameService.startGame(gameId);
+        Game existingGame = gameService.startGame(gameId, playMap);
 
         if (existingGame == null) {
             return createErrorResponse("No game found to start.");
         }
 
-        String selectedMap = existingGame.getSelectedMap();
-        if (selectedMap == null || selectedMap.isEmpty()) {
-            return ResponseEntity.badRequest().body("No map selected for this game.");
-        }
-    
-        List<String> mapData= new ArrayList<>();
-        try{
-        // Map-Daten zeilenweise lesen
-            try (BufferedReader reader = new BufferedReader(new FileReader(selectedMap))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    mapData.add(line); // Zeile zur Liste hinzufügen
-                }
-            }                                                    
-        }catch(IOException exception){
-            return ResponseEntity.status(500).body("Error reading map: " + exception.getMessage());
-        }
-        logger.info("Map data loaded successfully: {}", mapData);
-       
-        //return createOkResponse(existingGame);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "Game started successfully");
-        response.put("gameId", gameId);
-        response.put("mapName", selectedMap);
-        response.put("mapData", mapData);
-        
-        return ResponseEntity.ok(response);
-
-      
+        return createOkResponse(existingGame);
     }
 
     @MessageMapping("/topic/game/{lobbyid}/join")
@@ -299,7 +255,8 @@ public class GameAPIController {
         }
 
         return createErrorResponse("can not add "+ player.getName() +"!");
-             
+        
+                
     }
 
     @GetMapping("/games")
@@ -313,7 +270,6 @@ public class GameAPIController {
 
         return ResponseEntity.ok(response);
     }
-
 
     @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}")
     public ResponseEntity<?> movePlayer( @PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
@@ -360,6 +316,7 @@ public class GameAPIController {
             e.printStackTrace();
             feedbackData.put("feedback", "something in backend went wrong!");
         }
+
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
     }
 }
