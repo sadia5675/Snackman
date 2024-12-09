@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.hs_rm.backend.gamelogic.characters.players.Chicken;
+import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
+import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -30,6 +32,15 @@ public class Game {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
+
+    // Globale Liste der vordefinierten FoodItems
+    private static final List<FoodItems> FOOD_ITEMS = List.of(
+        new FoodItems("Banana", -1, -1, NutriScore.A), // Positionen werden später festgelegt
+        new FoodItems("Cookie", -1, -1, NutriScore.C),
+        new FoodItems("Apple", -1, -1, NutriScore.B)
+    );
+
+    private static final int ITEMS_NUM = 5;
 
 
     public Game(Player gamemaster) {
@@ -117,6 +128,30 @@ public class Game {
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
         }
+
+        for (int i = 0; i < ITEMS_NUM; i++) {
+            Tile randomTile;
+            int index = -1;
+            do {
+                index = random.nextInt(playmap.getTilesList().size());
+                randomTile = playmap.getTilesList().get(index);
+            } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter() || randomTile.hasChicken() || randomTile.hasItem());
+    
+            // Zufälliges Item aus der FOOD_ITEMS-Liste auswählen
+            FoodItems randomItemTemplate = FOOD_ITEMS.get(random.nextInt(FOOD_ITEMS.size()));
+    
+            // Erstelle eine neue Instanz mit der korrekten Position
+            FoodItems newItem = new FoodItems(
+                randomItemTemplate.getName(),
+                index % playmap.getWidth(),
+                index / playmap.getWidth(),
+                randomItemTemplate.getNutriScore()
+            );
+    
+            // Item hinzufügen
+            randomTile.addItem(newItem);
+        }
+
 
         return started;
     }
