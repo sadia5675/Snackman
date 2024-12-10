@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Knewave&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@100..900&family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -21,15 +22,31 @@
 }
 
 body{
-    font-family: "Shantell Sans", cursive;
+    /* font-family: "Shantell Sans", cursive; */
 }
 
 .header1 {
-    @apply font-knewave text-4xl text-gold lg:text-8xl mb-20 text-center
+    @apply font-knewave font-bold text-4xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
 }
 
-.button-small {
+.header2 {
+    @apply font-bigShoulders !font-extrabold text-4xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
+}
+
+/* .button-small {
     @apply bg-lila text-grau px-4 py-2 rounded-lg hover:bg-gold
+} */
+
+.button-small {
+    @apply font-mono text-white text-2xl hover:scale-110 transition-transform duration-300
+}
+
+.button-small-lobby {
+    @apply font-mono text-grau text-2xl hover:scale-110 transition-transform duration-300
+}
+
+.button-small-neumorphism {
+    @apply font-mono text-[#090909] px-7 py-3 text-lg rounded-md bg-[#e8e8e8] cursor-pointer border border-[#e8e8e8] transition-all duration-300 shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff]
 }
 
 .button-next-to-form {
@@ -42,6 +59,14 @@ body{
 
 .input-form {
    @apply  bg-beige text-hellgrau px-4 py-2 rounded-lg text-center  outline-gold
+}
+
+.input-form-small-neumorphism {
+    @apply font-mono w-full h-[53px] rounded-md text-center bg-[#e0e0e0]  shadow-[inset_6px_6px_12px_#c5c5c5,inset_-6px_-6px_12px_#ffffff]
+}
+
+.input-form-big-neumorphism {
+    @apply font-mono w-full h-[83px] rounded-md text-center bg-[#e0e0e0]  shadow-[inset_6px_6px_12px_#c5c5c5,inset_-6px_-6px_12px_#ffffff]
 }
 
 .centered {

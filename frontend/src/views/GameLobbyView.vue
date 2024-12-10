@@ -1,99 +1,121 @@
 <template>
-  <div class="centered ">
-    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+  <div class="centered bg-cover" :style="{backgroundImage: `url('/src/assets/FuturisticBackground.png')`}">
+    <!-- <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
-    </video>
+    </video> -->
+    <div class="absolute inset-0 bg-black bg-opacity-20 z-0"></div>
+    <!-- <div class="absolute inset-0 backdrop-blur-sm z-0"></div> -->
+
     <!--toDo: Überschriften vereinheitlichen und aus-agern-->
-    <div class=" mx-auto mt-0 ">
-      <!-- <div class="min-h-screen flex flex-col items-center justify-center"> -->
-      <h1 class="header1">Game Lobby</h1>
-      <div class="mb-3">
-        <!-- <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p> -->
-        <div class="flex items-center">
-          <input type="text" class="form-next-to-button text-gold w-full" disabled="true" v-model="lobbyId" />
-          <button class="button-next-to-form" @click="copyToClipboard()">
-            Copy
-          </button>
+    <div class=" mx-auto mt-0 z-10" >
+      <div class="min-h-screen flex flex-col items-center justify-center">
+        <h1 class="header2">Game Lobby</h1>
+
+
+        <div class="grid grid-cols-7 grid-rows-4 gap-4">
+
+
+          <!-- Lobby Code -->
+          <div class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
+
+            <!-- <p class="text-lg font-mono text-grau">Lobby Code:</p> -->
+          
+              <button class="button-small-neumorphism" @click="copyToClipboard()">
+                Copy
+              </button>
+              <input type="text" class="input-form-small-neumorphism" disabled="true" v-model="lobbyId" />
+
+
+           
+          </div>
+
+          <!-- Spielerliste -->
+          <div class="col-start-2 col-end-5 row-start-2 row-end-5 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
+            <ul class="bg-hellesgraulila shadow-lg rounded-lg divide-y divide-gray-900">
+              <!-- ToDo: Padding und Margin vereinheitlichen und auslagern -->
+              <li v-for="(player, i) in players" :key="player.name"
+                class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
+                <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
+              </li>
+              <li v-for="placeholder in placeholderCount"
+                class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
+                Empty
+              </li>
+            </ul>
+          </div>
+
+          <!-- Chickens und Map -->
+          <div class="col-start-5 col-end-7 row-start-1 row-end-3 bg-[#e8e8e8] rounded-lg p-4 shadow-lg space-y-4">
+            <div class="flex items-center justify mt-3 s">
+              <div class="flex items-center">
+                <p class="button-small-neumorphism">Chickens:</p>
+                <input type="number" v-model="chickenCount" class="input-form-small-neumorphism" />
+              </div>
+
+            </div>
+            <div class="flex">
+              <button class="button-small-neumorphism" @click="openMapPopup()">
+                Select Map
+              </button>
+              <div class="input-form-big-neumorphism flex items-center justify-center">
+                <p class="h-[82]">Selected: {{ selectedMap?.name || 'None' }}</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!--Start nutton-->
+          <div class="col-start-5 col-end-7 row-start-3 row-end-5 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
+            <div class="flex flex-col gap-3 ">
+              <!-- ToDo: Button -->
+              <button :class="{
+                'button-small-neumorphism': isHost,
+                'bg-gray-600': !isHost,
+              }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+                @click="startGame()">
+                {{ isHost ? 'Start Game' : '---' }}
+              </button>
+              <button :class="{
+                'button-small-neumorphism': isHost,
+                'bg-gray-600': !isHost
+              }" class="w-full px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
+                leave lobby
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <ul class="bg-hellesgraulila shadow-lg rounded-lg divide-y divide-gray-900">
-        <!-- ToDo: Padding und Margin vereinheitlichen und auslagern -->
-        <li v-for="(player, i) in players" :key="player.name"
-          class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
-          <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
-        </li>
-        <li v-for="placeholder in placeholderCount"
-          class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
-          Empty
-        </li>
-      </ul>
 
-      <div class="bg-hellesgraulila rounded-lg p-3 mt-3">
-        <div class="flex items-center gap-3 mt-3">
-        <div class="flex items-center space-x-2">
-          <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
-          <input type="number" v-model="chickenCount" class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600" />
-        </div>
-
-      </div>
-      <div class="flex gap-3 mt-3">
-        <button class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
-          @click="openMapPopup()">
-          Select Map
-        </button>
-        <div class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600">
-          <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
-        </div>
-      </div>
-      </div>
-      
-
-      
-
-
-      <div class="flex gap-3">
-        <!-- ToDo: Button -->
-        <button :class="{
-          'button-small': isHost,
-          'bg-gray-600': !isHost,
-        }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
-          @click="startGame()">
-          {{ isHost ? 'Start Game' : '---' }}
-        </button>
-        <button :class="{
-          'button-small': isHost,
-          'bg-gray-600': !isHost
-        }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
-          leave
-        </button>
-      </div>
 
     </div>
   </div>
 
   <!--Pop up-->
   <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
-    <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-      <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select:</h2>
+    <div class="bg-[#e8e8e8] rounded-lg p-4 shadow-lg max-w-md w-full">
+      <h2 class="font-mono text-grau">Select:</h2>
 
       <!-- Dropdown for map selection -->
-      <div class="mt-3">
-        <select v-model="selectedMap" class="w-full bg-gray-800 text-zinc-200 p-2 rounded-lg">
+      <div class="mt-3 flex">
+        <button class="button-small-neumorphism">
+          Kick
+        </button>
+        <select v-model="selectedMap" class="input-form-small-neumorphism">
           <option v-for="map in maps" :key="map.id" :value="map">
             {{ map.name }}
           </option>
         </select>
-        <button class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition">
-          Kick
-        </button>
+        
       </div>
-      <button class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition mt-4"
+      <button class="button-small-neumorphism mt-3"
         @click="closeMapPopup()">
         Close
       </button>
     </div>
+
+
   </div>
 </template>
 
@@ -244,3 +266,10 @@ onMounted(async () => {
 
 });
 </script>
+<style>
+/* .input {
+  background: linear-gradient(145deg, #CDCFD2, #FFFFFF);
+  border-radius: 30%;
+  box-shadow: inset 28.83px 28.83px 48px #BABBBE, inset -28.83px -28.83px 48px #FFFFFF;
+} */
+</style>

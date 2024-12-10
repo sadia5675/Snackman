@@ -1,7 +1,7 @@
 <template>
         <div class="fixed  bg-black backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 w-full h-full">
         
-        <div class="bg-[url('@/assets/backgroundModal.png')] bg-cover bg-center space-y-4 rounded-lg p-16">
+        <div class="bg-[#e8e8e8] rounded-lg p-4">
             <div>
                 <slot name="titel" ></slot>
             </div>
