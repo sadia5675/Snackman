@@ -21,13 +21,13 @@
       </div>
 
       <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-        <li
-          v-for="(player, i) in players"
-          :key="player.name"
-          class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors"
-        >
-          <PlayerTile v-model="players[i]" />
-        </li>
+          <li
+            v-for="(player, i) in players"
+            :key="player.name"
+            class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors"
+          >
+            <PlayerTile v-model="players[i]" />
+          </li>
         <li
           v-for="placeholder in placeholderCount"
           class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors"
@@ -36,23 +36,26 @@
         </li>
       </ul>
 
-      <div class="flex items-center space-x-6 mt-3">
-        <p class="text-lg w-50 font-semibold text-zinc-200">Chickens:</p>
-        <input
-          type="number"
-          v-model="chickenCount"
-          class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-        />
+            <div class="flex items-center space-x-2 mt-3">
+                <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
+                <input
+                    type="number"
+                    v-model="chickenCount"
+                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+                />
+
         <button
+        v-if="isGamemaster"
     class="w-80 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-    @click="randomizeRoles"
+    @click="randomizeRoles()"
       >
         Randomize Roles
       </button>
     </div>
+
       <div class="flex items-center space-x-2 mt-3">
-        
         <button
+        v-if="isGamemaster"
             class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
             @click="openMapPopup()"
         >
@@ -81,7 +84,7 @@
  
     <!--Pop up-->
     <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
-  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full">
+    <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full">
     <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
 
     <!-- Grid mit Map-Bildern -->
@@ -115,7 +118,7 @@
       >
         OK
       </button>
-    </div>
+    </div>
 
   </div>
 </div>
@@ -124,7 +127,7 @@
 <script setup lang="ts">
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole.js'
 import { useGameStore } from '@/stores/game/gamestore'
-import { computed, onMounted, ref, watch} from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 import PlayerTile from '@/components/PlayerTile.vue'
@@ -133,17 +136,16 @@ import { useMapStore } from '@/stores/map/MapStore'
 import type { MapDTD } from '@/stores/game/dtd/MapsDTD'
 import { nextTick } from 'vue';
 
-
 const gameStore = useGameStore()
-const { setPlayerRoleViaStomp} = gameStore
+const { setPlayerRoleViaStomp } = gameStore
 
 const route = useRoute()
 
 const gamestore = useGameStore()
 const mapStore = useMapStore()
 
-//um die Sichtbarkeit des Pop-ups zusteuern
-const isMapPopupVisible = ref(false) 
+// um die Sichtbarkeit des Pop-ups zu steuern
+const isMapPopupVisible = ref(false)
 
 // Die ausgewählte Map
 const selectedMap = ref<MapDTD | null>(null);
@@ -154,7 +156,7 @@ const isHost = ref(true)
 // Eventuell erst starten wenn alle Ready
 const isReady = ref(false)
 
-//ID in der aktuellen Lobby
+// ID in der aktuellen Lobby
 const lobbyId = route.params.id.toString()
 
 // Maximale Anzahl an Spielern in der Lobby
@@ -166,13 +168,21 @@ const players = computed(() => gamestore.gameState.gamedata?.players || [])
 // Anzahl der Platzhalter
 const placeholderCount = computed(() => maxPlayers - players.value.length)
 
-//Anzahl der festgelegten Chickens im Game
+// Anzahl der festgelegten Chickens im Game
 const chickenCount = computed({
   get: () => gamestore.gameState.gamedata?.chickens.length || 0,
   set: async (value: number) => {
     await gamestore.setChickenCount(value)
   },
 })
+
+// Überprüfung, ob aktueller Spieler Gamemaster ist
+const isGamemaster = computed(() => {
+  const currentPlayerName = sessionStorage.getItem("myName"); // Spielername aus sessionStorage
+  const gamemaster = gamestore.gameState.gamedata?.gamemaster;
+
+  return gamemaster?.name === currentPlayerName && gamemaster?.gamemaster; // Vergleich mit Gamemaster
+});
 
 watch(
   () => gamestore.gameState.gamedata?.started,
@@ -183,36 +193,7 @@ watch(
   },
 )
 
-//Funktion um das Game zu starten
-async function startGame() {
-  //startGame request and backend
-  try {
-    if (!mapStore.mapsDTD.selectedMap?.map) {
-      throw new Error("No map selected!");
-    }
-    await gamestore.startGame(mapStore.mapsDTD.selectedMap?.name)// muss ins backend gesendet werden, da die Tiles erstellt werden müssen
-    //Log zum testen
-    console.log(gamestore.gameState)
-    console.log("playMap: ",gamestore.gameState.gamedata.playmap)// gamestate hat jetzt auch die aktuelle map
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-//Um Lobby Code kopieren zu können
-function copyToClipboard() {
-  alert('Copied to Clipboard!')
-  navigator.clipboard.writeText(lobbyId)
-}
-
-onMounted(async () => {
-  try {
-    await gamestore.fetchGameStatus()
-  } catch (error) {
-    console.error('Error fetching game status:', error)
-  }
-})
-
+// Funktion, um die Rolle des Spielers zufällig zu setzen
 async function randomizeRoles() {
   const roles = [Playerrole.SNACKMAN, Playerrole.GHOST];
   for (const player of players.value) {
@@ -227,17 +208,46 @@ async function randomizeRoles() {
   }
 }
 
+// Funktion, um das Game zu starten
+async function startGame() {
+  try {
+    if (!mapStore.mapsDTD.selectedMap?.map) {
+      throw new Error("No map selected!");
+    }
+    await gamestore.startGame(mapStore.mapsDTD.selectedMap?.name); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
+    // Log zum Testen
+    console.log(gamestore.gameState);
+    console.log("playMap: ", gamestore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Um Lobby Code kopieren zu können
+function copyToClipboard() {
+  alert('Copied to Clipboard!');
+  navigator.clipboard.writeText(lobbyId);
+}
+
 onMounted(async () => {
   try {
-    await mapStore.fetchMaps(); //mapStore.mapsDTD erhält alle Karten vom Backend
-    // default auswahl
+    await gamestore.fetchGameStatus();
+  } catch (error) {
+    console.error('Error fetching game status:', error);
+  }
+});
+
+
+onMounted(async () => {
+  try {
+    await mapStore.fetchMaps(); // mapStore.mapsDTD erhält alle Karten vom Backend
+    // Default Auswahl
     if (mapStore.mapsDTD.maps.length > 0) {
       mapStore.mapsDTD.selectedMap = mapStore.mapsDTD.maps[0];
       selectedMap.value = mapStore.mapsDTD.selectedMap;
-      console.log("Default:",selectedMap.value.name);
+      console.log("Default:", selectedMap.value.name);
     }
-       
-    } catch (error) {
+  } catch (error) {
     console.error("Error during setup:", error);
   }
 });
@@ -254,7 +264,7 @@ watch(
   }
 );
 
-async function drawAllMaps() { // Tteriert durch die Maps damit man alle Maps zeichen kann
+async function drawAllMaps() {
   mapStore.mapsDTD.maps.forEach((map) => {
     console.log(`Drawing map with ID: ${map.id}`);
     drawMapCanvas(map);
@@ -263,12 +273,12 @@ async function drawAllMaps() { // Tteriert durch die Maps damit man alle Maps ze
 
 // Öffnet das Pop-up
 function openMapPopup() {
-  isMapPopupVisible.value = true
+  isMapPopupVisible.value = true;
 }
 
 // Schließt das Pop-up
 function closeMapPopup() {
-  isMapPopupVisible.value = false
+  isMapPopupVisible.value = false;
 }
 
 function selectRandomMap() {
@@ -285,11 +295,9 @@ function selectRandomMap() {
 }
 
 function selectMap(map: MapDTD) {
-  selectedMap.value = map;
-  mapStore.mapsDTD.selectedMap = map;
-  //alert("You selected:" ${map.name});
+ selectedMap.value = map;
+ mapStore.mapsDTD.selectedMap = map;
 }
-
 
 function drawMapCanvas(map: MapDTD) {
   const canvas = document.getElementById('mapCanvas-' + map.id) as HTMLCanvasElement;
@@ -323,5 +331,4 @@ function drawMapCanvas(map: MapDTD) {
 
   console.log(`Map ${map.id} drawn successfully.`);
 }
-
 </script>
