@@ -10,7 +10,6 @@ public abstract class Character{
     // PlayerPosition playerposition;
     // Player player;
     private int posX, posY;
-    private int currentcalorie;
     //private int life;
     private Item item; 
 
@@ -26,7 +25,6 @@ public abstract class Character{
         this.posX=posX;
         this.posY=posY;
         //this.life = life; 
-        this.currentcalorie= 0;
         //this.item = item; 
     }
 
@@ -74,22 +72,10 @@ public abstract class Character{
     public void setItem(Item item) {
         this.item=item; 
     }
-    
-    //Methode: addieren der Kalorien
-    public void mycurrentItem(){
-      Item currentItem= item;
-        if (currentItem instanceof FoodItems foodItem) {
-            currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
-    }
 
     //Abstrakte Methoden 
     public abstract PlayerPosition move(); 
-    
-    // Methode: Sammeln von Items
-    public void pickUpItemLogic(Item item) {
-        setItem(item);
-            System.out.println(item.getName() + "is picked up");
-    }
+    public abstract void pickUpItem(Item item);
     
     //TODO: muss noch ausgearbietet werden
     // Methode: Leben verloren
