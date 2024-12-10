@@ -21,7 +21,7 @@
     </button>
     <button v-if="isGamemaster"
       class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
-      @click="kickPlayer(isGamemaster ,player.name)">
+      @click="kickPlayer(player.name)">
       Kick
     </button>
   </div>
@@ -66,18 +66,24 @@ async function randomizeRole(playerName: string) {
 const gamestore = useGameStore()
 
 const isGamemaster = computed(() => {
-    const currentPlayer = sessionStorage.getItem("myName");
-    const gamemaster = gamestore.gameState.gamedata?.gamemaster;
-
-    return gamemaster?.name === currentPlayer && gamemaster?.playertype;
+  const currentPlayer = sessionStorage.getItem("myName");
+  const gamemaster = gamestore.gameState.gamedata?.gamemaster;
+  return gamemaster?.name === currentPlayer && gamemaster?.playertype;
 })
 
 //Methode wenn Host Spieler kicken will
-async function kickPlayer(username: string,kickedUsername: string) {
+async function kickPlayer(username: string) {
+  const gamemasterName = gamestore.gameState.gamedata?.gamemaster?.name; 
+  if (!gamemasterName) {
+    console.log('Gamemaster nicht gefunden!');
+    return;
+  }
+  
   try {
-    await kickUser(username,kickedUsername)
+    await kickUser(gamemasterName, username); 
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
+
 </script>

@@ -137,14 +137,32 @@ public class GameAPIController {
     // Method to kick a user from the game
     // soll username oder playerobj von frontend bekommen?
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
+    @SendTo("/topic/game/{lobbyid}")
     public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
+        HashMap<String,Object> response = new HashMap<>();
 
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
-        if(existingGame.kick(usernameKicker, usernameKicked)){
-            return createOkResponse(existingGame);
+        try {
+            if(existingGame.kick(usernameKicker, usernameKicked)){
+                return createOkResponse(existingGame);
+            }
+
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+            logger.info("Kicked {} successfully", usernameKicked);
+
+            messagingService.sendPlayerList(gameId, response);
+            
+        } catch (Exception e) {
+            response.put("feedback", e.getMessage());
+            response.put("status", "error");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(gameId, response);
         }
         return createErrorResponse("can not kick "+ usernameKicked +"!");
                 
