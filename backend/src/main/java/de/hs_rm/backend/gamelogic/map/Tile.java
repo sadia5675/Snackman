@@ -30,12 +30,34 @@ public class Tile {
         return chickenList != null && !chickenList.isEmpty();
     }
 
-
+    /**
+     * Wenn Charakter zu Tile kommt, wird es überprüft, ob passende items in tile sind oder andere Gegner/hühnchen da sind, 
+     * wenn ja -> Kollision
+     * 
+     * @param character
+     * @return true wenn Charakter erfolgreich rein kommt und ggfs. Item nehmen
+     */
     public boolean addCharacter(Character character){
         this.characterList.add(character);
         if(!itemList.isEmpty()){
             // TODO: Item hier nehmen
+            for(Item item: itemList){
+                if(character instanceof Snackman && item.getType()==PlayerRole.SNACKMAN){
+                    Snackman snackman = (Snackman) character; // Cast zu Snackman
+                    if(item instanceof FoodItems){
+                        // snackman.eatSnack((FoodItems)item);
+                    } else if(item instanceof ObjectsItems){
+                        // snackman.collectItem((ObjectsItems) item);
+                    }
+                    
+                } else if (character instanceof Ghost && item.getType()==PlayerRole.GHOST && item instanceof ObjectsItems){
+                    Ghost ghost = (Ghost) character;
+                    // ghost.collectItem((ObjectsItems) item);
+                }
+            }
+
         }
+        // TODO: Kollision zwischen Ghost und Snackman
         return true;
     }
 

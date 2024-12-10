@@ -36,8 +36,20 @@ public abstract class  Item {
         public void setY( int y) {
             this.y = y;
         }
+
+        
     
         // Abstrakte Methode für spezifische Effekte
         public abstract void applyEffect(Player player);
+
+        public PlayerRole getType() {
+            return type;
+        }
+
+        public void setType(PlayerRole type) {
+            this.type = type;
+        }
     }
+
+
     
