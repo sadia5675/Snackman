@@ -21,7 +21,7 @@
     </button>
     <button v-if="isGamemaster"
       class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
-      @click="kickPlayer(player.name)">
+      @click="kickPlayer(player)">
       Kick
     </button>
   </div>
@@ -72,8 +72,8 @@ const isGamemaster = computed(() => {
 })
 
 //Methode wenn Host Spieler kicken will
-async function kickPlayer(username: string) {
-  const gamemasterName = gamestore.gameState.gamedata?.gamemaster?.name; 
+async function kickPlayer(username: IPlayerDTD) {
+  const gamemasterName = gameStore.gameState.gamedata?.gamemaster; 
   if (!gamemasterName) {
     console.log('Gamemaster nicht gefunden!');
     return;
@@ -85,5 +85,6 @@ async function kickPlayer(username: string) {
     console.log(error);
   }
 }
+
 
 </script>

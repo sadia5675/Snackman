@@ -136,6 +136,7 @@ public class GameAPIController {
 
     // Method to kick a user from the game
     // soll username oder playerobj von frontend bekommen?
+    
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
     @SendTo("/topic/game/{lobbyid}")
     public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
@@ -167,6 +168,7 @@ public class GameAPIController {
         return createErrorResponse("can not kick "+ usernameKicked +"!");
                 
     }
+
 
     // Method to set the number of elements (e.g., chickens) in the game
     @PostMapping("/setChicken/{gameId}/{number}")

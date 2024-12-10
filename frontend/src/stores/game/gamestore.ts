@@ -132,19 +132,21 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-  async function kickUser(username: string,kickedusername: string) {
+  async function kickUser(username: IPlayerDTD, kickedusername: IPlayerDTD) {
     try {
-      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username}/${kickedusername}`, {
+      const response = await fetch(`${apiUrl}/kick/${gameState.gamedata.id}/${username.name}/${kickedusername.name}`, {
         method: 'POST',
       })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
-      console.log("User {} got kicked from {}",kickedusername,username)
+      leaveGame(gameState.gamedata.id, kickedusername)
+      console.log("User {} got kicked from {}", kickedusername, username)
     } catch (error) {
       handleGameStateError()
       console.error('Error kicking user:', error)
     }
   }
+
 
   async function setChickenCount(number: number) {
     try {
