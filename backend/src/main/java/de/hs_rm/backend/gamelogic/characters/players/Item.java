@@ -5,7 +5,9 @@ public abstract class  Item {
         private int x;
         private int y;
 
-        public Item(String name, int x, int y) {
+        private PlayerRole type; //für wenn ist das Item, für Snackman oder für Geist
+
+        public Item(String name, int x, int y, PlayerRole type) {
             this.name = name;
             this.x= x;
             this.y=y;
