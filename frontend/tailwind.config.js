@@ -17,8 +17,6 @@ export default {
         lila: '#6E54B5'
       },
       fontFamily: {
-        mickey: ['MickeyMouse'],
-        namaku: ['Namaku'],
         knewave: ['Knewave'],
         bigShoulders: ['Big Shoulders Stencil Text']
       }

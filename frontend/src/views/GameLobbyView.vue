@@ -1,37 +1,29 @@
 <template>
-  <div class="centered bg-cover" :style="{backgroundImage: `url('/src/assets/FuturisticBackground.png')`}">
+  <div class="layout-main" :style="{ backgroundImage: `url('/src/assets/FuturisticBackground.png')` }">
     <!-- <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video> -->
     <div class="absolute inset-0 bg-black bg-opacity-20 z-0"></div>
-    <!-- <div class="absolute inset-0 backdrop-blur-sm z-0"></div> -->
-
-    <!--toDo: Überschriften vereinheitlichen und aus-agern-->
-    <div class=" mx-auto mt-0 z-10" >
+    <div class=" mx-auto mt-0 z-10">
       <div class="min-h-screen flex flex-col items-center justify-center">
-        <h1 class="header2">Game Lobby</h1>
+        <h1 class="header-neumorphism">Game Lobby</h1>
 
 
         <div class="grid grid-cols-7 grid-rows-4 gap-4">
 
 
           <!-- Lobby Code -->
-          <div class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
-
-            <!-- <p class="text-lg font-mono text-grau">Lobby Code:</p> -->
-          
-              <button class="button-small-neumorphism" @click="copyToClipboard()">
-                Copy
-              </button>
-              <input type="text" class="input-form-small-neumorphism" disabled="true" v-model="lobbyId" />
-
-
-           
+          <div
+            class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
+            <button class="button-small-neumorphism" @click="copyToClipboard()">
+              Copy
+            </button>
+            <input type="text" class="input-form-small-neumorphism" disabled="true" v-model="lobbyId" />
           </div>
 
           <!-- Spielerliste -->
-          <div class="col-start-2 col-end-5 row-start-2 row-end-5 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
+          <div class="col-start-2 col-end-5 row-start-2 row-end-5 card">
             <ul class="bg-hellesgraulila shadow-lg rounded-lg divide-y divide-gray-900">
               <!-- ToDo: Padding und Margin vereinheitlichen und auslagern -->
               <li v-for="(player, i) in players" :key="player.name"
@@ -46,13 +38,12 @@
           </div>
 
           <!-- Chickens und Map -->
-          <div class="col-start-5 col-end-7 row-start-1 row-end-3 bg-[#e8e8e8] rounded-lg p-4 shadow-lg space-y-4">
+          <div class="col-start-5 col-end-7 row-start-1 row-end-3 card space-y-4">
             <div class="flex items-center justify mt-3 s">
               <div class="flex items-center">
                 <p class="button-small-neumorphism">Chickens:</p>
                 <input type="number" v-model="chickenCount" class="input-form-small-neumorphism" />
               </div>
-
             </div>
             <div class="flex">
               <button class="button-small-neumorphism" @click="openMapPopup()">
@@ -62,24 +53,23 @@
                 <p class="h-[82]">Selected: {{ selectedMap?.name || 'None' }}</p>
               </div>
             </div>
-
           </div>
 
           <!--Start nutton-->
-          <div class="col-start-5 col-end-7 row-start-3 row-end-5 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
-            <div class="flex flex-col gap-3 ">
+          <div class="col-start-5 col-end-7 row-start-3 row-end-5 card">
+            <div class="flex flex-col gap-3">
               <!-- ToDo: Button -->
               <button :class="{
                 'button-small-neumorphism': isHost,
                 'bg-gray-600': !isHost,
-              }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+              }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg  rounded-lg transition"
                 @click="startGame()">
                 {{ isHost ? 'Start Game' : '---' }}
               </button>
               <button :class="{
                 'button-small-neumorphism': isHost,
                 'bg-gray-600': !isHost
-              }" class="w-full px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
+              }" class="" @click="leaveGame(lobbyId)">
                 leave lobby
               </button>
             </div>
@@ -94,7 +84,7 @@
 
   <!--Pop up-->
   <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
-    <div class="bg-[#e8e8e8] rounded-lg p-4 shadow-lg max-w-md w-full">
+    <div class="card max-w-md w-full">
       <h2 class="font-mono text-grau">Select:</h2>
 
       <!-- Dropdown for map selection -->
@@ -107,10 +97,9 @@
             {{ map.name }}
           </option>
         </select>
-        
+
       </div>
-      <button class="button-small-neumorphism mt-3"
-        @click="closeMapPopup()">
+      <button class="button-small-neumorphism mt-3" @click="closeMapPopup()">
         Close
       </button>
     </div>

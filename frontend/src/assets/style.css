@@ -7,60 +7,54 @@
 @tailwind utilities;
 
 
-@font-face {
-    font-family: "MickeyMouse";
-    src: url('../fonts/MickeyMouse.otf') format('opentype');    font-weight: normal;
-    font-style: normal;
+/* Basic */
+.layout-main {
+    @apply min-h-screen bg-cover flex flex-col items-center justify-center;
+}
+.layout-modal {
+    @apply fixed bg-black backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 w-full h-full
+}
+.centered {
+    @apply fixed flex items-center justify-center w-full h-full
+}
+.error-message {
+    @apply text-red-500 text-sm mt-2
 }
 
-@font-face {
-    font-family: 'Namaku';
-    src: url('../fonts/Namaku.woff2') format('woff2'),
-         url('../fonts/Namaku.woff') format('woff'),
-         url('../fonts/Namaku.ttf') format('truetype');    font-weight: normal;
-    font-style: normal;
+
+
+
+/* Header Styles */
+.header-neumorphism {
+    @apply font-bigShoulders !font-extrabold text-5xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
+}
+.header-modal {
+    @apply font-bold font-mono text-6xl text-center text-white
+}
+.header-adventure {
+    @apply font-knewave font-bold text-5xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
 }
 
-body{
-    /* font-family: "Shantell Sans", cursive; */
+
+
+
+
+
+/* Button Styles */
+.button-small-neumorphism {
+    @apply font-mono text-grau px-7 py-3 text-lg rounded-md bg-[#e8e8e8] cursor-pointer border border-[#e8e8e8] transition-all duration-300 shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff]
 }
-
-.header1 {
-    @apply font-knewave font-bold text-4xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
-}
-
-.header2 {
-    @apply font-bigShoulders !font-extrabold text-4xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
-}
-
-/* .button-small {
-    @apply bg-lila text-grau px-4 py-2 rounded-lg hover:bg-gold
-} */
-
-.button-small {
+.button-small-adventure {
     @apply font-mono text-white text-2xl hover:scale-110 transition-transform duration-300
 }
-
-.button-small-lobby {
-    @apply font-mono text-grau text-2xl hover:scale-110 transition-transform duration-300
-}
-
-.button-small-neumorphism {
-    @apply font-mono text-[#090909] px-7 py-3 text-lg rounded-md bg-[#e8e8e8] cursor-pointer border border-[#e8e8e8] transition-all duration-300 shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff]
-}
-
 .button-next-to-form {
     @apply bg-lila text-grau px-4 py-2 rounded-r-lg hover:bg-gold 
 }
 
-.form-next-to-button {
-    @apply bg-hellesgraulila text-gray-800 px-4 py-2 rounded-l-lg text-center  outline-gold
-}
 
-.input-form {
-   @apply  bg-beige text-hellgrau px-4 py-2 rounded-lg text-center  outline-gold
-}
 
+
+/* Input-Form Styles */
 .input-form-small-neumorphism {
     @apply font-mono w-full h-[53px] rounded-md text-center bg-[#e0e0e0]  shadow-[inset_6px_6px_12px_#c5c5c5,inset_-6px_-6px_12px_#ffffff]
 }
@@ -69,6 +63,17 @@ body{
     @apply font-mono w-full h-[83px] rounded-md text-center bg-[#e0e0e0]  shadow-[inset_6px_6px_12px_#c5c5c5,inset_-6px_-6px_12px_#ffffff]
 }
 
-.centered {
-    @apply fixed flex items-center justify-center w-full h-full
+.form-next-to-button {
+    @apply bg-hellesgraulila text-gray-800 px-4 py-2 rounded-l-lg text-center  outline-gold
+}
+.input-form {
+    @apply  bg-beige text-hellgrau px-4 py-2 rounded-lg text-center  outline-gold
+ }
+
+
+
+
+ /* Card Styles */
+.card {
+    @apply bg-[#e8e8e8] rounded-lg p-4 shadow-lg
 }
