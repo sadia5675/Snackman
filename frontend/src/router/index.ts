@@ -4,6 +4,7 @@ import LobbyList from '../views/LobbyList.vue'
 import GameLobbyView from '@/views/GameLobbyView.vue'
 import Game from "@/views/Game.vue";
 import MapCreator from "@/views/MapCreator.vue";
+import GameEnd from '@/views/GameEnd.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +38,12 @@ const router = createRouter({
       name: 'createmap',
       component: MapCreator
     }, // Hier wird die Lobby Liste angezeigt
+    {
+      path: '/:id/GameEnd',
+      name: 'GameEnd',
+      component: GameEnd,
+    },
+
   ],
 })
 
