@@ -22,9 +22,20 @@ public class Player{
     //@Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY) // automatische ID-Generierung
     private String name; 
-    private String email; 
+    private String email;
 
     private boolean isGamemaster;
+
+    //Character Objekt 
+    private Character character;
+
+    public Character getCharacter() {
+        return character;
+    }
+
+    public void setCharacter(Character character) {
+        this.character = character;
+    }
 
     //Dadurch das wir das Passwort während der Ausgabe also von backend zu Frontend eigentlich verbergen möchten
     //Die Ausgabe erfolgt über ein Json-Format 

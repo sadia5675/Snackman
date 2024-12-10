@@ -85,7 +85,7 @@ export const useGameStore = defineStore('gameStore', () => {
         stompClient.unsubscribe(`${topicUrl}/${lobbyId}`)
 
         if (gameState.gamedata?.players) {
-          subscribeToLobby(lobbyId, (message: Message) => {
+          subscribeToLobby(lobbyId, (message: Message) => {  
             if (message.status === 'ok') {
               console.log(message.feedback)
               // TODO: Players werden geupdated mit `gameState.gamedata.players`, aber nicht ganzer gameState wie sonst mit `setGameStateFromResponse`,

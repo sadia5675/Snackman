@@ -1,7 +1,9 @@
 import type { IPlayerDTD } from "./IPlayerDTD";
+import type { PlayerPosition } from "./IPlayerPositionDTD";
 
 export interface Message {
-    feedback: IPlayerDTD[] | string; 
+    type: string;
+    feedback: PlayerPosition | IPlayerDTD[] | string ; 
     status: 'ok' | 'error';         
     time: string;                   
   }

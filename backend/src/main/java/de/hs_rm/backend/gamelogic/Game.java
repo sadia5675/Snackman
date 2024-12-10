@@ -29,6 +29,14 @@ public class Game {
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
 
+    public Map<String, Character> getCharacters() {
+        return characters;
+    }
+
+    public void setCharacters(Map<String, Character> characters) {
+        this.characters = characters;
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
 

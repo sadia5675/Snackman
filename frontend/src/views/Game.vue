@@ -7,7 +7,18 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import {WebGLRenderer} from "three";
 import ground from "@/assets/game/realistic/ground.png"
 import wall from "@/assets/game/realistic/wall.png"
+import type { Vector } from "three/examples/jsm/Addons.js";
+import { sendMessage, subscribeToLobby } from "@/config/stompWebsocket";
+import { useRoute } from "vue-router";
+import type { Message } from "@/stores/game/dtd/IMessageDTD";
+import type { PlayerPosition } from "@/stores/game/dtd/IPlayerPositionDTD";
 
+
+const route = useRoute()
+const lobbyId = route.params.id.toString();
+
+let nextPosition: THREE.Vector3;
+let lastSend: number = 0;
 
 let movingForward:boolean, movingBackward:boolean, movingLeft:boolean, movingRight:boolean = false
 const slowMovementSpeed = 5
@@ -137,42 +148,87 @@ function animate() {
 }
 
 function cameraPositionBewegen(delta:number) {
+
   let cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
+
+  nextPosition = camera.position.clone();
+
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (movingForward) {
       if (movingRight) {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 7 * Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 7 * Math.PI / 4), movementSpeed * delta)
       } else if (movingLeft) {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4), movementSpeed * delta)
       } else if (movingBackward) {
         //foward und backward canceln sich
       } else {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI), movementSpeed * delta)
       }
     } else if (movingBackward) {
       if (movingRight) {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 5 * Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 5 * Math.PI / 4), movementSpeed * delta)
       } else if (movingLeft) {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 3 * Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 3 * Math.PI / 4), movementSpeed * delta)
       } else {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI), movementSpeed * delta)
       }
     } else if (movingRight) {
       if (movingLeft) {
         //right und left canceln sich
       } else {
-        camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 3 * Math.PI / 2), movementSpeed * delta)
+        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 3 * Math.PI / 2), movementSpeed * delta)
       }
     } else if (movingLeft) {
-      camera.position.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2), movementSpeed * delta)
+      nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2), movementSpeed * delta)
     }
+    nextPosition.y =2
+    validatePosition(nextPosition);
+    
     camera.position.y = 2
   }
 }
 
+function validatePosition(nextPosition: THREE.Vector3) {
+  let currentTime: number = Date.now();
+
+  if(currentTime - lastSend > 200){
+    sendMessage(`/topic/ingame/${lobbyId}/playerPosition`,{
+      playerName: sessionStorage.getItem("myName"),
+      posX: nextPosition.x,
+      posY: nextPosition.z,
+    })
+  }
+  
+}
+
+function moveCamera() {
+  camera.position.copy(nextPosition)
+}
+
+
 onMounted(() => {
+
+  subscribeToLobby(lobbyId,(message: any) => {
+
+    switch(message.type){
+      case 'playerPosition':
+        console.log(message.feedback);
+        break;
+      case 'playerMoveValidation':
+        console.log(message.feedback);
+        const playerPosition: PlayerPosition =  message.feedback;
+
+        if(playerPosition.playerName === sessionStorage.getItem('myName')){
+          console.log("recevied validation");
+          moveCamera();
+        }
+
+        break;
+    }
+  })
+
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement);
   }

@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
@@ -106,6 +108,7 @@ public class GameAPIController {
             Game existingGame = gameService.joinGame(lobbyid, player);
             logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
 
+            response.put("type","playerJoin");
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
@@ -113,12 +116,58 @@ public class GameAPIController {
             messagingService.sendPlayerList(lobbyid, response);
 
         }catch(GameJoinException e){
+            response.put("type","playerJoin");
             response.put("feedback", e.getMessage());
             response.put("status", "error");
             response.put("time", LocalDateTime.now().toString());
 
             messagingService.sendPlayerList(lobbyid, response);
         }
+    }
+
+    @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
+    @SendTo("/topic/ingame/{lobbyid}")
+    public void moveCharacter (PlayerPosition position, @DestinationVariable String lobbyid){
+
+        //Zum Testen logik um Spieler zu bewegen fehlt noch
+
+        HashMap<String,Object> validationResponse = new HashMap<>();
+        HashMap<String,Object> response = new HashMap<>();
+        Game existingGame = gameService.getGameById(lobbyid);
+
+        Map<String,Character> currentCharacters = existingGame.getCharacters();
+        currentCharacters.get(position.getPlayerName()).move();
+
+        logger.info("Requested Player({}) move to: posX({}), posY({}), ",position.getPlayerName(),position.getPosX(), position.getPosY());
+        
+        //true nur zum testen, eig prüfen ob move valid ist oder nicht
+        if(true){
+
+            //sende das die Validation in Ordnung war
+            validationResponse.put("type","playerMoveValidation");
+            validationResponse.put("feedback", position);
+            validationResponse.put("status","ok");
+            validationResponse.put("time",LocalDateTime.now().toString());
+
+            messagingService.sendNewCharacterPosition(lobbyid,validationResponse);
+
+            //senden der Liste von Chars
+            response.put("type","playerPosition");
+            response.put("feedback",currentCharacters.values());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendNewCharacterPosition(lobbyid,response);
+
+            return;
+        }
+            response.put("type","playerPosition");
+            response.put("feedback",currentCharacters.values());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+        
+            messagingService.sendNewCharacterPosition(lobbyid,response);
+        
     }
 
     // Method to end the game
@@ -217,12 +266,14 @@ public class GameAPIController {
             Game existingGame = gameService.setRole(lobbyId, nameOfPlayerToSetRole, role);
             logger.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role, nameOfPlayerToSetRole);
 
+            response.put("type","playerRole");
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
 
             messagingService.sendPlayerList(lobbyId, response);
         } catch (SetRoleException e) {
+            response.put("type","playerRole");
             response.put("feedback", e.getMessage());
             response.put("status", "error");
             response.put("time", LocalDateTime.now().toString());

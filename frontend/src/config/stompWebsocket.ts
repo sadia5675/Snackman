@@ -1,4 +1,6 @@
 import { Client, type Message } from '@stomp/stompjs';
+import { type Message as IMessage } from '@/stores/game/dtd/IMessageDTD';
+
 
 
 
@@ -25,9 +27,22 @@ function subscribeToLobby(lobbyId: string, callback: (message: any) => void) {
     return;
   }
   stompClient.subscribe(`/topic/game/${lobbyId}`, (message: Message) => {
-    callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
+
+    const response: IMessage = JSON.parse(message.body);
+
+    switch(response.type){
+      
+      default:
+        callback(response);
+    }
+    
+
+
+
+
   });
 }
+
 
 // Funktion zum Senden von Nachrichten
 function sendMessage(destination: string, body: any) {
@@ -40,6 +55,8 @@ function sendMessage(destination: string, body: any) {
     console.error('WebSocket is not connected');
   }
 }
+
+
 
 // Exportiere den STOMP-Client und die Funktionen
 export { stompClient, subscribeToLobby, sendMessage };
