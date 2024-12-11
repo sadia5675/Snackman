@@ -7,6 +7,8 @@ import java.util.Map;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -36,14 +38,14 @@ public class GameService {
         return newGame;
     }
 
-    public Game startGame(String gameId) {
+    public Game startGame(String gameId, PlayMap playMap) {
         Game game = gameList.get(gameId);
         
         if(game == null){
             return null;
         }
 
-        game.start();
+        game.start(playMap);
 
         return game;
     }
@@ -61,6 +63,18 @@ public class GameService {
     
     }
 
+    public Game leaveGame(String gameId,Player player){
+        Game game = gameList.get(gameId);
+
+        if(game == null){
+            return null;
+        }
+
+        game.leaveGame(player);
+
+        return game;
+    }
+    
     public Game joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 
@@ -116,18 +130,25 @@ public class GameService {
 
         return game;
     }
-    
-    public Character getCharacterByPlayerName(String lobbyid, String playerName){
-        Game existingGame = getGameById(lobbyid);
 
-        if(existingGame != null){
-
-            Character retChar = existingGame.getCharacters().get(playerName);
-
-            return retChar;
+    public boolean move(String username, int targetX, int targetY) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username and direction must not be empty.");
         }
 
-        return null;
+        // Iteriert über alle Games, um den Spieler zu finden
+        for (Game game : gameList.values()) {
+            Player player = game.findPlayerByUsername(username);
+            if (player != null) {
+                return game.move(username, targetX, targetY);
+            }
+        }
+        throw new IllegalArgumentException("Player not found in any game.");
     }
+
+    public void setGameList(Map<String, Game> gameList) {
+        this.gameList = gameList;
+    }
+
     
 }

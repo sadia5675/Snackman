@@ -3,7 +3,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import com.fasterxml.jackson.annotation.JsonIgnore; // Korrektes Import für JsonIgnore
@@ -21,6 +22,7 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 public class Player{
     //@Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY) // automatische ID-Generierung
+    Logger logger = LoggerFactory.getLogger(Player.class);
     private String name; 
     private String email;
 
@@ -99,7 +101,9 @@ public class Player{
 
     public void setPlayerrole(PlayerRole playerrole) {
         this.playerrole = playerrole;
-        System.out.println("PlayerRole ist jetzt:" + this.playerrole);
+        //System.out.println("PlayerRole ist jetzt:" + this.playerrole);
+        logger.info("PlayerRole ist jetzt: {}", this.playerrole);
+
     }
 
     public boolean isGamemaster() {

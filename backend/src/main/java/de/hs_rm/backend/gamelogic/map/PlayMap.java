@@ -16,49 +16,56 @@ private char[][] map;
 private List <Tile> tilesList = new ArrayList<>();
 
 
+private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
+
+
 public PlayMap(String filePath) {
-    loadMap(filePath);
-    createTiles();
-
+    try {
+        loadMap(filePath);
+        //createTiles();
+    } catch (IllegalArgumentException e) {
+        LOGGER.error("Invalid map file: {}", e.getMessage());
+        throw e; // IllegalArgumentException weiterwerfen
+    } catch (IOException e) {
+        LOGGER.error("Error loading map file: {}", e.getMessage());
+        map = new char[0][0]; // Karte zurücksetzen
+    }
 }
-  private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
-    private void loadMap(String filePath) {
+public void loadMap(String filePath) throws IOException, IllegalArgumentException {
+    List<String> lines = new ArrayList<>();
+    int width = 0;
+
+    // Datei einlesen und die Zeilen speichern
+    try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/maps/" + filePath + ".txt"))) {
         String line;
-        int height = 0;
-        int width = 0;
-        try (BufferedReader reader = new BufferedReader(
-                new FileReader("src/main/resources/maps/" + filePath + ".txt"))) {
-            // Höhe und Breite der Map
-            while ((line = reader.readLine()) != null) {
-                width = Math.max(width, line.length());
-                height++;
-            }
-            // Map-Array für frontend
-            map = new char[height][width];
-
-        } catch (IOException e) {
-            LOGGER.error("Error loading map size from file '{}': {}", filePath, e.getMessage(), e);
-            map = new char[0][0];// zurück setzen
-            return;
-        }
-        // jetzt inhalt lesen
-        try (BufferedReader secondReader = new BufferedReader(
-                new FileReader("src/main/resources/maps/" + filePath + ".txt"))) {
-            int x = 0;
-            while ((line = secondReader.readLine()) != null) {
-                for (int y = 0; y < line.length(); y++) {
-                    char symbol = line.charAt(y);
-                    map[x][y] = symbol;
-                }
-                x++;
-            }
-        } catch (IOException e) {
-            LOGGER.error("Error loading map content from file '{}': {}", filePath, e.getMessage(), e);
-            map = new char[0][0];
+        while ((line = reader.readLine()) != null) {
+            lines.add(line);// Speichert die Zeilen der Datei
+            width = Math.max(width, line.length());
         }
     }
+     // Überprüfen, ob die Datei nach dem Einlesen leer ist
+     if (lines.isEmpty()) {
+        throw new IllegalArgumentException("The map file is empty, no map can be created.");
+    }
 
+    // Höhe und Breite der Karte festlegen
+    int height = lines.size();
+    map = new char[height][width];
+
+    // Zeilen in das map übertragen
+    for (int x = 0; x < height; x++) {
+        String line = lines.get(x);
+        for (int y = 0; y < line.length(); y++) {
+            char symbol = line.charAt(y);
+            if (symbol != '*' && symbol != ' ') {
+                throw new IllegalArgumentException("Unknown character in map: " + symbol);
+            }else{
+                map[x][y] = symbol; // Korrekte Symbol werden gespeichert
+            }
+        }
+    }
+}
 
 public void createTiles(){
     tilesList.clear(); // zurücksetzen
@@ -68,12 +75,8 @@ public void createTiles(){
 
     for (int x = 0; x < map.length; x++) {
         for (int y = 0; y < map[x].length; y++) {
-            try {
-                Tile tile = createTile(map[x][y]);
-                tilesList.add(tile); // Tile der Liste hinzufügen
-            } catch (IllegalArgumentException e) {
-                LOGGER.error("Invalid symbol '{}' at position ({}, {}): {}", map[x][y], x, y, e.getMessage(), e);
-            }
+            Tile tile = createTile(map[x][y]);// Tile der Liste hinzufügen
+            tilesList.add(tile);
         }
     }
 }
@@ -84,11 +87,12 @@ private Tile createTile(char symbol) {
             return new Tile(TileType.WALL);
         case ' ': // Frei
             return new Tile(TileType.SURFACE);
-        default:
-            throw new IllegalArgumentException("Unknown character in map: " + symbol);
+            default:
+            // Dies sollte nie passieren, da wir bereits in loadMap() prüfen
+            LOGGER.error("Unexpected symbol '{}' found during tile creation", symbol);
+            return new Tile(TileType.SURFACE); // Fallback zu einem Standardwert
     }
 }
-
 
 public char[][] getMap() {
     return map;

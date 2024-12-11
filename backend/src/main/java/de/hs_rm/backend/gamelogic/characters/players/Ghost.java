@@ -5,6 +5,9 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /*Die Ghost Klasse erbt von der Character Klasse. Hierbei handelt es sich um einen Gegner von Snackman,
  *der von einem Spieler gespielt werden kann. 
@@ -14,6 +17,8 @@ public class Ghost extends Character {
     private int touchcount; 
     private Item item;
     
+    Logger logger = LoggerFactory.getLogger(Ghost.class);
+
     public Ghost(double speed, int posX, int posY){
         super(speed,posX,posY);
         this.touchcount=0; 
@@ -39,15 +44,15 @@ public class Ghost extends Character {
     //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln= die Methode ist doch im Charackter??
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
-    @Override
-    public PlayerPosition move(){
-        System.out.println("the ghost is moving");
-        return null; 
-    }
+    //@Override
+    //public PlayerPosition move(){
+    //    logger.info("the ghost is moving");
+    //    return null;
+    //}
 
     //Reglung bei Kontakt mit Snackman--> Logik fehlt noch
     public void hit(String playerId){
-        System.out.println("Player " + playerId + " has been hit by the ghost.");
+        logger.info("Player " + playerId + " has been hit by the ghost.");
         touchcount++; 
     }
 }

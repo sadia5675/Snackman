@@ -2,13 +2,12 @@ import { Client, type Message } from '@stomp/stompjs';
 import { type Message as IMessage } from '@/stores/game/dtd/IMessageDTD';
 
 
-
+const protocol = window.location.protocol === 'http:' ? 'ws' : 'wss'
 
 const stompClient = new Client({
-    //Muss noch vereinbart werden
-  brokerURL: 'ws://localhost:8080/ws',
+  brokerURL: `${protocol}://${window.location.host}/ws`,
   connectHeaders: {
-    //Eventuell Authentifizierung 
+    //Eventuell Authentifizierung
   },
   onConnect: () => {
     console.log('Connected to STOMP');
@@ -20,7 +19,7 @@ const stompClient = new Client({
   debug: (str: string) => console.log(str), // Debugging zum testen
 });
 
-// Funktion zum Abonnieren einer Lobby 
+// Funktion zum Abonnieren einer Lobby
 function subscribeToLobby(lobbyId: string, callback: (message: any) => void) {
   if (!lobbyId) {
     console.error('Lobby ID is required to subscribe.');

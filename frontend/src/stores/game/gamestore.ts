@@ -1,14 +1,15 @@
-import { defineStore } from 'pinia'
-import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket'
-import { type Reactive, reactive } from 'vue'
-import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
-import type { GameResponse } from '@/stores/game/responses/GameResponse'
-import type { IGameDTD } from '@/stores/game/dtd/IGameDTD'
-import { emptyGame, type IGameState } from '@/stores/game/IGameState'
-import type { Message } from './dtd/IMessageDTD'
-import { useModalStore } from '../modalstore'
-import { Playerrole } from './dtd/EPlayerrole'
-import type { Result } from '@/stores/game/responses/Result'
+import { defineStore } from "pinia";
+import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { type Reactive, reactive } from "vue";
+import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
+import type { GameResponse } from "@/stores/game/responses/GameResponse";
+import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
+import { emptyGame, type IGameState } from "@/stores/game/IGameState";
+import type { Message } from "./dtd/IMessageDTD";
+import { useModalStore } from "../modalstore";
+import { Playerrole } from "./dtd/EPlayerrole";
+import { useRouter } from 'vue-router';
+import type {Result} from "@/stores/game/responses/Result";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -18,6 +19,8 @@ export const useGameStore = defineStore('gameStore', () => {
   // Game state
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore()
+
+  const router = useRouter();
 
   function handleGameStateError() {
     resetGameState()
@@ -72,7 +75,9 @@ export const useGameStore = defineStore('gameStore', () => {
       if (!stompClient.connected) {
         stompClient.activate()
       }
-      sessionStorage.setItem('myName', gamemaster.name)
+      sessionStorage.setItem("myName", gamemaster.name);
+      sessionStorage.setItem("playerInfo", JSON.stringify(gamemaster));
+
     } catch (error) {
       handleGameStateError()
       console.error('Error creating game:', error)
@@ -88,8 +93,6 @@ export const useGameStore = defineStore('gameStore', () => {
           subscribeToLobby(lobbyId, (message: Message) => {  
             if (message.status === 'ok') {
               console.log(message.feedback)
-              // TODO: Players werden geupdated mit `gameState.gamedata.players`, aber nicht ganzer gameState wie sonst mit `setGameStateFromResponse`,
-              //  So fehlt z.B. die ID der Lobby für den Spieler der joint
               gameState.gamedata.players = message.feedback as IPlayerDTD[]
               modal.setErrorMessage('')
 
@@ -112,16 +115,23 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
-  async function startGame() {
+  async function startGame(selectedMapName: string) {
     try {
-      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: 'POST' })
+      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({selectedMap: selectedMapName}),
+      })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
-    } catch (error) {
+  } catch (error) {
       handleGameStateError()
       console.error('Error starting game:', error)
     }
   }
+
 
   async function endGame() {
     try {
@@ -131,6 +141,61 @@ export const useGameStore = defineStore('gameStore', () => {
     } catch (error) {
       handleGameStateError()
       console.error('Error ending game:', error)
+    }
+  }
+
+  function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        if (!stompClient.connected) {
+          stompClient.activate();
+
+          stompClient.onConnect = () => {
+            sendLeaveMessage();
+          };
+        } else {
+          sendLeaveMessage();
+        }
+
+        function sendLeaveMessage() {
+          console.log("Sending leave message for:", leavingPlayer.name);
+          sendMessage(`/topic/game/${lobbyId}/leave`, { name: leavingPlayer.name });
+
+          subscribeToLobby(lobbyId, (message: Message) => {
+            if (message.status === 'ok') {
+              console.log(`${leavingPlayer.name} erfolgreich verlassen.`);
+
+              const updatedPlayers = message.feedback as IPlayerDTD[];
+              gameState.gamedata.players.splice(0, gameState.gamedata.players.length, ...updatedPlayers);
+
+              const myName = sessionStorage.getItem("myName");
+              if (myName === leavingPlayer.name) {
+                sessionStorage.removeItem("myName");
+                router.push({ name: "index" });
+              }
+
+              resolve(true);
+            } else {
+              console.error("Leave error:", message.feedback);
+              resolve(false);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error in leaveGame:", error);
+      }
+    });
+  }
+
+
+  async function closeTab() {
+    stompClient.onDisconnect = () => {
+      if (window.closed) {
+        if (stompClient.connected) {
+          console.log("ich wurde gelöscht");
+          stompClient.deactivate;
+        }
+      }
     }
   }
 
@@ -194,7 +259,11 @@ export const useGameStore = defineStore('gameStore', () => {
     return gameState.gamedata?.players?.find((player) => player.name === actingPlayerName)
   }
 
-  function setPlayerRoleViaStomp(username: string, role: Playerrole): Promise<Result> {
+  function setPlayerRoleViaStomp(
+    username: string,
+    role: Playerrole,
+    lobbyId: string,
+  ): Promise<Result> {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>
@@ -206,16 +275,16 @@ export const useGameStore = defineStore('gameStore', () => {
       )
     }
 
-    const lobbyId = gameState.gamedata.id
-    if (!lobbyId) {
-      return new Promise((resolve) =>
-        resolve({
-          ok: false,
-          message: 'No lobby ID found',
-          data: null,
-        }),
-      )
-    }
+    // const lobbyId = gameState.gamedata.id
+    // if (!lobbyId) {
+    //   return new Promise((resolve) =>
+    //     resolve({
+    //       ok: false,
+    //       message: 'No lobby ID found',
+    //       data: null,
+    //     }),
+    //   )
+    // }
 
     console.log('Setting role of ' + username + ' to ' + Playerrole[role])
 
@@ -242,11 +311,13 @@ export const useGameStore = defineStore('gameStore', () => {
     createGame,
     startGame,
     endGame,
+    leaveGame,
     kickUser,
     joinLobby,
     setChickenCount,
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
+    closeTab
   }
 })

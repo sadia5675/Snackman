@@ -2,15 +2,16 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.5'
 	id 'io.spring.dependency-management' version '1.1.6'
+	id "jacoco" // fuer Test-Coverage
+	id "org.sonarqube" version "5.1.0.4882"
 }
 
 group = 'de.hs-rm'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
@@ -25,8 +26,32 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+sonar {
+	properties {
+		property "sonar.token", "sqa_4690ab313c40251fff0c56eb36dca8f942bea298"
+		property "sonar.organization", "SWT-Projekt Gruppe 02"
+		property "sonar.host.url", "http://localhost:9000/sonar"
+	}	
+}
+
+/*
+* Jacoco ist ein Werkzeug zur Testueberdeckungs-Berechnung
+* https://docs.gradle.org/current/userguide/jacoco_plugin.html
+*/
+jacoco {
+	toolVersion = "0.8.12"
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+	}
 }
 
 def isWindows = System.getProperty("os.name").toLowerCase().contains("win")
