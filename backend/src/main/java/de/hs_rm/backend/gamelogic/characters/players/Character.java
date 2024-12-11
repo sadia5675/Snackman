@@ -16,13 +16,9 @@ public abstract class Character{
     private int currentcalorie;
     //private static final int MAX_LIFE =3;
 
-
-
     private Item item;
     private double angleInDegrees; //der Winkel info, die von FE bekommt
 
-    //private int life;
-    private Item item;
     Logger logger = LoggerFactory.getLogger(Character.class);
 
 
@@ -115,16 +111,8 @@ public abstract class Character{
         logger.info(item.getName() + " is picked up");
     }
 
-    public int getCurrentcalorie() {
-        return currentcalorie;
-    }
-
     public void setCurrentcalorie(int currentcalorie) {
         this.currentcalorie = currentcalorie;
-    }
-
-    public Item getItem() {
-        return item;
     }
 
     //TODO: muss noch ausgearbietet werden
@@ -135,10 +123,6 @@ public abstract class Character{
 
     public int getCurrentcalorie() {
         return currentcalorie;
-    }
-
-    public void setCurrentcalorie(int currentcalorie) {
-        this.currentcalorie = currentcalorie;
     }
 
     public Item getItem() {

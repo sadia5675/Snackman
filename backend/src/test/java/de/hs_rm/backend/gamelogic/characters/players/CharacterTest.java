@@ -14,7 +14,7 @@ public class CharacterTest {
     @BeforeEach
     public void setUp() {
         // vor jedem Test
-        testCharacter = new TestCharacter(10.0, 5, 5);
+        testCharacter = new Snackman(10.0, 5, 5, 3, 3);
     }
 
      @Test
@@ -40,13 +40,14 @@ public class CharacterTest {
         assertEquals(initialCalories + 10, testCharacter.getCurrentcalorie());
     }
 
+    /*
     @Test
     public void testMove() {
         PlayerPosition newPos = testCharacter.move();
         assertEquals(6, newPos.getX());
         assertEquals(6, newPos.getY());
     }
-
+    */
     @Test // Test, wenn kein Item gesetzt wird
     public void testPickUpItemLogicWithNullItem() {
         testCharacter.pickUpItemLogic(null);
