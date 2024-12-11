@@ -4,6 +4,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.hs_rm.backend.exception.SetRoleException;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,14 +36,14 @@ public class GameService {
         return newGame;
     }
 
-    public Game startGame(String gameId) {
+    public Game startGame(String gameId, PlayMap playMap) {
         Game game = gameList.get(gameId);
         
         if(game == null){
             return null;
         }
 
-        game.start();
+        game.start(playMap);
 
         return game;
     }
@@ -57,6 +61,18 @@ public class GameService {
     
     }
 
+    public Game leaveGame(String gameId,Player player){
+        Game game = gameList.get(gameId);
+
+        if(game == null){
+            return null;
+        }
+
+        game.leaveGame(player);
+
+        return game;
+    }
+    
     public Game joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 
@@ -77,6 +93,30 @@ public class GameService {
         return game;
     }
 
+    public Game setRole(String gameId, String nameOfPlayerToSetRole, String role) {
+        PlayerRole playerRoleToSet;
+
+        try {
+            playerRoleToSet = PlayerRole.valueOf(role);
+        } catch (IllegalArgumentException e) {
+            throw new SetRoleException("Role " + role + " not found!");
+        }
+
+        Game game = gameList.get(gameId);
+        if (game == null) {
+            throw new SetRoleException("Game not found!");
+        }
+
+        Player playerToSetRole = game.findPlayerByUsername(nameOfPlayerToSetRole);
+        if (playerToSetRole == null) {
+            throw new SetRoleException("Player to set role not found!");
+        }
+
+        playerToSetRole.setPlayerrole(playerRoleToSet);
+
+        return game;
+    }
+
     public Game setChicken(String gameId, int number){
         Game game = gameList.get(gameId);
 
@@ -87,6 +127,25 @@ public class GameService {
         game.setChicken(number);
 
         return game;
+    }
+
+    public boolean move(String username, int targetX, int targetY) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username and direction must not be empty.");
+        }
+
+        // Iteriert über alle Games, um den Spieler zu finden
+        for (Game game : gameList.values()) {
+            Player player = game.findPlayerByUsername(username);
+            if (player != null) {
+                return game.move(username, targetX, targetY);
+            }
+        }
+        throw new IllegalArgumentException("Player not found in any game.");
+    }
+
+    public void setGameList(Map<String, Game> gameList) {
+        this.gameList = gameList;
     }
 
     

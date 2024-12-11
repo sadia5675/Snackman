@@ -1,8 +1,5 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +18,11 @@ public abstract class Character{
     private int posX, posY;
     private ObjectsItems currentObjectItem; 
     private static final Logger logger = LoggerFactory.getLogger(Character.class);
+
+    private double angleInDegrees; //der Winkel info, die von FE bekommt
+    
+
+
 
     public Character(double speed, int posX, int posY){
         // this.id=id; 
@@ -53,6 +55,12 @@ public abstract class Character{
     // public void setGamiId(String gamiId) {
     //     this.gameId = gamiId;
     // }
+
+    public void move(int x, int y){
+        this.posX = x;
+        this.posY = y;
+    }
+    
     public double getSpeed() {
         return speed;
     }
@@ -98,5 +106,15 @@ public abstract class Character{
        // life--;
     }
 
+
+    public double getAngleInDegrees() {
+        return angleInDegrees;
+    }
+
+    public void setAngleInDegrees(double angleInDegrees) {
+        this.angleInDegrees = angleInDegrees;
+    }
+
+    
     
 }

@@ -1,35 +1,37 @@
 <template>
   <div>
     <h1>Map Creator</h1>
+    <p>Gib einen Namen für die Map ein:</p>
+    <input type="text" v-model="mapStore.mapName" placeholder="Map Name" />
     <p>Definiere die Größe des Spielfelds:</p>
     <p> Zeilen:</p>
-    <input type="number" v-model="rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
+    <input type="number" v-model="mapStore.rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
     <p>Spalten</p>
-    <input type="number" v-model="cols" placeholder="Anzahl der Spalten" min="1" max="15" />
-    <button class="buttons-top-bottom" @click="createGrid">Spielfeld erstellen</button>
+    <input type="number" v-model="mapStore.cols" placeholder="Anzahl der Spalten" min="1" max="15" />
+    <button class="buttons-top-bottom" @click="mapStore.createGrid">Spielfeld erstellen</button>
   </div>
   <br>
   <br>
   <!-- Raster des Spielfelds -->
   <!-- um dynamischer zur sein inline style verwendet (sofort Änderungen gezeigt)
-   Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit) 
+   Bestimmt, wie viele Zeilen/Spalten das Grid haben soll und wie breit diese sein solle(repeat(3, 50px)-> 3 Spalten, jede 50px breit)
   -->
   <div
     class="grid-container"
     :style="{
-      gridTemplateColumns: `repeat(${cols}, 50px)`,
-      gridTemplateRows: `repeat(${rows}, 50px)`
+      gridTemplateColumns: `repeat(${mapStore.cols}, 50px)`,
+      gridTemplateRows: `repeat(${mapStore.rows}, 50px)`
     }"
-    v-if="grid.length > 0"
+    v-if="mapStore.grid.length > 0"
   >
   <!-- .flat wandelt das "2Darray" in eindimensionalen array um direkt durchzuiterieren (sonst Probleme mit spalte größer als zeile)
-   
+
   -->
     <div
-      v-for="(cell, index) in grid.flat()"
+      v-for="(cell, index) in mapStore.grid.flat()"
       :key="'cell-' + index"
       class="grid-cell"
-      @click="updateCell(Math.floor(index / cols), index % cols)"
+      @click="mapStore.updateCell(Math.floor(index / mapStore.cols), index % mapStore.cols)"
       :data-value="cell"
     >
       {{ cell }}
@@ -41,59 +43,24 @@
   </div>
   <br>
   <br>
-  <button class="buttons-top-bottom"@click="finishMap">Create</button>
+  <button class="buttons-top-bottom"@click="mapStore.saveMap">Create</button>
 
 </template>
 
 
 
 <script setup lang="ts">
-import { ref } from "vue";
-//ref = reagitives Objekt dass direkt auf Änderungen reagiert und an die UI aktualisiert
-const rows = ref<number>(0); // Anzahl Reihen
-const cols = ref<number>(0); // Anzahl Spalten
-const grid = ref<string[][]>([]); // 2D-Array für das Raster
+import { onMounted } from "vue";
+import { useMapStore } from "@/stores/map/MapStore";
 
-  //funktion um Raster zu erstellen
-  function createGrid() {
-  // Sicherstellung, dass die Eingaben valide sind spricht nicht unter 0
-  if (rows.value <= 0 || cols.value <= 0) {
-    alert("Bitte gültige Werte für Reihen und Spalten eingeben.");
-    return;
-  }
-  // Raster als 2D-Array erstellen
-  grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-    Array.from({ length: cols.value }, () => " ")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
-  );
-  for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
-    for (let colIndex = 0; colIndex < cols.value; colIndex++) {
-      if (
-        //Minus 1 wegen Arrayindex und Grid 
-        rowIndex === 0 || // Erste Zeile
-        rowIndex === rows.value - 1 || // Letzte Zeile
-        colIndex === 0 || // Erste Spalte
-        colIndex === cols.value - 1 // Letzte Spalte
-      ) {
-        grid.value[rowIndex][colIndex] = "*";
-      }
-    }
-  }
-  console.log(`Erstelle ein Spielfeld mit ${rows.value} Reihen und ${cols.value} Spalten.`);
-  }
 
-  function updateCell(rowIndex:number,colIndex:number){
-    if (rowIndex === 0 || rowIndex === rows.value - 1 ||colIndex === 0 || colIndex === cols.value-1) {
-    return; // um das klicken zu ignorieren
-   }
-    // Prüft den aktuellen Wert der Zelle und wechselt zwischen '*' und ' '
-    //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
-    grid.value[rowIndex][colIndex] =
-      grid.value[rowIndex][colIndex] === "*" ? "weg" : "*";
-      
-  }
-  function finishMap(){
-    console.log(`Fertigstellung der Map`);
-  }
+const mapStore = useMapStore();
+//sorgt dafür das vorhandene Maps aus dem Backend sofort geladen und in mapStore.allmaps gespeichert
+onMounted (async() => {
+  await mapStore.fetchMaps();
+  console.log("Aktuelle Maps:", mapStore.mapsDTD.maps);
+})
+
 </script>
 
 <style scoped>
@@ -118,14 +85,14 @@ const grid = ref<string[][]>([]); // 2D-Array für das Raster
 }
 
 /* Wand (Stern '*') */
-.grid-cell[data-value="*"] {
-  background-color: #444; 
+.grid-cell[data-value="wall"] {
+  background-color: #444;
   color: #fff;
 }
 
 /* Weg ("weg") */
 .grid-cell[data-value="weg"] {
-  background-color: #fff; 
+  background-color: #fff;
   color: #000;
 }
 

@@ -29,11 +29,11 @@ public class Ghost extends Character {
     }
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
-    @Override
-    public PlayerPosition move(){
-        System.out.println("the ghost is moving");
-        return null; 
-    }
+    // @Override
+    // public PlayerPosition move(){
+    //     System.out.println("the ghost is moving");
+    //     return null; 
+    // }
 
     //Reglung bei Kontakt mit Snackman--> Logik fehlt noch
     public void hit(String playerId){
