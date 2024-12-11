@@ -2,7 +2,7 @@
 
   <Modal v-if="modal.isModalOpen">
     <template #titel>
-      <h2 class="header-modal">{{ modal.modalType === ModalType.JOIN_GAME ? "Join Game" : "New Game"
+      <h2 class="header-modal-adventure">{{ modal.modalType === ModalType.JOIN_GAME ? "Join Game" : "New Game"
         }}</h2>
     </template>
     <template #content>
@@ -16,9 +16,9 @@
       </div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
       <div class="flex space-x-4">
-        <button class="button-small-neumorphism"
+        <button class="button-small-adventure"
           @click=" modal.modalType === ModalType.NEW_GAME ? modal.newGame(newPlayer) : modal.joinGame(newPlayer)">Weiter</button>
-        <button class="button-small-neumorphism" @click="modal.closeModal()">Schließen</button>
+        <button class="button-small-adventure" @click="modal.closeModal()">Schließen</button>
       </div>
     </template>
   </Modal>
@@ -34,11 +34,11 @@
     <!-- <h1>Test: Namaku Font</h1> -->
 
     <div class="flex flex-col gap-3">
-      <button class="button-small-neumorphism" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
-      <button class="button-small-neumorphism" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join Game</button>
+      <button class="button-small-adventure" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
+      <button class="button-small-adventure" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join Game</button>
       <!-- @click="game.findLobbies()"-->
-      <button class="button-small-neumorphism" @click="router.push('/lobby')">Find Lobbies/Games</button>
-      <button class="button-small-neumorphism" v-on:click="toMapCreator">Map Creator</button>
+      <button class="button-small-adventure" @click="router.push('/lobby')">Find Lobbies/Games</button>
+      <button class="button-small-adventure" v-on:click="toMapCreator">Map Creator</button>
     </div>
 
 
