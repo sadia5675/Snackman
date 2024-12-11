@@ -144,7 +144,6 @@ const { setPlayerRoleViaStomp } = gameStore
 const route = useRoute()
 const router = useRouter();
 
-const gamestore = useGameStore()
 const mapStore = useMapStore()
 
 // um die Sichtbarkeit des Pop-ups zu steuern
@@ -166,29 +165,29 @@ const lobbyId = route.params.id.toString()
     const maxPlayers = 7;
 
     // Spieler-Liste aus dem Store oder leeres Array
-    const players = computed(() => gamestore.gameState.gamedata?.players || []);
+    const players = computed(() => gameStore.gameState.gamedata?.players || []);
 
     // Anzahl der Platzhalter
     const placeholderCount = computed(() => maxPlayers - players.value.length);
 
 // Anzahl der festgelegten Chickens im Game
 const chickenCount = computed({
-  get: () => gamestore.gameState.gamedata?.chickens.length || 0,
+  get: () => gameStore.gameState.gamedata?.chickens.length || 0,
   set: async (value: number) => {
-    await gamestore.setChickenCount(value)
+    await gameStore.setChickenCount(value)
   },
 })
 
 // Überprüfung, ob aktueller Spieler Gamemaster ist
 const isGamemaster = computed(() => {
   const currentPlayerName = sessionStorage.getItem("myName"); // Spielername aus sessionStorage
-  const gamemaster = gamestore.gameState.gamedata?.gamemaster;
+  const gamemaster = gameStore.gameState.gamedata?.gamemaster;
 
   return gamemaster?.name === currentPlayerName && gamemaster?.name; // Vergleich mit Gamemaster
 });
 
 watch(
-  () => gamestore.gameState.gamedata?.started,
+  () => gameStore.gameState.gamedata?.started,
   (newValue) => {
     if (newValue) {
       router.push({ name: 'game' })
@@ -218,10 +217,10 @@ async function startGame() {
     if (!mapStore.mapsDTD.selectedMap?.map) {
       throw new Error("No map selected!");
     }
-    await gamestore.startGame(mapStore.mapsDTD.selectedMap?.name); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
+    await gameStore.startGame(mapStore.mapsDTD.selectedMap?.name); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
     // Log zum Testen
-    console.log(gamestore.gameState);
-    console.log("playMap: ", gamestore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map
+    console.log(gameStore.gameState);
+    console.log("playMap: ", gameStore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map
   } catch (error) {
     console.log(error);
   }
@@ -251,7 +250,7 @@ async function leaveGame(lobbyId: string) {
         }
 
         console.log("Lobby-Daten vor leaveGame:", players.value);
-        const success = await gamestore.leaveGame(lobbyId, leavingPlayer);
+        const success = await gameStore.leaveGame(lobbyId, leavingPlayer);
         console.log("Leaving Game succeeded:", success);
         console.log("Lobby-Daten nach leaveGame:", players.value);
 
@@ -264,7 +263,7 @@ async function leaveGame(lobbyId: string) {
 
 onMounted(async () => {
   try {
-    await gamestore.fetchGameStatus();
+    await gameStore.fetchGameStatus();
   } catch (error) {
     console.error('Error fetching game status:', error);
   }
@@ -327,7 +326,7 @@ window.addEventListener('beforeunload', (event) => {
 
 onMounted(async () => {
     try {
-        await gamestore.fetchGameStatus();
+        await gameStore.fetchGameStatus();
         //Log zum testen
         //gamestore.joinLobby(lobbyId,);
 

@@ -115,14 +115,14 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
-  async function startGame(selectedMap: string) {
+  async function startGame(selectedMapName: string) {
     try {
       const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({selectedMap}),
+        body: JSON.stringify({selectedMap: selectedMapName}),
       })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
