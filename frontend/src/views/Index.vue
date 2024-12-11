@@ -24,16 +24,16 @@
   </Modal>
 
 
-  <div class="layout-main" :style="{backgroundImage: `url('/src/assets/FuturisticBackground.png')`}">
-    <!-- <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+  <div class="layout-main">
+    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
-    </video> -->
+    </video>
 
-    <h1 class="header-neumorphism">Snackman</h1>
+    <h1 class="header-adventure">Snackman</h1>
     <!-- <h1>Test: Namaku Font</h1> -->
 
-    <div class="flex flex-col gap-3 card">
+    <div class="flex flex-col gap-3">
       <button class="button-small-neumorphism" @click="modal.openModal(ModalType.NEW_GAME, '')">New Game</button>
       <button class="button-small-neumorphism" @click="modal.openModal(ModalType.JOIN_GAME, gameId)">Join Game</button>
       <!-- @click="game.findLobbies()"-->
