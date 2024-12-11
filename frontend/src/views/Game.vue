@@ -7,11 +7,11 @@ import {WebGLRenderer} from "three";
 import ground from "@/assets/game/realistic/ground.png"
 import wall from "@/assets/game/realistic/wall.png"
 import { useGameStore } from '@/stores/game/gamestore'
-import type { Vector } from "three/examples/jsm/Addons.js";
+import { GLTFLoader, type Vector } from "three/examples/jsm/Addons.js";
 import { sendMessage, subscribeToLobby } from "@/config/stompWebsocket";
 import { useRoute } from "vue-router";
 import type { Message } from "@/stores/game/dtd/IMessageDTD";
-import type { PlayerPosition } from "@/stores/game/dtd/IPlayerPositionDTD";
+import type { IPlayerpositionDTD } from "@/stores/game/dtd/IPlayerPositionDTD";
 
 const gameStore = useGameStore();
 
@@ -255,7 +255,7 @@ onMounted(async () => {
         break;
       case 'playerMoveValidation':
         console.log(message.feedback);
-        const playerPosition: PlayerPosition =  message.feedback;
+        const playerPosition: IPlayerpositionDTD =  message.feedback;
 
         if(playerPosition.playerName === sessionStorage.getItem('myName')){
           console.log("recevied validation");
@@ -300,11 +300,13 @@ onMounted(async () => {
 
   const mockPositions: IPlayerpositionDTD[] = [
     {
+      playerName: "test",
       x: 1,
       y: 1,
       angle: Math.PI,
     },
     {
+      playerName: "test",
       x: 2,
       y: 2,
       angle: 2 * Math.PI,

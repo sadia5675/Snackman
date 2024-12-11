@@ -314,14 +314,6 @@ public class Game {
         this.playmap = playmap;
     }
 
-    public Map<String, Character> getCharacters() {
-        return characters;
-    }
-
-    public void setCharacters(Map<String, Character> characters) {
-        this.characters = characters;
-    }
-
     public void addCharacter(String username, Character character) {
         this.characters.put(username, character);
     }

@@ -176,12 +176,12 @@ public class GameAPIController {
         Game existingGame = gameService.getGameById(lobbyid);
 
         Map<String,Character> currentCharacters = existingGame.getCharacters();
-        currentCharacters.get(position.getPlayerName()).move();
+        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY());
 
         logger.info("Requested Player({}) move to: posX({}), posY({}), ",position.getPlayerName(),position.getPosX(), position.getPosY());
         
         //true nur zum testen, eig prüfen ob move valid ist oder nicht
-        if(true){
+        if(validMove){
 
             //sende das die Validation in Ordnung war
             validationResponse.put("type","playerMoveValidation");

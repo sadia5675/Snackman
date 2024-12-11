@@ -1,5 +1,5 @@
-export interface IPlayerpositionDTD {
-  x:number
-  y:number
-  angle:number
+export interface PlayerPosition{
+    posY: number,
+    posX: number,
+    playerName: string,
 }
