@@ -1,6 +1,9 @@
 package de.hs_rm.backend.gamelogic.characters.players;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 
 // Bauplan der Characters --> hierbei handelt es sich um eine abstrakte Klasse!
 public abstract class Character{
@@ -13,13 +16,10 @@ public abstract class Character{
     // PlayerPosition playerposition;
     // Player player;
     private int posX, posY;
-    private int currentcalorie;
-    //private static final int MAX_LIFE =3;
+    private ObjectsItems currentObjectItem; 
+    private static final Logger logger = LoggerFactory.getLogger(Character.class);
 
-    private Item item;
     private double angleInDegrees; //der Winkel info, die von FE bekommt
-
-    Logger logger = LoggerFactory.getLogger(Character.class);
 
 
 
@@ -33,8 +33,7 @@ public abstract class Character{
         //this.player = player;
         this.posX=posX;
         this.posY=posY;
-        this.currentcalorie= 0;
-        //this.item = item; 
+        this.currentObjectItem = null;
     }
 
     //Getter udn Setter 
@@ -80,54 +79,32 @@ public abstract class Character{
     public void setPosY(int posY) {
         this.posY = posY;
     }
-    public Item getItems() {
-        return item;
+    public ObjectsItems getCurrentObjectItem() {
+        return currentObjectItem;
+    }
+
+    public void setCurrentObjectItem(ObjectsItems objectItem) {
+        this.currentObjectItem = objectItem;
     }
 
 
-    public void setItem(Item item) {
-        this.item=item; 
+    public void collectObjectItem(ObjectsItems item) {
+        if (currentObjectItem == null) {
+            currentObjectItem = item;
+            logger.info("ObjectItem '{}' collected.", item.getName());
+        } else {
+            logger.warn("Cannot collect '{}': Character already has an ObjectItem '{}'.", item.getName(), currentObjectItem.getName());
+        }
     }
+    public abstract void useItem(ObjectsItems item);
     
-    //Methode: addieren der Kalorien
-    public void mycurrentItem(){
-      Item currentItem= item;
-        if (currentItem instanceof FoodItems foodItem) {
-            currentcalorie += foodItem.getNutriScore().getCalorieBonus();
-            logger.info(item.getName() + " has been used. Calories increased by " + foodItem.getNutriScore().getCalorieBonus());
-        }else {
-            logger.info("No item to use.");
-        }
-
-    }
-
-    // Methode: Sammeln von Items
-    public void pickUpItemLogic(Item item) {
-        if (item == null) {
-            logger.info("No item to pick up");
-            return;
-        }
-        setItem(item);
-        logger.info(item.getName() + " is picked up");
-    }
-
-    public void setCurrentcalorie(int currentcalorie) {
-        this.currentcalorie = currentcalorie;
-    }
-
     //TODO: muss noch ausgearbietet werden
     // Methode: Leben verloren
     public void caught() {
        // life--;
     }
 
-    public int getCurrentcalorie() {
-        return currentcalorie;
-    }
 
-    public Item getItem() {
-        return item;
-    }
 
     public double getAngleInDegrees() {
         return angleInDegrees;
