@@ -20,7 +20,7 @@ public abstract class Character{
     private static final Logger logger = LoggerFactory.getLogger(Character.class);
 
     private double angleInDegrees; //der Winkel info, die von FE bekommt
-    
+
 
 
 
@@ -60,7 +60,7 @@ public abstract class Character{
         this.posX = x;
         this.posY = y;
     }
-    
+
     public double getSpeed() {
         return speed;
     }
@@ -105,6 +105,7 @@ public abstract class Character{
     }
 
 
+
     public double getAngleInDegrees() {
         return angleInDegrees;
     }
@@ -113,6 +114,6 @@ public abstract class Character{
         this.angleInDegrees = angleInDegrees;
     }
 
-    
-    
+
+
 }

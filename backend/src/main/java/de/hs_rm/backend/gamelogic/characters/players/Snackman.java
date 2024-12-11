@@ -2,10 +2,8 @@ package de.hs_rm.backend.gamelogic.characters.players;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 /*
  * Die Snackman Klasse erbt von der Charackter Klasse.
  */
@@ -83,7 +81,7 @@ public class Snackman extends Character {
     public void caught (){
         this.life--; 
         if(this.life <= 0 ){
-            System.out.println("Snackman has been caught and has no more lives.");
+            logger.info("Snackman has been caught and has no more lives.");
         }
     }
 
