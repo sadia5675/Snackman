@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
-import { WebGLRenderer } from 'three'
-import { onMounted, ref } from 'vue'
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
+import {WebGLRenderer} from 'three'
+import {onMounted, ref} from 'vue'
+import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
-import type { IPlayerpositionDTD } from '@/stores/game/dtd/IPlayerpositionDTD'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { useGameStore } from '@/stores/game/gamestore'
+import type {IPlayerpositionDTD} from '@/stores/game/dtd/IPlayerpositionDTD'
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
+import {useGameStore} from '@/stores/game/gamestore'
 
 const gameStore = useGameStore()
 
@@ -44,7 +44,7 @@ function createSceneCameraRendererControlsClock() {
   pointerLockControls.pointerSpeed = 1
 
   const clock = new THREE.Clock()
-  return { scene, camera, renderer, pointerLockControls, clock }
+  return {scene, camera, renderer, pointerLockControls, clock}
 }
 
 function registerListeners(window: Window, renderer: WebGLRenderer) {
@@ -94,7 +94,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
   })
 }
 
-const { scene, camera, renderer, pointerLockControls, clock } =
+const {scene, camera, renderer, pointerLockControls, clock} =
   createSceneCameraRendererControlsClock()
 registerListeners(window, renderer)
 
@@ -132,6 +132,11 @@ function animate() {
 function cameraPositionBewegen(delta: number) {
   let cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
+
+  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
+  cameraViewDirection.y = 0
+  cameraViewDirection.normalize()
+
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (movingForward) {
@@ -189,6 +194,7 @@ function cameraPositionBewegen(delta: number) {
   }
 }
 
+
 function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
   const modelLoader = new GLTFLoader()
   playerPositions.forEach((playerPosition) => {
@@ -207,8 +213,8 @@ function loadMap(map: String[]) {
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
   const groundTexture = new THREE.TextureLoader().load(ground)
   const wallTexture = new THREE.TextureLoader().load(wall)
-  const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture })
-  const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture })
+  const groundMaterial = new THREE.MeshStandardMaterial({map: groundTexture})
+  const wallMaterial = new THREE.MeshStandardMaterial({map: wallTexture})
 
   let rowCounter = 0
   map.forEach((e) => {
