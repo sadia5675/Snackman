@@ -19,7 +19,17 @@ export default {
       fontFamily: {
         knewave: ['Knewave'],
         bigShoulders: ['Big Shoulders Stencil Text']
-      }
+      },
+      boxShadow: {
+        custom: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+      },
+      backdropBlur: {
+        custom: '9px',
+      },
+      borderRadius: {
+        custom: '10px',
+      },
+
     },
   },
   plugins: [],

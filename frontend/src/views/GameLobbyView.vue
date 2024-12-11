@@ -1,13 +1,13 @@
 <template>
-  <div class="layout-main" :style="{ backgroundImage: `url('/src/assets/FuturisticBackground.png')` }">
-    <!-- <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+  <div class="layout-main">
+    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
-    </video> -->
+    </video>
     <div class="absolute inset-0 bg-black bg-opacity-20 z-0"></div>
     <div class=" mx-auto mt-0 z-10">
       <div class="min-h-screen flex flex-col items-center justify-center">
-        <h1 class="header-neumorphism">Game Lobby</h1>
+        <h1 class="header-adventure">Game Lobby</h1>
 
 
         <div class="grid grid-cols-7 grid-rows-4 gap-4">
@@ -15,15 +15,15 @@
 
           <!-- Lobby Code -->
           <div
-            class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 bg-[#e8e8e8] rounded-lg p-4 shadow-lg">
-            <button class="button-small-neumorphism" @click="copyToClipboard()">
+            class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 card-adventure">
+            <button class="button-small-adventure" @click="copyToClipboard()">
               Copy
             </button>
             <input type="text" class="input-form-small-neumorphism" disabled="true" v-model="lobbyId" />
           </div>
 
           <!-- Spielerliste -->
-          <div class="col-start-2 col-end-5 row-start-2 row-end-5 card">
+          <div class="col-start-2 col-end-5 row-start-2 row-end-5 card-adventure">
             <ul class="bg-hellesgraulila shadow-lg rounded-lg divide-y divide-gray-900">
               <!-- ToDo: Padding und Margin vereinheitlichen und auslagern -->
               <li v-for="(player, i) in players" :key="player.name"
@@ -38,15 +38,15 @@
           </div>
 
           <!-- Chickens und Map -->
-          <div class="col-start-5 col-end-7 row-start-1 row-end-3 card space-y-4">
+          <div class="col-start-5 col-end-7 row-start-1 row-end-3 card-adventure space-y-4">
             <div class="flex items-center justify mt-3 s">
               <div class="flex items-center">
-                <p class="button-small-neumorphism">Chickens:</p>
+                <p class="button-small-adventure">Chickens:</p>
                 <input type="number" v-model="chickenCount" class="input-form-small-neumorphism" />
               </div>
             </div>
             <div class="flex">
-              <button class="button-small-neumorphism" @click="openMapPopup()">
+              <button class="button-small-adventure" @click="openMapPopup()">
                 Select Map
               </button>
               <div class="input-form-big-neumorphism flex items-center justify-center">
@@ -55,19 +55,19 @@
             </div>
           </div>
 
-          <!--Start nutton-->
-          <div class="col-start-5 col-end-7 row-start-3 row-end-5 card">
+          <!--Start und leave button-->
+          <div class="col-start-5 col-end-7 row-start-3 row-end-5 card-adventure">
             <div class="flex flex-col gap-3">
               <!-- ToDo: Button -->
               <button :class="{
-                'button-small-neumorphism': isHost,
+                'button-small-adventure': isHost,
                 'bg-gray-600': !isHost,
               }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg  rounded-lg transition"
                 @click="startGame()">
                 {{ isHost ? 'Start Game' : '---' }}
               </button>
               <button :class="{
-                'button-small-neumorphism': isHost,
+                'button-small-adventure': isHost,
                 'bg-gray-600': !isHost
               }" class="" @click="leaveGame(lobbyId)">
                 leave lobby
@@ -89,7 +89,7 @@
 
       <!-- Dropdown for map selection -->
       <div class="mt-3 flex">
-        <button class="button-small-neumorphism">
+        <button class="button-small-adventure">
           Kick
         </button>
         <select v-model="selectedMap" class="input-form-small-neumorphism">
@@ -99,7 +99,7 @@
         </select>
 
       </div>
-      <button class="button-small-neumorphism mt-3" @click="closeMapPopup()">
+      <button class="button-small-adventure mt-3" @click="closeMapPopup()">
         Close
       </button>
     </div>

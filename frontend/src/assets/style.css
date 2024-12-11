@@ -34,30 +34,10 @@
     @apply font-bold font-mono text-6xl text-center text-white
 }
 
-
-
-
-
 /* Button Styles */
 .button-small-neumorphism {
     @apply font-mono text-grau px-7 py-3 text-lg rounded-md bg-[#e8e8e8] cursor-pointer border border-[#e8e8e8] transition-all duration-300 shadow-[6px_6px_12px_#c5c5c5,-6px_-6px_12px_#ffffff]
 }
-
-
-
-
-
-
-
- /* Card Styles */
- .card-neumophism {
-    @apply bg-[#e8e8e8] rounded-lg p-4 shadow-lg
-}
-
-
-
-
-
 
 /* Input-Form Styles */
 .input-form-small-neumorphism {
@@ -71,6 +51,11 @@
 .input-form {
     @apply  bg-beige text-hellgrau px-4 py-2 rounded-lg text-center  outline-gold
  }
+
+ /* Card Styles */
+ .card-neumophism {
+    @apply bg-[#e8e8e8] rounded-lg p-4 shadow-lg
+}
 
 
 
@@ -91,41 +76,14 @@
     @apply font-knewave font-bold text-5xl text-[#e8e8e8] lg:text-9xl mb-20 text-center
 }
 .header-modal-adventure{
-    @apply font-bold font-knewave text-6xl text-center text-white
-
+    @apply font-bold font-knewave text-6xl text-center text-white mb-3
 
 }
-
-
-
-
-
 
 /* Button Styles */
 .button-small-adventure {
     @apply font-mono text-white text-2xl hover:scale-110 transition-transform duration-300
 }
-
-
-
-
-
-
-
-
-
- /* Card Styles */
- .card-adventure {
-    @apply rounded-lg p-4 shadow-lg
-}
-
-
-
-
-
-
-
-
 
 /* Input-Form Styles */
 .input-form-small-neumorphism {
@@ -142,6 +100,11 @@
 
 .form-next-to-button {
     @apply bg-hellesgraulila text-gray-800 px-4 py-2 rounded-l-lg text-center  outline-gold
+}
+
+ /* Card Styles */
+ .card-adventure {
+    @apply bg-white/30 shadow-custom backdrop-blur-custom rounded-custom p-3
 }
 
 
