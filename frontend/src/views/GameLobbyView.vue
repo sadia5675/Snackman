@@ -184,7 +184,7 @@ const isGamemaster = computed(() => {
   const currentPlayerName = sessionStorage.getItem("myName"); // Spielername aus sessionStorage
   const gamemaster = gamestore.gameState.gamedata?.gamemaster;
 
-  return gamemaster?.name === currentPlayerName && gamemaster?.gamemaster; // Vergleich mit Gamemaster
+  return gamemaster?.name === currentPlayerName && gamemaster?.name; // Vergleich mit Gamemaster
 });
 
 watch(
