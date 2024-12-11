@@ -22,9 +22,14 @@
       <option :value="Playerrole.GHOST">Ghost</option>
     </select>
     <button
+        class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
+        @click="randomizeRole(player.name)">
+      Randomize Role
+    </button>
+    <button
+      v-if="isGamemaster"
       class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"
-      @click="kickPlayer(player.name)"
-    >
+      @click="kickPlayer(player)">
       Kick
     </button>
   </div>
@@ -35,7 +40,7 @@ import { Playerrole } from '@/stores/game/dtd/EPlayerrole.js'
 import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
 import type { Result } from '@/stores/game/responses/Result'
 import { useGameStore } from '@/stores/game/gamestore'
-import { type Ref } from 'vue'
+import { computed, type Ref } from 'vue'
 
 const props = defineProps({
   lobbyId: {
@@ -55,12 +60,28 @@ async function onPlayerRoleChanged(player: IPlayerDTD) {
   })
 }
 
+const gamestore = useGameStore()
+
+const isGamemaster = computed(() => {
+  const currentPlayer = sessionStorage.getItem("myName");
+  const gamemaster = gamestore.gameState.gamedata?.gamemaster;
+  return gamemaster?.name === currentPlayer && gamemaster?.playertype;
+})
+
 //Methode wenn Host Spieler kicken will
-async function kickPlayer(username: string) {
+async function kickPlayer(username: IPlayerDTD) {
+  const gamemasterName = gameStore.gameState.gamedata?.gamemaster;
+  if (!gamemasterName) {
+    console.log('Gamemaster nicht gefunden!');
+    return;
+  }
+
   try {
-    await kickUser(username)
+    await kickUser(gamemasterName, username);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
+
+
 </script>

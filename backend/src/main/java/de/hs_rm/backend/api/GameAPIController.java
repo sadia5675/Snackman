@@ -175,24 +175,43 @@ public class GameAPIController {
 
     // Method to kick a user from the game
     // soll username oder playerobj von frontend bekommen?
+
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
-    public ResponseEntity<?> kickUser(@PathVariable String gameId, @PathVariable String usernameKicker,
-            @PathVariable String usernameKicked) {
+    @SendTo("/topic/game/{lobbyid}")
+    public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
+        HashMap<String,Object> response = new HashMap<>();
 
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
-        if (existingGame.kick(usernameKicker, usernameKicked)) {
-            return createOkResponse(existingGame);
-        }
-        return createErrorResponse("can not kick " + usernameKicked + "!");
+        try {
+            if(existingGame.kick(usernameKicker, usernameKicked)){
+                return createOkResponse(existingGame);
+            }
 
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+            logger.info("Kicked {} successfully", usernameKicked);
+
+            messagingService.sendPlayerList(gameId, response);
+
+        } catch (Exception e) {
+            response.put("feedback", e.getMessage());
+            response.put("status", "error");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(gameId, response);
+        }
+        return createErrorResponse("can not kick "+ usernameKicked +"!");
+                
     }
+
 
     // Method to set the number of elements (e.g., chickens) in the game
     @PostMapping("/setChicken/{gameId}/{number}")
-    public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId, @PathVariable int number) {
+    public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId ,@PathVariable int number) {
         // #63 NEW: gameService now sets the number of Chickens
         Game existingGame = gameService.setChicken(gameId, number);
 
@@ -303,7 +322,7 @@ public class GameAPIController {
     public ResponseEntity<?> movePlayer( @PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
 
         Game existingGame = gameService.getGameById(gameId);
-        
+
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
