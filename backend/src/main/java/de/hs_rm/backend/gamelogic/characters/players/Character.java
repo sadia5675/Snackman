@@ -16,6 +16,8 @@ public abstract class Character{
 
 
     private Item item; 
+    private double angleInDegrees; //der Winkel info, die von FE bekommt
+    
 
 
 
@@ -51,6 +53,12 @@ public abstract class Character{
     // public void setGamiId(String gamiId) {
     //     this.gameId = gamiId;
     // }
+
+    public void move(int x, int y){
+        this.posX = x;
+        this.posY = y;
+    }
+    
     public double getSpeed() {
         return speed;
     }
@@ -85,9 +93,6 @@ public abstract class Character{
             currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
     }
 
-    //Abstrakte Methoden 
-    public abstract PlayerPosition move(); 
-    
     // Methode: Sammeln von Items
     public void pickUpItemLogic(Item item) {
         setItem(item);
@@ -100,5 +105,26 @@ public abstract class Character{
        // life--;
     }
 
+    public int getCurrentcalorie() {
+        return currentcalorie;
+    }
+
+    public void setCurrentcalorie(int currentcalorie) {
+        this.currentcalorie = currentcalorie;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public double getAngleInDegrees() {
+        return angleInDegrees;
+    }
+
+    public void setAngleInDegrees(double angleInDegrees) {
+        this.angleInDegrees = angleInDegrees;
+    }
+
+    
     
 }

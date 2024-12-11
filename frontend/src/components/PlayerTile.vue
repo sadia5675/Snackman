@@ -2,11 +2,6 @@
   <div class="flex flex-col flex-grow">
     <p class="text-sm font-medium text-gray-900">Name</p>
     <p class="text-lg font-semibold text-blue-600">{{ player.name }}</p>
-    <!--
-    TODO: playerrole kann testweise hiermit live gesehen werden, da über select nicht funktioniert:
-    <p class="text-lg font-semibold text-blue-600">{{ player.playerrole }}</p>
-    -->
-    <p class="text-lg font-semibold text-blue-600">{{ player.playerrole }}</p>
   </div>
   <p
     :class="{
@@ -18,7 +13,6 @@
     {{ true ? 'Ready' : 'Not Ready' }}
   </p>
   <div class="flex items-center space-x-2">
-    <!-- TODO: select zeigt nicht aktuellen playerrole an, obwohl Daten geupdatet sind. Etwas mit select stimmt nicht -->
     <select
       v-model="player.playerrole"
       @change="onPlayerRoleChanged(player)"
@@ -43,13 +37,20 @@ import type { Result } from '@/stores/game/responses/Result'
 import { useGameStore } from '@/stores/game/gamestore'
 import { type Ref } from 'vue'
 
+const props = defineProps({
+  lobbyId: {
+    type: String,
+    required: true,
+  },
+})
+
 const player: Ref<IPlayerDTD> = defineModel<IPlayerDTD>({ required: true })
 
 const gameStore = useGameStore()
 const { setPlayerRoleViaStomp, kickUser } = gameStore
 
 async function onPlayerRoleChanged(player: IPlayerDTD) {
-  await setPlayerRoleViaStomp(player.name, player.playerrole).then((result: Result) => {
+  await setPlayerRoleViaStomp(player.name, player.playerrole, props.lobbyId).then((result: Result) => {
     console.log(result)
   })
 }
@@ -58,9 +59,6 @@ async function onPlayerRoleChanged(player: IPlayerDTD) {
 async function kickPlayer(username: string) {
   try {
     await kickUser(username)
-
-    //log zum testen
-    console.log(gamestore.gameState)
   } catch (error) {
     console.log(error)
   }
