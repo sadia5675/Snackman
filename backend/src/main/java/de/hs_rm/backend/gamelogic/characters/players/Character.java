@@ -87,8 +87,6 @@ public abstract class Character{
         this.currentObjectItem = objectItem;
     }
 
-    //Abstrakte Methoden 
-    public abstract PlayerPosition move(); 
 
     public void collectObjectItem(ObjectsItems item) {
         if (currentObjectItem == null) {
