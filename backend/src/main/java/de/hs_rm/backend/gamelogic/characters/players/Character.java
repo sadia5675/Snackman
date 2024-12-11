@@ -1,4 +1,7 @@
 package de.hs_rm.backend.gamelogic.characters.players;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // Bauplan der Characters --> hierbei handelt es sich um eine abstrakte Klasse!
 public abstract class Character{
     //Initialisierung 
@@ -15,9 +18,13 @@ public abstract class Character{
 
 
 
-    private Item item; 
+    private Item item;
     private double angleInDegrees; //der Winkel info, die von FE bekommt
-    
+
+    //private int life;
+    private Item item;
+    Logger logger = LoggerFactory.getLogger(Character.class);
+
 
 
 
@@ -58,7 +65,7 @@ public abstract class Character{
         this.posX = x;
         this.posY = y;
     }
-    
+
     public double getSpeed() {
         return speed;
     }
@@ -90,15 +97,36 @@ public abstract class Character{
     public void mycurrentItem(){
       Item currentItem= item;
         if (currentItem instanceof FoodItems foodItem) {
-            currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
+            currentcalorie += foodItem.getNutriScore().getCalorieBonus();
+            logger.info(item.getName() + " has been used. Calories increased by " + foodItem.getNutriScore().getCalorieBonus());
+        }else {
+            logger.info("No item to use.");
+        }
+
     }
 
     // Methode: Sammeln von Items
     public void pickUpItemLogic(Item item) {
+        if (item == null) {
+            logger.info("No item to pick up");
+            return;
+        }
         setItem(item);
-            System.out.println(item.getName() + "is picked up");
+        logger.info(item.getName() + " is picked up");
     }
-    
+
+    public int getCurrentcalorie() {
+        return currentcalorie;
+    }
+
+    public void setCurrentcalorie(int currentcalorie) {
+        this.currentcalorie = currentcalorie;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
     //TODO: muss noch ausgearbietet werden
     // Methode: Leben verloren
     public void caught() {
@@ -125,6 +153,6 @@ public abstract class Character{
         this.angleInDegrees = angleInDegrees;
     }
 
-    
-    
+
+
 }
