@@ -11,6 +11,7 @@ public abstract class  Item {
             this.name = name;
             this.x= x;
             this.y=y;
+            this.type = type;
         }
     
         public String getName() {

@@ -33,7 +33,6 @@ public abstract class Character{
         //this.player = player;
         this.posX=posX;
         this.posY=posY;
-        this.currentObjectItem = null;
     }
 
     //Getter udn Setter 

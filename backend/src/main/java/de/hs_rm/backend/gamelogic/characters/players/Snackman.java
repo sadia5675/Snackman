@@ -12,8 +12,10 @@ public class Snackman extends Character {
     private int maxLife;
     private int life; 
     private double nutriscore; 
-    private Item item;
+
     private int currentCalorie;
+
+
 
     private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
 
@@ -21,17 +23,11 @@ public class Snackman extends Character {
         super(speed,posX,posY);
         this.life=life; 
         this.nutriscore=0; 
-        this.item= null;
         this.maxLife=maxLife;
+        this.currentCalorie =0;
     }
 
-    public Item getItems() {
-        return item;
-    }
 
-    public void setItem(Item item) {
-        this.item=item; 
-    }
 
     public int getLife() {
         return life;
@@ -45,6 +41,16 @@ public class Snackman extends Character {
     }
     public void setNutriscore(double nutriscore) {
         this.nutriscore = nutriscore;
+    }
+
+    public int getCurrentCalorie() {
+        return currentCalorie;
+    }
+
+
+
+    public void setCurrentCalorie(int currentCalorie) {
+        this.currentCalorie = currentCalorie;
     }
 
      //abstrakte Methode zum fortbewegen--> Logik fehlt noch
