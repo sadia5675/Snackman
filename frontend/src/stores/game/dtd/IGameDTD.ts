@@ -8,7 +8,7 @@ export interface IGameDTD {
   gamemaster: IPlayerDTD | null
   started: boolean
   playmap?: {
-    map: string[][]
+    map: string[]
     width: number
     height: number
   }
