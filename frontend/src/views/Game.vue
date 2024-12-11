@@ -189,6 +189,9 @@ function validatePosition(nextPosition: THREE.Vector3) {
       posX: nextPosition.x,
       posY: nextPosition.z,
     })
+    lastSend = currentTime;
+  }else{
+    moveCamera();
   }
   
 }
@@ -198,7 +201,7 @@ function moveCamera() {
 }
 
 
-function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
+function renderCharacters(playerPositions: IPlayerPositionDTD[]) {
   const modelLoader = new GLTFLoader()
   playerPositions.forEach((playerPosition) => {
     modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (objekt) => {
@@ -255,7 +258,7 @@ onMounted(async () => {
         break;
       case 'playerMoveValidation':
         console.log(message.feedback);
-        const playerPosition: IPlayerpositionDTD =  message.feedback;
+        const playerPosition: IPlayerPositionDTD =  message.feedback;
 
         if(playerPosition.playerName === sessionStorage.getItem('myName')){
           console.log("recevied validation");
@@ -298,7 +301,7 @@ onMounted(async () => {
     console.error('No map found')
   }
 
-  const mockPositions: IPlayerpositionDTD[] = [
+  const mockPositions: IPlayerPositionDTD[] = [
     {
       playerName: "test",
       x: 1,
