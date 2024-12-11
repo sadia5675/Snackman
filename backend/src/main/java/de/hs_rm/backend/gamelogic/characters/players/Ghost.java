@@ -11,8 +11,7 @@ import org.slf4j.LoggerFactory;
 public class Ghost extends Character {
     //Initialisierung 
     private int touchcount; 
-    private Item item;
-    private List<ObjectsItems> collectedObjectItems; 
+    private ObjectsItems item;
     
     private static final Logger logger = LoggerFactory.getLogger(Ghost.class);
     
@@ -20,29 +19,13 @@ public class Ghost extends Character {
         super(speed,posX,posY);
         this.touchcount=0; 
         this.item= item;  
-        this.collectedObjectItems = new ArrayList<>();
     }
-
-    @Override
-    public Item getItems() {
-        return item;
-    }
-
-    @Override
-    public void setItem(Item item) {
-        this.item=item; 
-    }
-    
 
     public int getTouchcount() {
         return touchcount;
     }
     public void setTouchcount(int touchcount) {
         this.touchcount = touchcount;
-    }
-
-    public List<ObjectsItems> getCollectedObjectItems() {
-        return collectedObjectItems;
     }
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
@@ -58,15 +41,15 @@ public class Ghost extends Character {
         touchcount++; 
     }
 
-    //TODO: Wie viel Objekte darf man haben???
-    //Methode: Objectitem in der Liste 
     @Override
-    public void pickUpItem(Item item) {
-        if (item instanceof ObjectsItems objectItem) {
-            collectedObjectItems.add(objectItem); 
-            logger.info("ObjectItem '{}' collected by Geist.", objectItem.getName());
+    public void useItem(ObjectsItems item) {
+        item = getCurrentObjectItem();
+        if (item != null) {
+            logger.info("Snackman uses ObjectItem '{}'.", item.getName());
+            // Hier die Logik für die Verwendung des ObjectItems implementieren
+            setCurrentObjectItem(null); // Das Item wird nach der Nutzung entfernt
         } else {
-            logger.warn("Geist cannot pick up this item of type '{}'.", item.getClass().getSimpleName());
+            logger.warn("No ObjectItem to use.");
         }
     }
 }

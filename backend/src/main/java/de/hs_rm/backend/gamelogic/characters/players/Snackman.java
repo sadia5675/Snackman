@@ -15,7 +15,6 @@ public class Snackman extends Character {
     private double nutriscore; 
     private Item item;
     private int currentCalorie;
-    private List<ObjectsItems> collectedObjectItems; 
 
     private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
 
@@ -24,18 +23,7 @@ public class Snackman extends Character {
         this.life=life; 
         this.nutriscore=0; 
         this.item= item; 
-        this.currentCalorie= 0;
-        this.collectedObjectItems = new ArrayList<>(); 
-    }
-
-    @Override
-    public Item getItems() {
-        return item;
-    }
-
-    @Override
-    public void setItem(Item item) {
-        this.item=item; 
+        this.currentCalorie= 0; 
     }
 
     public int getLife() {
@@ -52,10 +40,6 @@ public class Snackman extends Character {
         this.nutriscore = nutriscore;
     }
 
-    public List<ObjectsItems> getCollectedObjectItems() {
-        return collectedObjectItems;
-    }
-
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
     @Override
     public PlayerPosition move(){
@@ -63,18 +47,21 @@ public class Snackman extends Character {
         return null; 
     }
 
-    //Methode: addieren der Kalorien und Objekte in der Liste rein tun
+    // Methode: Aufnehmen von FoodItems
+     public void eatSnack(FoodItems foodItem) {
+        currentCalorie += foodItem.getNutriScore().getCalorieBonus();
+        logger.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentCalorie);
+    }
+
     @Override
-    public void pickUpItem(Item item) {
-        if (item instanceof FoodItems foodItem) {
-            // Kalorien
-            logger.info("{} is picked up", foodItem.getName());
-            currentCalorie += foodItem.getNutriScore().getCalorieBonus();
-            logger.info("FoodItem {} consumed: Current Calories = {}", foodItem.getName(), currentCalorie);
-        } else if (item instanceof ObjectsItems objectItem) {
-            // ObjectItem sammeln
-            collectedObjectItems.add(objectItem);
-            logger.info("ObjectItem {} collected. Total collected items: {}", objectItem.getName(), collectedObjectItems.size());
+    public void useItem(ObjectsItems item) {
+        item = getCurrentObjectItem();
+        if (item != null) {
+            logger.info("Snackman uses ObjectItem '{}'.", item.getName());
+            // Hier die Logik
+            setCurrentObjectItem(null); 
+        } else {
+            logger.warn("No ObjectItem to use.");
         }
     }
     
