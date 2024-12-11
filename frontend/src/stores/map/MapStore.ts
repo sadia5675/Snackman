@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import type { MapsDTD } from "@/stores/game/dtd/MapsDTD";
+
 export const useMapStore = defineStore("map", ()=> {
 //onMounted? nachschauen
 //ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
@@ -7,19 +9,33 @@ const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
 const mapName = ref<string>(""); // Map-Name
-const allMaps= ref<string[]>([]);//alle maps
+const mapsDTD = ref<MapsDTD>({
+  maps: [],
+  selectedMap: null
+});
 
 //Um maps aus backend zu hollen
 async function fetchMaps(){
     try{
-      // GetAnfrage an den Backend 
-        const response = await fetch ("/api/maps"); 
+      // GetAnfrage an den Backend
+        const response = await fetch ("/api/maps");
         //D Json wird dann in allmaps gespeichert -_> also die Mapnamen
-        allMaps.value= await response.json(); 
-        console.log("Fetched Maps:", allMaps.value);
-    }catch(error){
-        console.error("Error fetching maps:", error);
+        const data = await response.json();
+
+    // Überprüft, ob das feedback-Feld existiert und ein Objekt ist
+    if (data.feedback && typeof data.feedback === "object") {
+      mapsDTD.value.maps = Object.keys(data.feedback).map((key, index) => ({// Extrahiert die Schlüsselnamen
+          id: index + 1,         // Eindeutige ID
+          name: key,             // Der Name
+          map: data.feedback[key] // Das Layout der Karte (2D-Array von Strings)
+        }));
+    } else {
+      throw new Error("Invalid data format");
     }
+    console.log("Fetched Maps:", mapsDTD.value.maps);
+  } catch (error) {
+    console.error("Error fetching maps:", error);
+  }
 }
 
 //funktion um Raster zu erstellen
@@ -31,12 +47,12 @@ function createGrid() {
     }
     // Raster als 2D-Array erstellen
     grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-      Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt 
+      Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
     );
     for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
       for (let colIndex = 0; colIndex < cols.value; colIndex++) {
         if (
-          //Minus 1 wegen Arrayindex und Grid 
+          //Minus 1 wegen Arrayindex und Grid
           rowIndex === 0 || // Erste Zeile
           rowIndex === rows.value - 1 || // Letzte Zeile
           colIndex === 0 || // Erste Spalte
@@ -57,11 +73,11 @@ function updateCell(rowIndex:number,colIndex:number){
     //ternäre Operator --> wie Ifelse aber wesentlich Kompakter
     grid.value[rowIndex][colIndex] =
       grid.value[rowIndex][colIndex] === "wall" ? "weg" : "wall";
-      
+
 }
 
 /*
-  * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um 
+  * die Funktion spiechert die eingaben des Benutzers ab und wandelt diese ind JSON um
   */
   //
 async function saveMap(){
@@ -78,7 +94,7 @@ async function saveMap(){
         //3= weil er denn wert des Strings überprüft ob er wirklich
         if (cell == "null"){
           valideCell=true;
-          break; 
+          break;
         }
       }if(valideCell){
         break; // wenn schon in der äußeren Schleife eine ungültige eingabe gefunden wurde also null
@@ -86,16 +102,17 @@ async function saveMap(){
     }
     if(valideCell){
       alert("Pleas fill the Map at first!");
-      return; 
+      return;
     }
     // **Vergleich des Namens mit den vorhandenen Maps**
+    await  fetchMaps();
     let nameExists = false;
-    for(let existingMap of allMaps.value){
-        if (existingMap.trim().toLowerCase()=== mapName.value.trim().toLowerCase()){
-          nameExists=true; 
+    for(let existingMap of mapsDTD.value.maps){
+        if (existingMap.name.trim().toLowerCase()=== mapName.value.trim().toLowerCase()){
+          nameExists=true;
         }
     }
-    
+
     if (nameExists) {
       alert("The name is not available, please choose a different name.");
       return;
@@ -108,16 +125,16 @@ async function saveMap(){
 };
   //in diesem Block werden die Daten vom Browser eingelesen und vorbereitet für backend
     try {
-    
+
      //Http Post request zum Speichern der Map
       const response = await fetch("/api/maps", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(mapData),//mapdaten in Json format umgewandelt
       });
-      
+
       if (!response.ok) {
         throw new Error(await response.text());// Nachricht vom Backend also fehlermeldung
       }
@@ -132,6 +149,6 @@ async function saveMap(){
 
 // Rückgabe der Funktionen und Variablen, die im Store verfügbar sind
   return{
-    mapName, rows, cols, grid, allMaps,fetchMaps,saveMap,createGrid,updateCell,
+    mapName, rows, cols, grid, mapsDTD,fetchMaps,saveMap,createGrid,updateCell,
   };
 });

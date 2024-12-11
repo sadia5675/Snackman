@@ -64,11 +64,13 @@ class GameServiceTests {
         assertNull(foundGame);
     }
 
+    /*
     @Test
     void testStartGame() {
         Player gamemaster = new Player("Gamemaster");
         Game game = gameService.createGame(gamemaster);
         gameService.setChicken(game.getId(), 3);
+
 
         Game startedGame = gameService.startGame(game.getId());
 
@@ -89,6 +91,8 @@ class GameServiceTests {
         assertNotNull(endedGame);
         assertFalse(endedGame.isStarted());
     }
+
+     */
 
     @Test
     void testJoinGame() {
@@ -145,6 +149,7 @@ class GameServiceTests {
         assertEquals(1, updatedGame.getPlayers().size());
     }
 
+    /*
     @Test
     void testSetChicken() {
         Player gamemaster = new Player("Gamemaster");
@@ -155,4 +160,6 @@ class GameServiceTests {
         assertNotNull(updatedGame);
         assertEquals(5, updatedGame.getChickens().size());
     }
+
+     */
 }

@@ -1,10 +1,12 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /*Die Ghost Klasse erbt von der Character Klasse. Hierbei handelt es sich um einen Gegner von Snackman,
  *der von einem Spieler gespielt werden kann. 
@@ -12,7 +14,9 @@ import java.util.Set;
 public class Ghost extends Character {
     //Initialisierung 
     private int touchcount; 
-    private Item item;
+    private ObjectsItems item;
+    
+    private static final Logger logger = LoggerFactory.getLogger(Ghost.class);
     
     public Ghost(double speed, int posX, int posY){
         super(speed,posX,posY);
@@ -20,35 +24,35 @@ public class Ghost extends Character {
         this.item= item;  
     }
 
-    public Item getItems() {
-        return item;
-    }
-
-    public void setItem(Item item) {
-        this.item=item; 
-    }
-    
-
     public int getTouchcount() {
         return touchcount;
     }
     public void setTouchcount(int touchcount) {
         this.touchcount = touchcount;
     }
-
-    //abstrakte Methode um bestimmte Items in einer Liste vom Typ Item zu sammeln= die Methode ist doch im Charackter??
     
     //abstrakte Methode zum fortbewegen--> Logik fehlt noch
-    // @Override
-    // public PlayerPosition move(){
-    //     System.out.println("the ghost is moving");
-    //     return null; 
-    // }
+    //@Override
+    //public PlayerPosition move(){
+    //    logger.info("the ghost is moving");
+    //    return null;
+    //}
 
     //Reglung bei Kontakt mit Snackman--> Logik fehlt noch
     public void hit(String playerId){
-        System.out.println("Player " + playerId + " has been hit by the ghost.");
+        logger.info("Player " + playerId + " has been hit by the ghost.");
         touchcount++; 
     }
 
+    @Override
+    public void useItem(ObjectsItems item) {
+        item = getCurrentObjectItem();
+        if (item != null) {
+            logger.info("Snackman uses ObjectItem '{}'.", item.getName());
+            // Hier die Logik für die Verwendung des ObjectItems implementieren
+            setCurrentObjectItem(null); // Das Item wird nach der Nutzung entfernt
+        } else {
+            logger.warn("No ObjectItem to use.");
+        }
+    }
 }
