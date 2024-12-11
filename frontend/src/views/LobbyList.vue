@@ -51,17 +51,19 @@ async function getAllGames(){
 <template>
   <Modal v-if="modal.isModalOpen">
     <template #titel>
-      <h2 class="font-bold text-3xl text-center">Join Game</h2>
+      <h2 class="header-modal-adventure">Join Game</h2>
     </template>
     <template #content>
+      <div class="flex flex-col gap-3">
       <input v-model="newPlayer.name" type="text" name="name" id="name"
-        class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+        class="input-form"
         placeholder="Username eingeben" />
       <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
+    </div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
        <div class="flex space-x-4">
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.joinGame(newPlayer)">Weiter</button>
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
+        <button class="button-small-adventure" @click="modal.joinGame(newPlayer)">Weiter</button>
+        <button class="button-small-adventure" @click="modal.closeModal()">Schließen</button>
        </div>
       
     </template>
