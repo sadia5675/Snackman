@@ -11,7 +11,7 @@ import { GLTFLoader, type Vector } from "three/examples/jsm/Addons.js";
 import { sendMessage, subscribeToLobby } from "@/config/stompWebsocket";
 import { useRoute } from "vue-router";
 import type { Message } from "@/stores/game/dtd/IMessageDTD";
-import type { IPlayerpositionDTD } from "@/stores/game/dtd/IPlayerPositionDTD";
+import type { IPlayerPositionDTD } from "@/stores/game/dtd/IPlayerPositionDTD";
 
 const gameStore = useGameStore();
 
