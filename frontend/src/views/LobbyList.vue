@@ -66,11 +66,17 @@ async function getAllGames(){
       
     </template>
   </Modal>
-    <div class="flex items-center justify-center min-h-screen bg-gray-100">
-      <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-4xl">
+
+
+    <div class="flex items-center justify-center min-h-screen">
+      <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
+    </video>
+      <div class="card-adventure max-w-4xl">
         <table class="table-auto w-full border-rounded-lg border-collapse border border-gray-300">
           <thead>
-            <tr class="bg-gray-100">
+            <tr class="bg-gray-100 opacity-60">
               <th class="px-6 py-3 text-gray-700">Lobby</th>
               <th class="px-6 py-3 text-gray-700">Host</th>
               <th class="px-6 py-3 text-gray-700">Action</th>
