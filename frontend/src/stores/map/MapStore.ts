@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import type { MapsDTD } from "@/stores/game/dtd/MapsDTD";
+
 export const useMapStore = defineStore("map", ()=> {
 //onMounted? nachschauen
 //ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
@@ -7,7 +9,10 @@ const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
 const mapName = ref<string>(""); // Map-Name
-const allMaps= ref<string[]>([]);//alle maps
+const mapsDTD = ref<MapsDTD>({
+  maps: [],
+  selectedMap: ""
+});
 
 //Um maps aus backend zu hollen
 async function fetchMaps(){
@@ -15,11 +20,22 @@ async function fetchMaps(){
       // GetAnfrage an den Backend 
         const response = await fetch ("/api/maps"); 
         //D Json wird dann in allmaps gespeichert -_> also die Mapnamen
-        allMaps.value= await response.json(); 
-        console.log("Fetched Maps:", allMaps.value);
-    }catch(error){
-        console.error("Error fetching maps:", error);
+        const data = await response.json();
+
+    // Überprüft, ob das feedback-Feld existiert und ein Objekt ist
+    if (data.feedback && typeof data.feedback === "object") {
+      mapsDTD.value.maps = Object.keys(data.feedback).map((key, index) => ({// Extrahiert die Schlüsselnamen
+          id: index + 1,         // Eindeutige ID 
+          name: key,             // Der Name
+          map: data.feedback[key] // Das Layout der Karte (2D-Array von Strings)
+        })); 
+    } else {
+      throw new Error("Invalid data format");
     }
+    console.log("Fetched Maps:", mapsDTD.value.maps);
+  } catch (error) {
+    console.error("Error fetching maps:", error);
+  }
 }
 
 //funktion um Raster zu erstellen
@@ -89,9 +105,10 @@ async function saveMap(){
       return; 
     }
     // **Vergleich des Namens mit den vorhandenen Maps**
+    await  fetchMaps();
     let nameExists = false;
-    for(let existingMap of allMaps.value){
-        if (existingMap.trim().toLowerCase()=== mapName.value.trim().toLowerCase()){
+    for(let existingMap of mapsDTD.value.maps){
+        if (existingMap.name.trim().toLowerCase()=== mapName.value.trim().toLowerCase()){
           nameExists=true; 
         }
     }
@@ -132,6 +149,6 @@ async function saveMap(){
 
 // Rückgabe der Funktionen und Variablen, die im Store verfügbar sind
   return{
-    mapName, rows, cols, grid, allMaps,fetchMaps,saveMap,createGrid,updateCell,
+    mapName, rows, cols, grid, mapsDTD,fetchMaps,saveMap,createGrid,updateCell,
   };
 });

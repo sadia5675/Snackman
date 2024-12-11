@@ -22,7 +22,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 public PlayMap(String filePath) {
     try {
         loadMap(filePath);
-        createTiles();
+        //createTiles();
     } catch (IllegalArgumentException e) {
         LOGGER.error("Invalid map file: {}", e.getMessage());
         throw e; // IllegalArgumentException weiterwerfen

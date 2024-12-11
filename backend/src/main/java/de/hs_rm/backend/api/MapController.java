@@ -2,6 +2,18 @@ package de.hs_rm.backend.api;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMapService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,18 +22,20 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 
 @RestController
 //so kreifen wir auf dei Daten im frontend zu
 @RequestMapping("/api/maps")
 public class MapController {
+    @Autowired
+    PlayMapService playMapService;
+
     @PostMapping
     public ResponseEntity<String> saveMap(@RequestBody Map<String,Object> requestMap) {
         //TODO: process POST request
@@ -64,24 +78,38 @@ public class MapController {
         }
     }
 
-    @GetMapping
-    public ResponseEntity <List<String>> allMaps() {
-
-    // Der Pfad zum Map-Ordner
-    File mapFolder = new File("src/main/resources/maps");
-    String[] files = mapFolder.list();
-
-    //Liste zur maps wird erstellt 
-    List<String> mapNames = new ArrayList<>();
-    if (files != null) {
-        for (String file : files) {
-            if (file.endsWith(".txt")) {
-                mapNames.add(file.replace(".txt", " "));
-            }
-        }
+    @GetMapping// name und array mit symbolen
+    public ResponseEntity<Map<String, Object>> getAllMaps() {
+        Map<String, char[][]> allMaps = playMapService.getAllMaps();
+        return createOkResponse(allMaps);
     }
-    System.out.println("Available Maps: " + mapNames); 
-    return ResponseEntity.ok(mapNames); // Map-Namen zurückgeben
+
     
+    // Helper method for standardized error response
+    private ResponseEntity<Map<String, Object>> createErrorResponse(String feedbackMessage) {
+        Map<String, Object> feedbackData = new HashMap<>();
+        feedbackData.put("status", "error");
+        feedbackData.put("feedback", feedbackMessage);
+        feedbackData.put("time", LocalDateTime.now().toString());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(feedbackData);
     }
+
+    // Helper method for standardized ok response
+    private ResponseEntity<Map<String, Object>> createOkResponse(Map<String, char[][]> allMaps) {
+            Map<String, Object> feedbackData = new HashMap<>();
+            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+            String gameJSON;
+            feedbackData.put("status", "ok");
+            feedbackData.put("time", LocalDateTime.now().toString());
+            try {
+                gameJSON = ow.writeValueAsString(allMaps);
+                feedbackData.put("feedback", allMaps);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            feedbackData.put("feedback", "something in backend went wrong!");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
+    }
+
 }

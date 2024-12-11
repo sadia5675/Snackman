@@ -14,5 +14,6 @@ export const emptyGame: IGameState = {
     chickens: [],
     gamemaster: null,
     started: false,
+    playmap: undefined,
   },
 }

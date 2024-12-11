@@ -9,6 +9,7 @@ import type { Message } from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
+import type {Result} from "@/stores/game/responses/Result";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -114,17 +115,23 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
-
-  async function startGame() {
+  async function startGame(selectedMap: string) {
     try {
-      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, { method: 'POST' })
+      const response = await fetch(`${apiUrl}/start/${gameState.gamedata.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({selectedMap}),
+      })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
-    } catch (error) {
+  } catch (error) {
       handleGameStateError()
       console.error('Error starting game:', error)
     }
   }
+
 
   async function endGame() {
     try {
