@@ -58,7 +58,7 @@ const mapStore = useMapStore();
 //sorgt dafür das vorhandene Maps aus dem Backend sofort geladen und in mapStore.allmaps gespeichert
 onMounted (async() => {
   await mapStore.fetchMaps();
-  console.log("Aktuelle Maps:", mapStore.allMaps);
+  console.log("Aktuelle Maps:", mapStore.mapsDTD.maps);
 })
 
 </script>
