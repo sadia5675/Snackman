@@ -11,7 +11,7 @@ public class GameMessagingService {
 
     Logger logger = LoggerFactory.getLogger(GameMessagingService.class);
 
-    private SimpMessagingTemplate template;
+    private final SimpMessagingTemplate template;
 
     public GameMessagingService(SimpMessagingTemplate template) {
         this.template = template;
@@ -25,4 +25,7 @@ public class GameMessagingService {
         template.convertAndSend("/topic/game/" + lobbyid, position);
     }
 
+    public void sendGameStart(String lobbyid, Object gameState){
+        template.convertAndSend("/topic/game/" + lobbyid, gameState);
+    }
 }
