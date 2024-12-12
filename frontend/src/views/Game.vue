@@ -1,25 +1,24 @@
 <script setup lang="ts">
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
-import * as THREE from "three"
-import {ref, onMounted} from "vue";
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import {WebGLRenderer} from "three";
-import ground from "@/assets/game/realistic/ground.png"
-import wall from "@/assets/game/realistic/wall.png"
+import * as THREE from 'three'
+import { WebGLRenderer } from 'three'
+import { onMounted, ref } from 'vue'
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
+import ground from '@/assets/game/realistic/ground.png'
+import wall from '@/assets/game/realistic/wall.png'
 import { useGameStore } from '@/stores/game/gamestore'
-import { GLTFLoader, type Vector } from "three/examples/jsm/Addons.js";
-import { sendMessage, subscribeToLobby } from "@/config/stompWebsocket";
-import { useRoute } from "vue-router";
-import type { Message } from "@/stores/game/dtd/IMessageDTD";
-import type { IPlayerPositionDTD } from "@/stores/game/dtd/IPlayerPositionDTD";
+import { sendMessage, subscribeToLobby } from '@/config/stompWebsocket'
+import { useRoute } from 'vue-router'
+import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
-const gameStore = useGameStore();
+const gameStore = useGameStore()
 
 const route = useRoute()
-const lobbyId = route.params.id.toString();
+const lobbyId = route.params.id.toString()
 
-let nextPosition: THREE.Vector3;
-let lastSend: number = 0;
+let nextPosition: THREE.Vector3
+let lastSend: number = 0
 
 let movingForward: boolean,
   movingBackward: boolean,
@@ -138,68 +137,95 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
-function cameraPositionBewegen(delta:number) {
-  let cameraViewDirection = new THREE.Vector3()
+function cameraPositionBewegen(delta: number) {
+  const cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
+
+  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
+  cameraViewDirection.y = 0
+  cameraViewDirection.normalize()
+
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
 
-  nextPosition = camera.position.clone();
+  nextPosition = camera.position.clone()
 
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (movingForward) {
       if (movingRight) {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 7 * Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
+          movementSpeed * delta,
+        )
       } else if (movingLeft) {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4),
+          movementSpeed * delta,
+        )
       } else if (movingBackward) {
         //foward und backward canceln sich
       } else {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI),
+          movementSpeed * delta,
+        )
       }
     } else if (movingBackward) {
       if (movingRight) {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 5 * Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
+          movementSpeed * delta,
+        )
       } else if (movingLeft) {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 3 * Math.PI / 4), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
+          movementSpeed * delta,
+        )
       } else {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI),
+          movementSpeed * delta,
+        )
       }
     } else if (movingRight) {
       if (movingLeft) {
         //right und left canceln sich
       } else {
-        nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, 3 * Math.PI / 2), movementSpeed * delta)
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
+          movementSpeed * delta,
+        )
       }
     } else if (movingLeft) {
-      nextPosition.addScaledVector(cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2), movementSpeed * delta)
+      nextPosition.addScaledVector(
+        cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2),
+        movementSpeed * delta,
+      )
     }
-    nextPosition.y =2
-    validatePosition(nextPosition);
-    
+    nextPosition.y = 2
+    validatePosition(nextPosition)
+
     camera.position.y = 2
   }
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
-  let currentTime: number = Date.now();
+  const currentTime: number = Date.now()
 
-  if(currentTime - lastSend > 200){
-    sendMessage(`/topic/ingame/${lobbyId}/playerPosition`,{
-      playerName: sessionStorage.getItem("myName"),
+  if (currentTime - lastSend > 200) {
+    sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
+      playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
     })
-    lastSend = currentTime;
-  }else{
-    moveCamera();
+    lastSend = currentTime
+  } else {
+    moveCamera()
   }
-  
 }
 
 function moveCamera() {
   camera.position.copy(nextPosition)
 }
-
 
 function renderCharacters(playerPositions: IPlayerPositionDTD[]) {
   const modelLoader = new GLTFLoader()
@@ -244,28 +270,26 @@ function loadMap(map: String[]) {
 
 onMounted(async () => {
   try {
-    await gameStore.fetchGameStatus();
+    await gameStore.fetchGameStatus()
   } catch (error) {
-    console.error('Error fetching game status:', error);
+    console.error('Error fetching game status:', error)
   }
 
-
-  subscribeToLobby(lobbyId,(message: any) => {
-
-    switch(message.type){
+  subscribeToLobby(lobbyId, (message: any) => {
+    switch (message.type) {
       case 'playerPosition':
-        console.log(message.feedback);
-        break;
+        console.log(message.feedback)
+        break
       case 'playerMoveValidation':
-        console.log(message.feedback);
-        const playerPosition: IPlayerPositionDTD =  message.feedback;
+        console.log(message.feedback)
+        const playerPosition: IPlayerPositionDTD = message.feedback
 
-        if(playerPosition.playerName === sessionStorage.getItem('myName')){
-          console.log("recevied validation");
-          moveCamera();
+        if (playerPosition.playerName === sessionStorage.getItem('myName')) {
+          console.log('recevied validation')
+          moveCamera()
         }
 
-        break;
+        break
     }
   })
 
@@ -303,13 +327,13 @@ onMounted(async () => {
 
   const mockPositions: IPlayerPositionDTD[] = [
     {
-      playerName: "test",
+      playerName: 'test',
       x: 1,
       y: 1,
       angle: Math.PI,
     },
     {
-      playerName: "test",
+      playerName: 'test',
       x: 2,
       y: 2,
       angle: 2 * Math.PI,
