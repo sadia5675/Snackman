@@ -2,9 +2,10 @@ package de.hs_rm.backend.gamelogic.characters.players;
 
 public class ObjectsItems extends  Item {
     private String effectDescription;
-    
+
+        // erstmal sei ObjectsItem für Snackman
         public ObjectsItems(String name, int x, int y, String effectDescription) {
-            super(name, x, y);
+            super(name, x, y, PlayerRole.SNACKMAN);
             this.effectDescription = effectDescription;
         }
         

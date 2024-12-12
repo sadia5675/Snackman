@@ -5,10 +5,13 @@ public abstract class  Item {
         private int x;
         private int y;
 
-        public Item(String name, int x, int y) {
+        private PlayerRole type; //für wenn ist das Item, für Snackman oder für Geist
+
+        public Item(String name, int x, int y, PlayerRole type) {
             this.name = name;
             this.x= x;
             this.y=y;
+            this.type = type;
         }
     
         public String getName() {
@@ -34,8 +37,20 @@ public abstract class  Item {
         public void setY( int y) {
             this.y = y;
         }
+
+        
     
         // Abstrakte Methode für spezifische Effekte
         public abstract void applyEffect(Player player);
+
+        public PlayerRole getType() {
+            return type;
+        }
+
+        public void setType(PlayerRole type) {
+            this.type = type;
+        }
     }
+
+
     
