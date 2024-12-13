@@ -7,10 +7,12 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
 import { useGameStore } from '@/stores/game/gamestore'
-import { sendMessage, subscribeToLobby } from '@/config/stompWebsocket'
+import type { IMessageDTD } from '@/stores/game/dtd/IMessageDTD'
+import { sendMessage, subscribeTo } from '@/config/stompWebsocket'
 import { useRoute } from 'vue-router'
 import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 
 const gameStore = useGameStore()
 
@@ -201,21 +203,23 @@ function cameraPositionBewegen(delta: number) {
         movementSpeed * delta,
       )
     }
-    nextPosition.y = 2
+    nextPosition.y = 1
     validatePosition(nextPosition)
 
-    camera.position.y = 2
+    camera.position.y = 1
   }
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
 
-  if (currentTime - lastSend > 200) {
+  if (currentTime - lastSend > 50) {
+
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
+      angle: camera.rotation.z,
     })
     lastSend = currentTime
   } else {
@@ -223,11 +227,14 @@ function validatePosition(nextPosition: THREE.Vector3) {
   }
 }
 
+
 function moveCamera() {
   camera.position.copy(nextPosition)
 }
 
+
 function renderCharacters(playerPositions: IPlayerPositionDTD[]) {
+  console.log("INSIDE RENDER: ",playerPositions)
   const modelLoader = new GLTFLoader()
   playerPositions.forEach((playerPosition) => {
     modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (objekt) => {
@@ -240,6 +247,37 @@ function renderCharacters(playerPositions: IPlayerPositionDTD[]) {
   })
 }
 
+const players = new Map<string, THREE.Object3D>(); // Spieler mit Namen als Key auf Character Model
+
+function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
+  console.log("INSIDE RENDER: ", playerPositions);
+
+  const modelLoader = new GLTFLoader();
+  const adjustAngle = Math.PI / 1;
+
+  playerPositions.forEach((playerPosition) => {
+    if (!players.has(playerPosition.playerName)) {
+      //Modell initial rendern
+
+      modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (gltf) => {
+        const model = gltf.scene;
+        model.scale.set(0.5, 0.5, 0.5);
+        players.set(playerPosition.playerName, model);
+        scene.add(model);
+
+        model.position.set(playerPosition.x, 1, playerPosition.y);
+        model.rotation.y = playerPosition.angle + adjustAngle;
+      });
+    } else {
+      //Modell updaten
+      const model = players.get(playerPosition.playerName);
+      if (model) {
+        model.position.set(playerPosition.x, 1, playerPosition.y);
+        model.rotation.y =  playerPosition.angle + adjustAngle; 
+      }
+    }
+  });
+}
 function loadMap(map: String[]) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1)
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
@@ -268,6 +306,24 @@ function loadMap(map: String[]) {
   })
 }
 
+async function handleCharacters(data: ICharacterDTD[]) {
+  let playerPositions: IPlayerPositionDTD[] = [];
+  data.forEach(character => {
+    console.log(character)
+    if(sessionStorage.getItem('myName') !== character.name){
+      playerPositions.push({
+        playerName: character.name,
+        x: character.posX,
+        y: character.posY,
+        angle: character.angleInDegrees,
+      })
+    }
+  
+  });
+
+  renderCharactersTest(playerPositions);
+}
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
@@ -275,21 +331,27 @@ onMounted(async () => {
     console.error('Error fetching game status:', error)
   }
 
-  subscribeToLobby(lobbyId, (message: any) => {
+  subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
       case 'playerPosition':
-        console.log(message.feedback)
-        break
+        console.log("FROM PLAYER POSITON: ", message.feedback)
+        await handleCharacters(message.feedback);
+        break;
+    }
+  });
+
+  subscribeTo(`/ingame/${lobbyId}`, async (messageValidation: IMessageDTD) => {
+    switch (messageValidation.type) {
       case 'playerMoveValidation':
-        console.log(message.feedback)
-        const playerPosition: IPlayerPositionDTD = message.feedback
+        const playerPosition: any = messageValidation.feedback
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
+          console.log("FROM PLAYER MOVE VALIDATION: ", messageValidation.feedback)
           console.log('recevied validation')
           moveCamera()
         }
 
-        break
+        break;
     }
   })
 
