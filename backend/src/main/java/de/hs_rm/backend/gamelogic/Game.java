@@ -32,6 +32,27 @@ public class Game {
         return characters;
     }
 
+    public Map<String, Object> getCharacterDataWithNames() {
+        Map<String, Object> characterData = new HashMap<>();
+    
+        for (Map.Entry<String, Character> entry : characters.entrySet()) {
+            String username = entry.getKey(); // Der Name des Spielers (Key in der Map)
+            Character character = entry.getValue();
+    
+            Map<String, Object> characterWithNames = new HashMap<>();
+            characterWithNames.put("name", username); // Username hinzufügen
+            characterWithNames.put("posX", character.getPosX());
+            characterWithNames.put("posY", character.getPosY());
+            characterWithNames.put("speed", character.getSpeed());
+            characterWithNames.put("angleInDegrees", character.getAngleInDegrees());
+    
+            characterData.put(username, characterWithNames);
+        }
+    
+        return characterData;
+    }
+
+
     public void setCharacters(Map<String, Character> characters) {
         this.characters = characters;
     }
@@ -213,22 +234,39 @@ public class Game {
 
     }
 
+    public boolean moveTest(String username, double posX, double posY, double angle){
+        Character curCharacter = characters.get(username);
+
+        curCharacter.move(posX, posY, angle);
+        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
+        return true;
+    }
+
     public boolean move(String username, int posX, int posY) {
+
+        LOGGER.info("{}{}{}",username,posX,posY);
         // DONE: Tile obj von x und y überprüfen
         int targetIndex = posY * playmap.getWidth() + posX;
         Tile targetTile = playmap.getTilesList().get(targetIndex);
         Character curCharacter = characters.get(username);
 
-        int curIndex = curCharacter.getPosY() * playmap.getWidth() + curCharacter.getPosX();
-        Tile curTile = playmap.getTilesList().get(curIndex);
+        //int curIndex = curCharacter.getPosY() * playmap.getWidth() + curCharacter.getPosX();
+        //Tile curTile = playmap.getTilesList().get(curIndex);
+        
+        //*TESTING */
+        curCharacter.move(posX, posY, posY);
+        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
+        //*TESTING */
 
         if (targetTile.getType() == TileType.WALL) {
             return false;
         }
         // DONE: position von character aktualisieren für frontend
-        curCharacter.move(posX, posY);
+        //curCharacter.move(posX, posY);
         // TODO: hier fehlt noch Kollision in addCharacter
-        curTile.removeCharacter(curCharacter);
+
+        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
+        //curTile.removeCharacter(curCharacter);
         targetTile.addCharacter(curCharacter);
 
         return true;

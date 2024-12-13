@@ -12,7 +12,7 @@ public abstract class Character{
     private double speed;
     // PlayerPosition playerposition;
     // Player player;
-    private int posX, posY;
+    private double posX, posY;
     private int currentcalorie;
     //private static final int MAX_LIFE =3;
 
@@ -57,9 +57,10 @@ public abstract class Character{
     //     this.gameId = gamiId;
     // }
 
-    public void move(int x, int y){
+    public void move(double x, double y, double angle){
         this.posX = x;
         this.posY = y;
+        this.angleInDegrees = angle;
     }
 
     public double getSpeed() {
@@ -68,13 +69,13 @@ public abstract class Character{
     public void setSpeed(double playerSpeed) {
         this.speed = playerSpeed;
     }
-    public int getPosX() {
+    public double getPosX() {
         return posX;
     }
     public void setPosX(int posX) {
         this.posX = posX;
     }
-    public int getPosY() {
+    public double getPosY() {
         return posY;
     }
     public void setPosY(int posY) {

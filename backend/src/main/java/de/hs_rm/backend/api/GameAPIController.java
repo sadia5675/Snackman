@@ -200,7 +200,6 @@ public class GameAPIController {
     }
 
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
-    @SendTo("/topic/ingame/{lobbyid}")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
 
         //Zum Testen logik um Spieler zu bewegen fehlt noch
@@ -209,13 +208,14 @@ public class GameAPIController {
         HashMap<String, Object> response = new HashMap<>();
         Game existingGame = gameService.getGameById(lobbyid);
 
-        Map<String, Character> currentCharacters = existingGame.getCharacters();
-        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY());
+        Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
+        boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
 
-        logger.info("Requested Player({}) move to: posX({}), posY({}), ", position.getPlayerName(), position.getPosX(), position.getPosY());
+        logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(),position.getAngle(), validMove);
 
         //true nur zum testen, eig prüfen ob move valid ist oder nicht
-        if (validMove) {
+
+        if (true) {
 
             //sende das die Validation in Ordnung war
             validationResponse.put("type", "playerMoveValidation");
@@ -223,9 +223,9 @@ public class GameAPIController {
             validationResponse.put("status", "ok");
             validationResponse.put("time", LocalDateTime.now().toString());
 
-            messagingService.sendNewCharacterPosition(lobbyid, validationResponse);
+            messagingService.sendPositionValidation(lobbyid, validationResponse);
 
-            //senden der Liste von Chars
+            //senden der Liste von Charsd
             response.put("type", "playerPosition");
             response.put("feedback", currentCharacters.values());
             response.put("status", "ok");
