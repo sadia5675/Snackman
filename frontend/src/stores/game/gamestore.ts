@@ -1,11 +1,11 @@
 import { defineStore } from "pinia";
-import { sendMessage, stompClient, subscribeToLobby } from '@/config/stompWebsocket';
+import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket';
 import { type Reactive, reactive } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
 import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
 import { emptyGame, type IGameState } from "@/stores/game/IGameState";
-import type { Message } from "./dtd/IMessageDTD";
+import type { IMessageDTD} from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
@@ -66,7 +66,7 @@ export const useGameStore = defineStore('gameStore', () => {
 
       stompClient.onConnect = () => {
         if (gameState.gamedata?.players) {
-          subscribeToLobby(gameState.gamedata.id, (message: Message) => {
+          subscribeTo(`/game/${gameState.gamedata.id}`, (message: IMessageDTD) => {
             handleStompMessage(message, () => {})
           })
         }
@@ -90,7 +90,7 @@ export const useGameStore = defineStore('gameStore', () => {
         stompClient.unsubscribe(`${topicUrl}/${lobbyId}`)
 
         if (gameState.gamedata?.players) {
-          subscribeToLobby(lobbyId, (message: Message) => {
+          subscribeTo(`/game/${lobbyId}`, (message: IMessageDTD) => {
             handleStompMessage(message, resolve);
           })
 
@@ -180,7 +180,7 @@ export const useGameStore = defineStore('gameStore', () => {
           console.log("Sending leave message for:", leavingPlayer.name);
           sendMessage(`/topic/game/${lobbyId}/leave`, { name: leavingPlayer.name });
 
-          subscribeToLobby(lobbyId, (message: Message) => {
+          subscribeTo(`/game/${lobbyId}`, (message: IMessageDTD) => {
             if (message.status === 'ok') {
               console.log(`${leavingPlayer.name} erfolgreich verlassen.`);
 
@@ -315,7 +315,7 @@ export const useGameStore = defineStore('gameStore', () => {
   }
 
     function handleStompMessage(
-      message: Message,
+      message: IMessageDTD,
       resolve: (value: boolean) => void,
     ) {
       console.log(message.feedback)
