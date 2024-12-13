@@ -17,12 +17,18 @@ public class GameMessagingService {
         this.template = template;
     }
 
+    public void sendPositionValidation(String lobbyid, Object position){
+        logger.info("Sending Validation");
+        template.convertAndSend("/topic/ingame/"+ lobbyid, position);
+    }
+
     public void sendPlayerList(String lobbyid, Object ev) {
         template.convertAndSend("/topic/game/" + lobbyid, ev);
     }
 
     public void sendNewCharacterPosition(String lobbyid, Object position){
-        template.convertAndSend("/topic/game/" + lobbyid, position);
+        logger.info("Sending playerPositions");
+        template.convertAndSend("/topic/ingame/playerPositions/" + lobbyid, position);
     }
 
     public void sendGameStart(String lobbyid, Object gameState){
