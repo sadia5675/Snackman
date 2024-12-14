@@ -67,6 +67,14 @@ public void loadMap(String filePath) throws IOException, IllegalArgumentExceptio
     }
 }
 
+public void updateMapState(int x, int y, char symbol) {
+    if (x >= 0 && x < map.length && y >= 0 && y < map.length && map[x][y] == ' ') {
+        map[x][y] = symbol;
+    } else {
+        LOGGER.warn("Invalid position to update map: ({}, {})", x, y);
+    }
+}
+
 public void createTiles(){
     tilesList.clear(); // zurücksetzen
     if (map == null || map.length == 0) {

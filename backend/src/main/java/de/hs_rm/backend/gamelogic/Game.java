@@ -17,9 +17,10 @@ import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
 
 public class Game {
-    private static Set<String> existingIds = new HashSet<>(); // set --> verhindert Duplikate und static --> diese liste wird für alle Instanzen der Klasse geteilt
+    private static Set<String> existingIds = new HashSet<>(); // set --> verhindert Duplikate und static --> diese liste
+                                                              // wird für alle Instanzen der Klasse geteilt
     private String id;
-    private List<Player> players; //for lobby
+    private List<Player> players; // for lobby
     private List<Chicken> chickens;
     private Player gamemaster;
     private boolean started;
@@ -29,18 +30,40 @@ public class Game {
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
     // Globale Liste der vordefinierten FoodItems
     private static final List<FoodItems> FOOD_ITEMS = List.of(
-        new FoodItems("Banana", -1, -1, NutriScore.A), // Positionen werden später festgelegt
-        new FoodItems("Cookie", -1, -1, NutriScore.C),
-        new FoodItems("Apple", -1, -1, NutriScore.B)
-    );
+            new FoodItems("Banana", -1, -1, NutriScore.A), // Positionen werden später festgelegt
+            new FoodItems("Cookie", -1, -1, NutriScore.C),
+            new FoodItems("Apple", -1, -1, NutriScore.B)
+            );
 
     private static final int ITEMS_NUM = 5;
+    private static final int GHOST_NUM = 3;
+    private static final int SNACKMAN_NUM = 1;
+    
+    
 
+    public int getChickenNum() {
+        return chickenNum;
+    }
+
+    public void setChickenNum(int chickenNum) {
+        this.chickenNum = chickenNum;
+    }
+
+    public static int getGhostNum() {
+        return GHOST_NUM;
+    }
+
+    public static int getSnackmanNum() {
+        return SNACKMAN_NUM;
+    }
+
+    public static int getItemsNum() {
+        return ITEMS_NUM;
+    }
 
     public Game(Player gamemaster) {
         this.id = generateId(5);
@@ -62,7 +85,7 @@ public class Game {
     }
 
     // Generiert eindeutige ID
-    // Synchronisieren --> verhindert, dass mehrere Threads gleichzeitig doppelte IDs erzeugen
+// Synchronisieren --> verhindert, dass mehrere Threads gleichzeitig doppelte IDs erzeugen
     private synchronized String generateId(int length) {
         String newId;
         do {
@@ -102,7 +125,8 @@ public class Game {
         }
 
         Random random = new Random();
-
+        int ghostCount = 0;
+        int snackmanCount = 0;
 
         // DONE: hier sollte Charakter liste erstellen und player zu jedem charater zuweisen
         for (Player player : players) {
@@ -117,14 +141,26 @@ public class Game {
             switch (player.getPlayerrole()) {
                 // DONE: random position von Charakter
                 case GHOST -> {
-
-                    characters.put(player.getName(), new Ghost(1.0, index % playmap.getWidth(), index / playmap.getWidth()));
-                    randomTile.addCharacter(characters.get(player.getName()));
+                    if (ghostCount < GHOST_NUM) {
+                        characters.put(player.getName(),
+                                new Ghost(1.0, index % playmap.getWidth(), index / playmap.getWidth()));
+                        randomTile.addCharacter(characters.get(player.getName()));
+                        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'G');
+                        ghostCount++;
+                    } else {
+                        LOGGER.warn("Already 3 Ghosts, cannot add more for player: {}", player.getName());
+                    }
                 }
                 case SNACKMAN -> {
-
-                    characters.put(player.getName(), new Snackman(1.0, index % playmap.getWidth(), index / playmap.getWidth(), 3, 3));
-                    randomTile.addCharacter(characters.get(player.getName()));
+                    if (snackmanCount < SNACKMAN_NUM) {
+                        characters.put(player.getName(),
+                                new Snackman(1.0, index % playmap.getWidth(), index / playmap.getWidth(), 3, 3));
+                        randomTile.addCharacter(characters.get(player.getName()));
+                        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'S');
+                        snackmanCount++;
+                    } else {
+                        LOGGER.warn("Already 1 Snackman, cannot add another for player: {}", player.getName());
+                    }
                 }
                 default -> {
                     LOGGER.warn("Unknown player role for player: {}", player.getName());
@@ -145,6 +181,7 @@ public class Game {
             chickens.add(chicken);
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
+            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'C');
         }
 
         for (int i = 0; i < ITEMS_NUM; i++) {
@@ -153,24 +190,26 @@ public class Game {
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
-            } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter() || randomTile.hasChicken() || randomTile.hasItem());
-    
+            } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter() || randomTile.hasChicken()
+                    || randomTile.hasItem());
+
             // Zufälliges Item aus der FOOD_ITEMS-Liste auswählen
             FoodItems randomItemTemplate = FOOD_ITEMS.get(random.nextInt(FOOD_ITEMS.size()));
-    
+
             // Erstelle eine neue Instanz mit der korrekten Position
             FoodItems newItem = new FoodItems(
-                randomItemTemplate.getName(),
-                index % playmap.getWidth(),
-                index / playmap.getWidth(),
-                randomItemTemplate.getNutriScore()
-            );
-    
+                    randomItemTemplate.getName(),
+                    index % playmap.getWidth(),
+                    index / playmap.getWidth(),
+                    randomItemTemplate.getNutriScore()
+                    );
+
             // Item hinzufügen
             randomTile.addItem(newItem);
+            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'I');
         }
 
-
+        
         return started;
     }
 
@@ -295,7 +334,6 @@ public class Game {
         int index = random.nextInt(players.size()); // zwischen 0 und players.size() - 1
         return players.get(index);
     }
-
 
     public void setPlayers(List<Player> players) {
         this.players = players;
