@@ -9,6 +9,7 @@ import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
 import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
+import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -38,28 +39,16 @@ public class Game {
             new FoodItems("Cookie", -1, -1, NutriScore.C),
             new FoodItems("Apple", -1, -1, NutriScore.B)
             );
+    // vordefinierten ObjectsItems --> Pos muss geändert werden
+    private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
+            new ObjectsItems("Speed Boost", -1, -1, "Increases movement speed temporarily"),
+            new ObjectsItems("Shield", -1, -1, "Provides temporary invincibility"),
+            new ObjectsItems("Double Points", -1, -1, "Doubles points gained for a limited time")
+    );
+
 
     private static final int ITEMS_NUM = 5;
-    private static final int GHOST_NUM = 3;
-    private static final int SNACKMAN_NUM = 1;
-    
-    
 
-    public int getChickenNum() {
-        return chickenNum;
-    }
-
-    public void setChickenNum(int chickenNum) {
-        this.chickenNum = chickenNum;
-    }
-
-    public static int getGhostNum() {
-        return GHOST_NUM;
-    }
-
-    public static int getSnackmanNum() {
-        return SNACKMAN_NUM;
-    }
 
     public static int getItemsNum() {
         return ITEMS_NUM;
@@ -125,8 +114,6 @@ public class Game {
         }
 
         Random random = new Random();
-        int ghostCount = 0;
-        int snackmanCount = 0;
 
         // DONE: hier sollte Charakter liste erstellen und player zu jedem charater zuweisen
         for (Player player : players) {
@@ -141,26 +128,15 @@ public class Game {
             switch (player.getPlayerrole()) {
                 // DONE: random position von Charakter
                 case GHOST -> {
-                    if (ghostCount < GHOST_NUM) {
                         characters.put(player.getName(),
                                 new Ghost(1.0, index % playmap.getWidth(), index / playmap.getWidth()));
                         randomTile.addCharacter(characters.get(player.getName()));
-                        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'G');
-                        ghostCount++;
-                    } else {
-                        LOGGER.warn("Already 3 Ghosts, cannot add more for player: {}", player.getName());
-                    }
                 }
                 case SNACKMAN -> {
-                    if (snackmanCount < SNACKMAN_NUM) {
+
                         characters.put(player.getName(),
                                 new Snackman(1.0, index % playmap.getWidth(), index / playmap.getWidth(), 3, 3));
                         randomTile.addCharacter(characters.get(player.getName()));
-                        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'S');
-                        snackmanCount++;
-                    } else {
-                        LOGGER.warn("Already 1 Snackman, cannot add another for player: {}", player.getName());
-                    }
                 }
                 default -> {
                     LOGGER.warn("Unknown player role for player: {}", player.getName());
@@ -181,11 +157,11 @@ public class Game {
             chickens.add(chicken);
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
-            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'C');
         }
 
         for (int i = 0; i < ITEMS_NUM; i++) {
             Tile randomTile;
+            boolean createFoodItem = random.nextInt(100) < 70; // 70% Chance für FoodItem, 30% für ObjectsItem
             int index = -1;
             do {
                 index = random.nextInt(playmap.getTilesList().size());
@@ -193,6 +169,7 @@ public class Game {
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter() || randomTile.hasChicken()
                     || randomTile.hasItem());
 
+            if (createFoodItem) {
             // Zufälliges Item aus der FOOD_ITEMS-Liste auswählen
             FoodItems randomItemTemplate = FOOD_ITEMS.get(random.nextInt(FOOD_ITEMS.size()));
 
@@ -206,10 +183,25 @@ public class Game {
 
             // Item hinzufügen
             randomTile.addItem(newItem);
-            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'I');
+            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'F'); // F für Food
+        } else {
+             // Zufälliges ObjectsItem aus der vordefinierten Liste 
+        ObjectsItems randomObjectTemplate =  OBJECTS_ITEMS.get(random.nextInt(OBJECTS_ITEMS.size()));
+
+        // Neue Instanz des ObjectsItems mit Position
+        ObjectsItems newObjectItem = new ObjectsItems(
+                randomObjectTemplate.getName(),
+                index % playmap.getWidth(),
+                index / playmap.getWidth(),
+                randomObjectTemplate.getEffectDescription()
+        );
+
+        // ObjectsItem hinzufügen
+        randomTile.addItem(newObjectItem);
+        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'O'); // 'O' für Object
         }
 
-        
+    }
         return started;
     }
 
