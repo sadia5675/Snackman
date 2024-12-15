@@ -2,7 +2,7 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { onMounted, ref } from 'vue'
+import {onBeforeMount, onMounted, ref} from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
@@ -21,6 +21,7 @@ const lobbyId = route.params.id.toString()
 
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
+const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 
 let movingForward: boolean,
   movingBackward: boolean,
@@ -133,7 +134,9 @@ pointLight.position.set(10, 20, 10) //extra Lightning for the ball
 scene.add(pointLight)
 
 function animate() {
-  requestAnimationFrame(animate)
+  setTimeout( function() {
+    requestAnimationFrame(animate)
+  }, 1000 / 60 );
   renderer.render(scene, camera)
   const delta = clock.getDelta()
   cameraPositionBewegen(delta)
@@ -232,37 +235,31 @@ function moveCamera() {
   camera.position.copy(nextPosition)
 }
 
-
-function renderCharacters(playerPositions: IPlayerPositionDTD[]) {
-  console.log("INSIDE RENDER: ",playerPositions)
-  const modelLoader = new GLTFLoader()
-  playerPositions.forEach((playerPosition) => {
-    modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (objekt) => {
-      const model = objekt.scene
-      model.position.set(playerPosition.x, 1, playerPosition.y)
-      model.scale.set(0.5, 0.5, 0.5)
-      model.rotateY(playerPosition.angle)
-      scene.add(model)
-    })
-  })
-}
-
-const players = new Map<string, THREE.Object3D>(); // Spieler mit Namen als Key auf Character Model
-
 function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   console.log("INSIDE RENDER: ", playerPositions);
 
   const modelLoader = new GLTFLoader();
-  const adjustAngle = Math.PI / 1;
+  const adjustAngle = Math.PI;
+  const fehlerndeSpieler = Array.from(players.keys()).filter((playerName) =>
+    !playerPositions.map((position)=>position.playerName).includes(playerName))
 
-  playerPositions.forEach((playerPosition) => {
+  fehlerndeSpieler.forEach((player)=>{
+    const index: number | undefined = players.get(player)
+    if(index){
+      const object = scene.getObjectById(index)
+      if(object){
+        scene.remove(object)
+      }
+    }
+  })
+
+    playerPositions.forEach((playerPosition) => {
     if (!players.has(playerPosition.playerName)) {
       //Modell initial rendern
-
       modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (gltf) => {
         const model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
-        players.set(playerPosition.playerName, model);
+        players.set(playerPosition.playerName, model.id);
         scene.add(model);
 
         model.position.set(playerPosition.x, 1, playerPosition.y);
@@ -270,10 +267,17 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
       });
     } else {
       //Modell updaten
-      const model = players.get(playerPosition.playerName);
-      if (model) {
-        model.position.set(playerPosition.x, 1, playerPosition.y);
-        model.rotation.y =  playerPosition.angle + adjustAngle; 
+      const index: number | undefined = players.get(playerPosition.playerName)
+      if(index) {
+        const model = scene.getObjectById(index);
+        if (model) {
+          const messungsBox = new THREE.Box3()
+          const breite = new THREE.Vector3()
+          messungsBox.getSize(breite)
+          messungsBox.expandByObject(model)
+          model.position.set(playerPosition.x - (breite.x/2), 1, playerPosition.y);
+          model.rotation.y = playerPosition.angle + adjustAngle;
+        }
       }
     }
   });
@@ -309,7 +313,6 @@ function loadMap(map: String[]) {
 async function handleCharacters(data: ICharacterDTD[]) {
   let playerPositions: IPlayerPositionDTD[] = [];
   data.forEach(character => {
-    console.log(character)
     if(sessionStorage.getItem('myName') !== character.name){
       playerPositions.push({
         playerName: character.name,
@@ -318,12 +321,9 @@ async function handleCharacters(data: ICharacterDTD[]) {
         angle: character.angleInDegrees,
       })
     }
-  
   });
-
   renderCharactersTest(playerPositions);
 }
-
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
@@ -401,7 +401,6 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
-  renderCharacters(mockPositions)
   animate()
 })
 </script>
