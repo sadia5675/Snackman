@@ -4,6 +4,8 @@ import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Item;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
@@ -20,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class GameTest{
@@ -59,6 +62,22 @@ class GameTest{
         List<Tile> mockTilesList = createMockTilesList(100);
         assertNotNull(mockTilesList, "Die TilesList sollte nicht null sein.");
         when(mockPlayMap.getTilesList()).thenReturn(mockTilesList);
+
+        // Mock für SURFACE-Tiles setzen
+        for (int i = 0; i < mockTilesList.size(); i++) {
+            Tile mockTile = mockTilesList.get(i);
+            when(mockTile.getType()).thenReturn(i < 80 ? TileType.SURFACE : TileType.WALL); // 80% SURFACE
+            
+            List<Item> mockItemList = new ArrayList<>();
+            when(mockTile.getItemList()).thenReturn(mockItemList);
+            when(mockTile.hasItem()).thenAnswer(invocation -> !mockItemList.isEmpty());
+            
+            doAnswer(invocation -> {
+                Item item = invocation.getArgument(0);
+                mockItemList.add(item);
+                return true;
+            }).when(mockTile).addItem(any(Item.class));
+        }
     
         // Spiel initialisieren
         game.setPlaymap(mockPlayMap);
@@ -69,6 +88,18 @@ class GameTest{
         assertTrue(started, "Das Spiel sollte erfolgreich gestartet werden.");
         assertNotNull(game.getPlaymap(), "Die Spielfläche sollte initialisiert werden.");
         assertEquals(5, game.getChickens().size(), "Die Anzahl der Hühner sollte korrekt sein.");
+
+        // Sicherstellen, dass 5 Items verteilt wurden
+        int totalItems = 0;
+        for (Tile tile : mockTilesList) {
+            if(tile.hasItem()){
+                totalItems += 1;
+            }
+
+        }
+
+        assertEquals(5, totalItems, "Es sollten genau 5 Items auf der Spielfläche verteilt werden.");
+
     }
     
     @Test

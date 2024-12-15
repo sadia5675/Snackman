@@ -3,8 +3,9 @@ package de.hs_rm.backend.gamelogic.characters.players;
     public class FoodItems extends  Item {
         private NutriScore nutriScore;
        
+        // erstmal sie FoodItems für Snackman
        public FoodItems(String name, int x, int y, NutriScore nutriScore) {
-               super(name, x, y);
+               super(name, x, y, PlayerRole.SNACKMAN);
                this.nutriScore = nutriScore;
         }
 

@@ -9,19 +9,19 @@ import de.hs_rm.backend.gamelogic.characters.players.Character;
 
 public class Tile {
     private TileType type;
-    //    List<Item> itemList;
+    List<Item> itemList;
     List<Character> characterList;
     List<Chicken> chickenList;
 
     public Tile(TileType type) {
         this.type = type;
-        // itemList = new ArrayList<>();
+        itemList = new ArrayList<>();
         characterList = new ArrayList<>();
     }
 
-    // public boolean hasItem() {
-    //     return itemList != null && !itemList.isEmpty();
-    // }
+    public boolean hasItem() {
+        return itemList != null && !itemList.isEmpty();
+    }
 
     public boolean hasCharacter() {
         return characterList != null && !characterList.isEmpty();
@@ -30,27 +30,49 @@ public class Tile {
         return chickenList != null && !chickenList.isEmpty();
     }
 
-
+    /**
+     * Wenn Charakter zu Tile kommt, wird es überprüft, ob passende items in tile sind oder andere Gegner/hühnchen da sind, 
+     * wenn ja -> Kollision
+     * 
+     * @param character
+     * @return true wenn Charakter erfolgreich rein kommt und ggfs. Item nehmen
+     */
     public boolean addCharacter(Character character){
         this.characterList.add(character);
-        // if(!itemList.isEmpty()){
-            // TODO: Item hier nehmen
-        // }
+        if(!itemList.isEmpty()){
+            // DONE: Item hier nehmen
+            for(Item item: itemList){
+                if(character instanceof Snackman && item.getType()==PlayerRole.SNACKMAN){
+                    Snackman snackman = (Snackman) character; // Cast zu Snackman
+                    if(item instanceof FoodItems){
+                        snackman.eatSnack((FoodItems)item);
+                    } else if(item instanceof ObjectsItems){
+                        snackman.collectObjectItem((ObjectsItems) item);
+                    }
+                    
+                } else if (character instanceof Ghost && item.getType()==PlayerRole.GHOST && item instanceof ObjectsItems){
+                    Ghost ghost = (Ghost) character;
+                    ghost.collectObjectItem((ObjectsItems) item);
+                }
+            }
+
+        }
+        // TODO: Kollision zwischen Ghost und Snackman
         return true;
     }
 
     public boolean addChicken(Chicken chicken){
         this.chickenList.add(chicken);
-        // if(!itemList.isEmpty()){
+        if(!itemList.isEmpty()){
             // TODO: Item hier nehmen
-        // }
+        }
         return true;
     }
 
-    // public boolean addItem(Item item){
-    //     this.itemList.add(item);
-    //     return true;
-    // }
+    public boolean addItem(Item item){
+        this.itemList.add(item);
+        return true;
+    }
 
     public boolean removeCharacter(Character character) {
         if (characterList != null && characterList.contains(character)) {
@@ -60,13 +82,13 @@ public class Tile {
         return false; 
     }
 
-    // public List<Item> getItemList() {
-    //     return itemList;
-    // }
+    public List<Item> getItemList() {
+        return itemList;
+    }
 
-    // public void setItemList(List<Item> itemList) {
-    //     this.itemList = itemList;
-    // }
+    public void setItemList(List<Item> itemList) {
+        this.itemList = itemList;
+    }
 
     public TileType getType() {
         return type;
