@@ -1,17 +1,17 @@
 <template>
-        <div class="layout-modal">
-        
-        <div class="card">
+    <div class="layout-modal">
+
+        <div>
             <div>
-                <slot name="titel" ></slot>
+                <slot name="titel"></slot>
             </div>
-            
+
             <div class="space-y-4">
                 <slot name="content"></slot>
             </div>
         </div>
 
-    </div>    
+    </div>
 </template>
 
 

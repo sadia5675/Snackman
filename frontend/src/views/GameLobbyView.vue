@@ -1,4 +1,32 @@
 <template>
+
+<Modal v-if="modal.isModalOpen">
+      <template #titel>
+        <h2 class="header-modal-adventure">Select Map</h2>
+      </template>
+      <template #content>
+        <div class="flex flex-col gap-3">
+          <select v-model="selectedMap" class="input-form-small-neumorphism">
+            <option v-for="map in maps" :key="map.id" :value="map">
+              {{ map.name }}
+            </option>
+          </select>
+        </div>
+        <div class="flex space-x-4">
+          <button class="button-small-adventure">
+            Kick
+          </button>
+          <button class="button-small-adventure" @click="modal.closeModal()">
+            Close
+          </button>
+        </div>
+      </template>
+    </Modal>
+
+
+
+
+
   <div class="layout-main">
     <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
@@ -14,8 +42,7 @@
 
 
           <!-- Lobby Code -->
-          <div
-            class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 card-adventure">
+          <div class="flex items-center col-start-2 col-end-5 row-start-1 row-end-2 card-adventure">
             <button class="button-small-adventure" @click="copyToClipboard()">
               Copy
             </button>
@@ -46,7 +73,7 @@
               </div>
             </div>
             <div class="flex">
-              <button class="button-small-adventure" @click="openMapPopup()">
+              <button class="button-small-adventure" @click="modal.openModal(ModalType.SELECT_MAP, '')">
                 Select Map
               </button>
               <div class="input-form-big-neumorphism flex items-center justify-center">
@@ -62,8 +89,7 @@
               <button :class="{
                 'button-small-adventure': isHost,
                 'bg-gray-600': !isHost,
-              }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg  rounded-lg transition"
-                @click="startGame()">
+              }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg  rounded-lg transition" @click="startGame()">
                 {{ isHost ? 'Start Game' : '---' }}
               </button>
               <button :class="{
@@ -83,12 +109,12 @@
   </div>
 
   <!--Pop up-->
-  <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+  <!-- <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
     <div class="card max-w-md w-full">
-      <h2 class="font-mono text-grau">Select:</h2>
+      <h2 class="font-mono text-grau">Select:</h2> -->
 
       <!-- Dropdown for map selection -->
-      <div class="mt-3 flex">
+      <!-- <div class="mt-3 flex">
         <button class="button-small-adventure">
           Kick
         </button>
@@ -102,22 +128,31 @@
       <button class="button-small-adventure mt-3" @click="closeMapPopup()">
         Close
       </button>
-    </div>
+      </div>
+    </div> -->
+
+  
 
 
-  </div>
+  
 </template>
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/game/gamestore'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useModalStore } from '@/stores/modalstore';
 import PlayerTile from '@/components/PlayerTile.vue'
+import Modal from '@/components/Modal.vue';
+import { ModalType } from '@/stores/game/dtd/EModalType';
+
 
 const route = useRoute()
 const router = useRouter();
 
 const gamestore = useGameStore()
+
+const modal = useModalStore();
 
 //um die Sichtbarkeit des Pop-ups zusteuern
 const isMapPopupVisible = ref(false)

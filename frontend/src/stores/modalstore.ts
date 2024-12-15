@@ -19,6 +19,8 @@ export const useModalStore = defineStore('modal', () => {
         isModalOpen.value = true;
         modalType.value = type;
         gameId.value = gameId_;
+        console.log('Opening Modal:', 'Type:', type, 'GameId:',gameId_, 'IsModalOpen:',isModalOpen);
+
     }
 
     function closeModal() {
