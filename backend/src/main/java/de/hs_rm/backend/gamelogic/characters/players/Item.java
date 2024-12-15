@@ -37,8 +37,6 @@ public abstract class  Item {
             this.y = y;
         }
 
-        
-    
         // Abstrakte Methode für spezifische Effekte
         public abstract void applyEffect(Player player);
 
