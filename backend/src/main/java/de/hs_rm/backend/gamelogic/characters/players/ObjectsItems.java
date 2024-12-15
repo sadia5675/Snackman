@@ -1,11 +1,10 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
-public class ObjectsItems extends  Item {
+public abstract class ObjectsItems extends  Item {
     private String effectDescription;
 
-        // erstmal sei ObjectsItem für Snackman
-        public ObjectsItems(String name, int x, int y, String effectDescription) {
-            super(name, x, y, PlayerRole.SNACKMAN);
+        public ObjectsItems(String name, int x, int y, PlayerRole playerRole, String effectDescription) {
+            super(name, x, y,  playerRole);
             this.effectDescription = effectDescription;
         }
         
@@ -19,8 +18,5 @@ public class ObjectsItems extends  Item {
 
      //TODO: muss noch gemacht werden
         @Override
-        public void applyEffect(Player player) {
-        //System.out.println("Effect applied from object: " + getName() + " - " + effectDescription);
-            // Zusätzliche Logik für spezifische Effekte könnte hier implementiert werden.
-        }
+        public abstract void applyEffect(Player player);
 }
