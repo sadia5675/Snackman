@@ -28,11 +28,14 @@ public class Game {
     private PlayMap playmap;
     private int chickenNum;
     private String selectedMap;
+    private int itemsNum;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
+
+    //TO-DO: beide Listen müssen nochmal angepasst werden
     // Globale Liste der vordefinierten FoodItems
     private static final List<FoodItems> FOOD_ITEMS = List.of(
             new FoodItems("Banana", -1, -1, NutriScore.A), // Positionen werden später festgelegt
@@ -45,14 +48,6 @@ public class Game {
             new ObjectsItems("Shield", -1, -1, "Provides temporary invincibility"),
             new ObjectsItems("Double Points", -1, -1, "Doubles points gained for a limited time")
     );
-
-
-    private static final int ITEMS_NUM = 5;
-
-
-    public static int getItemsNum() {
-        return ITEMS_NUM;
-    }
 
     public Game(Player gamemaster) {
         this.id = generateId(5);
@@ -158,10 +153,11 @@ public class Game {
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
         }
+        this.itemsNum = Math.max(1, playmap.getCountSurface()/ 10); // 1 Item pro 10 surface
 
-        for (int i = 0; i < ITEMS_NUM; i++) {
+        for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
-            boolean createFoodItem = random.nextInt(100) < 70; // 70% Chance für FoodItem, 30% für ObjectsItem
+            boolean createFoodItem = random.nextInt(2) == 0; // 50% Chance für FoodItem, 50% für ObjectsItem
             int index = -1;
             do {
                 index = random.nextInt(playmap.getTilesList().size());
@@ -183,7 +179,7 @@ public class Game {
 
             // Item hinzufügen
             randomTile.addItem(newItem);
-            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'F'); // F für Food
+            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), '!'); // '!' für Food
         } else {
              // Zufälliges ObjectsItem aus der vordefinierten Liste 
         ObjectsItems randomObjectTemplate =  OBJECTS_ITEMS.get(random.nextInt(OBJECTS_ITEMS.size()));
@@ -198,7 +194,7 @@ public class Game {
 
         // ObjectsItem hinzufügen
         randomTile.addItem(newObjectItem);
-        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), 'O'); // 'O' für Object
+        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), '?'); // '?' für Object
         }
 
     }
@@ -381,5 +377,13 @@ public class Game {
 
     public void addCharacter(String username, Character character) {
         this.characters.put(username, character);
+    }
+
+    public int getItemsNum() {
+        return itemsNum;
+    }
+
+    public void setItemsNum(int itemsNum) {
+        this.itemsNum = itemsNum;
     }
 }

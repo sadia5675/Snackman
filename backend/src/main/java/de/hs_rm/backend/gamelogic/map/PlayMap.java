@@ -14,6 +14,7 @@ public class PlayMap {
 
 private char[][] map;
 private List <Tile> tilesList = new ArrayList<>();
+private int countSurface = 0;
 
 
 private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
@@ -94,6 +95,7 @@ private Tile createTile(char symbol) {
         case '*': // Wand
             return new Tile(TileType.WALL);
         case ' ': // Frei
+            countSurface++;
             return new Tile(TileType.SURFACE);
             default:
             // Dies sollte nie passieren, da wir bereits in loadMap() prüfen
@@ -135,5 +137,12 @@ public int getHeight() {
     return 0;
 }
 
+public int getCountSurface() {
+    return countSurface;
+}
+
+public void setCountSurface(int countSurface) {
+    this.countSurface = countSurface;
+}
 
 }
