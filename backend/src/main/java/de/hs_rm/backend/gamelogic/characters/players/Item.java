@@ -41,6 +41,8 @@ public abstract class  Item {
         // Abstrakte Methode für spezifische Effekte
         public abstract void applyEffect(Player player);
 
+        public abstract char getSymbol();
+
         public PlayerRole getType() {
             return type;
         }

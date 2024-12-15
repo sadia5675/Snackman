@@ -8,10 +8,12 @@ import org.slf4j.LoggerFactory;
 import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
+import de.hs_rm.backend.gamelogic.characters.players.GhostObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
+import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
@@ -34,6 +36,7 @@ public class Game {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
+    private static final int ITEMS_PER_SURFACE_RATIO = 10; // Items pro Surface-Tile
 
     //TO-DO: beide Listen müssen nochmal angepasst werden
     // Globale Liste der vordefinierten FoodItems
@@ -44,9 +47,10 @@ public class Game {
             );
     // vordefinierten ObjectsItems --> Pos muss geändert werden
     private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
-            new ObjectsItems("Speed Boost", -1, -1, "Increases movement speed temporarily"),
-            new ObjectsItems("Shield", -1, -1, "Provides temporary invincibility"),
-            new ObjectsItems("Double Points", -1, -1, "Doubles points gained for a limited time")
+            new GhostObjectItem("Speed Boost", -1, -1, "Increases movement speed temporarily"),
+            new GhostObjectItem("Shield", -1, -1, "Provides temporary invincibility"),
+            new SnackmanObjectItem("Double Points", -1, -1, "Doubles points gained for a limited time"),
+            new SnackmanObjectItem("Extra Life", -1, -1, "Grants an extra life")
     );
 
     public Game(Player gamemaster) {
@@ -153,7 +157,7 @@ public class Game {
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
         }
-        this.itemsNum = Math.max(1, playmap.getCountSurface()/ 10); // 1 Item pro 10 surface
+        this.itemsNum = Math.max(1, playmap.getCountSurface()/ ITEMS_PER_SURFACE_RATIO ); // 1 Item pro ITEMS_PER_SURFACE_RATIO 
 
         for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
@@ -179,22 +183,36 @@ public class Game {
 
             // Item hinzufügen
             randomTile.addItem(newItem);
-            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), '!'); // '!' für Food
+            playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), newItem.getSymbol()); // für Food
         } else {
-             // Zufälliges ObjectsItem aus der vordefinierten Liste 
+        
+            // Zufälliges ObjectsItem aus der vordefinierten Liste 
         ObjectsItems randomObjectTemplate =  OBJECTS_ITEMS.get(random.nextInt(OBJECTS_ITEMS.size()));
+        ObjectsItems newObjectItem;
 
-        // Neue Instanz des ObjectsItems mit Position
-        ObjectsItems newObjectItem = new ObjectsItems(
-                randomObjectTemplate.getName(),
-                index % playmap.getWidth(),
-                index / playmap.getWidth(),
-                randomObjectTemplate.getEffectDescription()
-        );
+        // Bestimmt die konkrete Unterklasse des ObjectsItems mit Position
+        if (randomObjectTemplate instanceof GhostObjectItem) {
+            newObjectItem = new GhostObjectItem(
+                    randomObjectTemplate.getName(),
+                    index % playmap.getWidth(),
+                    index / playmap.getWidth(),
+                    randomObjectTemplate.getEffectDescription()
+            );
+        } else if (randomObjectTemplate instanceof SnackmanObjectItem) {
+            newObjectItem = new SnackmanObjectItem(
+                    randomObjectTemplate.getName(),
+                    index % playmap.getWidth(),
+                    index / playmap.getWidth(),
+                    randomObjectTemplate.getEffectDescription()
+            );
+        }else {
+            LOGGER.warn("Unknown ObjectsItem type: {}", randomObjectTemplate.getName());
+            continue;
+        }
 
         // ObjectsItem hinzufügen
         randomTile.addItem(newObjectItem);
-        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), '?'); // '?' für Object
+        playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), newObjectItem.getSymbol()); // für Object
         }
 
     }

@@ -15,6 +15,16 @@ public abstract class ObjectsItems extends  Item {
         public void setEffectDescription(String effectDescription) {
             this.effectDescription = effectDescription;
         }
+    
+        public char getSymbol() {
+            return switch (this.getName()) {
+                case "Speed Boost" -> '1';
+                case "Shield" -> '2';
+                case "Double Points" -> '3';
+                case "Extra Life" -> '4';
+                default -> '?';
+            };
+        }
 
      //TODO: muss noch gemacht werden
         @Override
