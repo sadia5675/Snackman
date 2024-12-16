@@ -35,6 +35,7 @@ export const useModalStore = defineStore('modal', () => {
           await game.createGame(newPlayer);
       
           router.push(`/lobby/${game.gameState.gamedata.id}`);
+          isModalOpen.value = false;
         }
       }
       
@@ -48,6 +49,7 @@ export const useModalStore = defineStore('modal', () => {
           if(response){
             const id = game.gameState.gamedata.id;
             router.push(`/lobby/${gameId.value}`);
+            isModalOpen.value = false;
             return;
           } 
           

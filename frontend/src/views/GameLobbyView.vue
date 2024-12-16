@@ -1,27 +1,27 @@
 <template>
 
-<Modal v-if="modal.isModalOpen">
-      <template #titel>
-        <h2 class="header-modal-adventure">Select Map</h2>
-      </template>
-      <template #content>
-        <div class="flex flex-col gap-3">
-          <select v-model="selectedMap" class="input-form-small-neumorphism">
-            <option v-for="map in maps" :key="map.id" :value="map">
-              {{ map.name }}
-            </option>
-          </select>
-        </div>
-        <div class="flex space-x-4">
-          <button class="button-small-adventure">
-            Kick
-          </button>
-          <button class="button-small-adventure" @click="modal.closeModal()">
-            Close
-          </button>
-        </div>
-      </template>
-    </Modal>
+  <Modal v-if="modal.isModalOpen">
+    <template #titel>
+      <h2 class="header-modal-adventure">Select Map</h2>
+    </template>
+    <template #content>
+      <div class="flex flex-col gap-3">
+        <select v-model="selectedMap" class="input-form-small-neumorphism">
+          <option v-for="map in maps" :key="map.id" :value="map">
+            {{ map.name }}
+          </option>
+        </select>
+      </div>
+      <div class="flex space-x-4">
+        <button class="button-small-adventure">
+          Kick
+        </button>
+        <button class="button-small-adventure" @click="modal.closeModal()">
+          Close
+        </button>
+      </div>
+    </template>
+  </Modal>
 
 
 
@@ -113,8 +113,8 @@
     <div class="card max-w-md w-full">
       <h2 class="font-mono text-grau">Select:</h2> -->
 
-      <!-- Dropdown for map selection -->
-      <!-- <div class="mt-3 flex">
+  <!-- Dropdown for map selection -->
+  <!-- <div class="mt-3 flex">
         <button class="button-small-adventure">
           Kick
         </button>
@@ -131,10 +131,10 @@
       </div>
     </div> -->
 
-  
 
 
-  
+
+
 </template>
 
 <script setup lang="ts">
