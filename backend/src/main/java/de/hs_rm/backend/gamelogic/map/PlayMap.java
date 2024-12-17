@@ -24,11 +24,9 @@ private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
 public PlayMap(String filePath) {
     try {
-        LOGGER.info("FilePath: " + filePath);
+       
         loadMap(filePath);
         //createTiles();
-        LOGGER.info("Map geladen: " + filePath);
-        LOGGER.info("Arbeitsverzeichnis: " + System.getProperty("user.dir"));
         PythonInterpreter interpreter = new PythonInterpreter();
         try {
             String scriptPath = "src/main/java/de/hs_rm/backend/gamelogic/bots/chicken_bots.py";
