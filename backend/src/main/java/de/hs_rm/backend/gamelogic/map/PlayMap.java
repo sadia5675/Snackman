@@ -1,11 +1,14 @@
 package de.hs_rm.backend.gamelogic.map;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.python.core.Py;
+import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +24,26 @@ private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
 public PlayMap(String filePath) {
     try {
+        LOGGER.info("FilePath: " + filePath);
         loadMap(filePath);
         //createTiles();
+        LOGGER.info("Map geladen: " + filePath);
+        LOGGER.info("Arbeitsverzeichnis: " + System.getProperty("user.dir"));
+        PythonInterpreter interpreter = new PythonInterpreter();
+        try {
+            String scriptPath = "src/main/java/de/hs_rm/backend/gamelogic/bots/chicken_bots.py";
+            File scriptFile = new File(scriptPath);
+
+            if (scriptFile.exists()) {
+                LOGGER.info("Starte Python Skript...");
+                interpreter.execfile(scriptPath);
+                LOGGER.info("Python Skript erfolgreich gestartet");
+            } else {
+                LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     } catch (IllegalArgumentException e) {
         LOGGER.error("Invalid map file: {}", e.getMessage());
         throw e; // IllegalArgumentException weiterwerfen
