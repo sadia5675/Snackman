@@ -21,27 +21,19 @@ private List <Tile> tilesList = new ArrayList<>();
 
 private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
+private int mapRow;
+private int mapCol;
+
 
 public PlayMap(String filePath) {
     try {
        
         loadMap(filePath);
-        //createTiles();
-        PythonInterpreter interpreter = new PythonInterpreter();
-        try {
-            String scriptPath = "src/main/java/de/hs_rm/backend/gamelogic/bots/chicken_bots.py";
-            File scriptFile = new File(scriptPath);
+        this.mapRow = map.length;
+        this.mapCol = map[0].length;
 
-            if (scriptFile.exists()) {
-                LOGGER.info("Starte Python Skript...");
-                interpreter.execfile(scriptPath);
-                LOGGER.info("Python Skript erfolgreich gestartet");
-            } else {
-                LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //createTiles();
+        
     } catch (IllegalArgumentException e) {
         LOGGER.error("Invalid map file: {}", e.getMessage());
         throw e; // IllegalArgumentException weiterwerfen
@@ -144,6 +136,14 @@ public int getHeight() {
         return map.length;
     }
     return 0;
+}
+
+public int getMapCol(){
+    return mapCol;
+}
+
+public int getMapRow(){
+    return mapRow;
 }
 
 

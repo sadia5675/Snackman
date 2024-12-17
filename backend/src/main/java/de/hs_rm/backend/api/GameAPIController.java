@@ -19,6 +19,7 @@ import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,7 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/api/game")
 public class GameAPIController {
 
+
     @Autowired
     GameMessagingService messagingService;
 
@@ -58,6 +61,8 @@ public class GameAPIController {
     PlayMapService playMapService;
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
+
 
     // private Game game;
 
@@ -76,6 +81,21 @@ public class GameAPIController {
         Player gamemaster = new Player(gamemasterFromFrontend.getName());
         gamemaster.setGamemaster(true);
         gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
+        PythonInterpreter interpreter = new PythonInterpreter();
+        try {
+            String scriptPath = "src/main/java/de/hs_rm/backend/gamelogic/bots/ChickenBotMovement.py";
+            File scriptFile = new File(scriptPath);
+
+            if (scriptFile.exists()) {
+                LOGGER.info("Starte Python Skript...");
+                interpreter.execfile(scriptPath);
+                LOGGER.info("Python Skript erfolgreich gestartet");
+            } else {
+                LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // #63 NEW: gameservice now creates game
         Game newGame = gameService.createGame(gamemaster);
 
