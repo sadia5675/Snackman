@@ -48,43 +48,27 @@ public class SnackmanTest {
     }
 
     @Test
-public void testStartInvincibilityFrames() throws InterruptedException {
-    Snackman snackman = new Snackman(1.0, 0, 0, 3, 3);
-
-    // Vor Aktivierung der Invincibility
-    assertFalse(snackman.isInvincible(), "Snackman should not be invincible initially.");
-
-    // Invincibility aktivieren
-    snackman.startInvincibilityFrames();
-    assertTrue(snackman.isInvincible(), "Snackman should be invincible immediately after activation.");
-
-    // Warten auf das Ende des Invincibility-Threads
-    snackman.invincibilityThread.join(); // Synchronisiere Test mit dem Thread
-
-    assertFalse(snackman.isInvincible(), "Snackman should no longer be invincible after duration.");
-}
-
-@Test
-public void testCaughtAndInvincibility() throws InterruptedException {
-    Snackman snackman = new Snackman(1.0, 0, 0, 3, 3);
-
-    // Erster Treffer
+    public void testCaughtWithInvincibilityFrames() throws InterruptedException {
+       // Erster:
     snackman.caught();
-    assertEquals(2, snackman.getLife(), "Life should decrease to 2 after first hit.");
-    assertTrue(snackman.isInvincible(), "Snackman should be invincible after first hit.");
+    System.out.println("Nach erstem Treffer: Leben = " + snackman.getLife() + ", Unverwundbar = " + snackman.isInvincible());
+    assertEquals(2, snackman.getLife(), "Leben sollte nach erstem Treffer 2 sein.");
+    assertTrue(snackman.isInvincible(), "Snackman sollte nach dem ersten Treffer unverwundbar sein.");
 
-    // Zweiter Treffer während Invincibility (soll ignoriert werden)
+    // Zweiter: während der Invincibility
     snackman.caught();
-    assertEquals(2, snackman.getLife(), "Life should remain 2 during invincibility.");
+    System.out.println("Während der Unverwundbarkeit: Leben = " + snackman.getLife() + ", Unverwundbar = " + snackman.isInvincible());
+    assertEquals(2, snackman.getLife(), "Leben sollte während der Invincibility gleich bleiben.");
 
-    // Warten, bis der Invincibility-Thread endet
-    snackman.invincibilityThread.join(); // Warten auf das Ende des Threads
-    assertFalse(snackman.isInvincible(), "Invincibility should have ended.");
+    // Warten, bis die Invincibility Frames ablaufen
+    Thread.sleep(snackman.invincibilityDuration.toMillis() + 100);
 
-    // Dritter Treffer nach Ablauf der Invincibility
+    // Prüfen, dass Invincibility vorbei ist
+    assertFalse(snackman.isInvincible(), "Snackman sollte nicht mehr unverwundbar sein.");
+
+    // Dritter: nach Ablauf der Invincibility
     snackman.caught();
-    assertEquals(1, snackman.getLife(), "Life should decrease to 1 after invincibility ends.");
-}
-
-
+    assertEquals(1, snackman.getLife(), "Leben sollte nach drittem Treffer 1 sein.");
+    assertTrue(snackman.isInvincible(), "Snackman sollte nach dem dritten Treffer erneut unverwundbar sein.");
+    }
 }
