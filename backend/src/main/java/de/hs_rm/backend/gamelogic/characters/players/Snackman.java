@@ -1,9 +1,10 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /*
  * Die Snackman Klasse erbt von der Charackter Klasse.
  */
@@ -14,8 +15,14 @@ public class Snackman extends Character {
     private double nutriscore; 
     private Item item;
     private int currentCalorie;
+    public Thread invincibilityThread;
 
     private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
+
+    // Invincibility Frames
+    private boolean isInvincible = false;  
+    //private Instant lastDamageTimestamp; 
+    private final Duration invincibilityDuration = Duration.ofSeconds(5); 
 
     public Snackman(double speed, int posX, int posY, int life,int maxLife){
         super(speed,posX,posY);
@@ -78,11 +85,48 @@ public class Snackman extends Character {
     }
 
     //Methode zum Verhhalten nachdem man erwicht worden ist  
-    public void caught (){
-        this.life--; 
-        if(this.life <= 0 ){
+    public void caught() {
+        logger.info("Caught called: life={}, isInvincible={}", this.life, this.isInvincible);
+
+        if (isInvincible) {
+            logger.info("Snackman is currently invincible. Damage ignored.");
+            return;
+        }
+    
+        this.life--;
+        logger.info("Snackman has taken damage! Remaining life: {}", this.life);
+    
+        if (this.life <= 0) {
             logger.info("Snackman has been caught and has no more lives.");
         }
+    
+        // Invincibility wird aktiviert... erst nach dem man ein Leben verloren hat
+        startInvincibilityFrames();
+    }
+
+
+     // Methode: Überprüft der Invincibility Frames
+    public void startInvincibilityFrames() {
+        logger.info("Invincibility started. Snackman is now invincible.");
+    isInvincible = true;
+    // Speichere den Thread in der Klasse
+    invincibilityThread = new Thread(() -> {
+        try {
+            Thread.sleep(invincibilityDuration.toMillis()); // Wartezeit für Invincibility
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Invincibility thread was interrupted.", e);
+        } finally {
+            isInvincible = false; // Flag zurücksetzen
+            logger.info("Snackman is no longer invincible.");
+        }
+    });
+
+    invincibilityThread.start();
+    }
+
+    public boolean isInvincible() {
+        return isInvincible;
     }
 
 }
