@@ -68,7 +68,8 @@ public class Game {
         new FoodItems("Apple", -1, -1, NutriScore.B)
     );
 
-    private static final int ITEMS_NUM = 5;
+    // TODO: Wenn mehr Items hinzugefügt werden sollen als es freie Tiles gibt, sind wir in einer Endlosscchleife. Dies sollte gefixt werden.
+    private static final int ITEMS_NUM = 1;
 
 
     public Game(Player gamemaster) {
