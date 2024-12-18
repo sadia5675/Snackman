@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.python.core.Py;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
@@ -23,15 +27,13 @@ private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
 private int mapRow;
 private int mapCol;
+private DefaultUndirectedGraph<Vertex, DefaultEdge> graph;
 
 
 public PlayMap(String filePath) {
     try {
        
         loadMap(filePath);
-        this.mapRow = map.length;
-        this.mapCol = map[0].length;
-
         //createTiles();
         
     } catch (IllegalArgumentException e) {
@@ -41,7 +43,57 @@ public PlayMap(String filePath) {
         LOGGER.error("Error loading map file: {}", e.getMessage());
         map = new char[0][0]; // Karte zurücksetzen
     }
+
+    this.graph = new DefaultUndirectedGraph<>(DefaultEdge.class);
+    buildGraph(map);
+    this.mapRow = map.length;
+    this.mapCol = map[0].length;
+    LOGGER.info("Geladene Map: Höhe = {}, Breite = {}", map.length, map[0].length);
 }
+
+public void buildGraph(char [][]map) {
+    // Knoten hinzufügen
+    LOGGER.info("Map Dimensionen: {} {}", map.length, map[1].length);
+    for (int x = 0; x < map.length; x++) {
+        for(int y = 0; y < map[1].length; y++) {
+            if (map[x][y] == ' '){
+                Vertex vertex = new Vertex(x, y);
+                LOGGER.info("Knoten hinzugefügt: ({}, {})",x ,y );
+                graph.addVertex(vertex);
+
+            }
+        }
+    }
+
+    LOGGER.info("Alle Knoten im Graphen: {}", graph.vertexSet());
+    // Kanten hinzufügen
+    for (int x = 0; x < map.length; x++) {
+        for(int y = 0; y < map[1].length; y++) {
+            if (map[x][y] == ' '){
+                Vertex currentVertex = new Vertex(x, y);
+                if(x > 0 && map[x-1][y] == ' '){
+                    Vertex neighborTop = new Vertex(x-1, y);
+                    graph.addEdge(currentVertex, neighborTop);
+                    LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x-1, y);
+                }
+                if(y > 0 && map[x][y-1] == ' '){
+                    Vertex neighborLeft = new Vertex(x, y-1);
+                    graph.addEdge(currentVertex, neighborLeft);
+                    LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x, y-1);
+                }
+            }
+        }
+    }
+    LOGGER.info("Alle Kanten im Graphen: {}", graph.edgeSet());
+}
+
+public List<DefaultEdge> getShortestPathWithDijkstra(Vertex start, Vertex ziel) {
+    LOGGER.info("Übergebene Werte: ({}, {})", start, ziel);
+    DijkstraShortestPath<Vertex, DefaultEdge> dijkstra = new DijkstraShortestPath<>(graph);
+    GraphPath<Vertex, DefaultEdge> shortestPath = dijkstra.getPath(start, ziel);
+    return shortestPath.getEdgeList();
+}
+
 
 public void loadMap(String filePath) throws IOException, IllegalArgumentException {
     List<String> lines = new ArrayList<>();
@@ -144,6 +196,14 @@ public int getMapCol(){
 
 public int getMapRow(){
     return mapRow;
+}
+
+public DefaultUndirectedGraph<Vertex, DefaultEdge> getGraph() {
+    return graph;
+}
+
+public void setGraph(DefaultUndirectedGraph<Vertex, DefaultEdge> graph) {
+    this.graph = graph;
 }
 
 
