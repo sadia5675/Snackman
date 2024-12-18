@@ -247,6 +247,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     const index: number | undefined = players.get(player)
     if(index){
       const object = scene.getObjectById(index)
+      players.delete(player)
       if(object){
         scene.remove(object)
       }
