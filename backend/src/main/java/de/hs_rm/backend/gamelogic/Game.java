@@ -270,15 +270,15 @@ public class Game {
 
     }
 
-    public boolean moveTest(String username, double posX, double posY, double angle){
+    public boolean moveTest(String username, double posX, double posY, double posZ, double angle){
         Character curCharacter = characters.get(username);
 
-        curCharacter.move(posX, posY, angle);
+        curCharacter.move(posX, posY, posZ, angle);
         LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
         return true;
     }
 
-    public boolean move(String username, int posX, int posY) {
+    public boolean move(String username, int posX, int posY, int posZ) {
 
         LOGGER.info("{}{}{}",username,posX,posY);
         // DONE: Tile obj von x und y überprüfen
@@ -290,7 +290,7 @@ public class Game {
         //Tile curTile = playmap.getTilesList().get(curIndex);
         
         //*TESTING */
-        curCharacter.move(posX, posY, posY);
+        curCharacter.move(posX, posY, posZ, posY);
         LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
         //*TESTING */
 

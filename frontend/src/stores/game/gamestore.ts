@@ -122,7 +122,7 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-  async function startGameViaStomp(selectedMapName: string, lobbyId: string): Promise<Result> {
+  async function startGameViaStomp(selectedMapName: string): Promise<Result> {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>

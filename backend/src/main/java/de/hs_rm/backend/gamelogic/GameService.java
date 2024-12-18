@@ -131,7 +131,7 @@ public class GameService {
         return game;
     }
 
-    public boolean move(String username, int targetX, int targetY) {
+    public boolean move(String username, int targetX, int targetY, int targetZ) {
         if (username == null || username.isEmpty()) {
             throw new IllegalArgumentException("Username and direction must not be empty.");
         }
@@ -140,7 +140,7 @@ public class GameService {
         for (Game game : gameList.values()) {
             Player player = game.findPlayerByUsername(username);
             if (player != null) {
-                return game.move(username, targetX, targetY);
+                return game.move(username, targetX, targetY, targetZ);
             }
         }
         throw new IllegalArgumentException("Player not found in any game.");

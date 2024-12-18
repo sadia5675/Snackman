@@ -209,7 +209,7 @@ public class GameAPIController {
         Game existingGame = gameService.getGameById(lobbyid);
 
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-        boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
+        boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
 
         logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(),position.getAngle(), validMove);
 
@@ -404,15 +404,21 @@ public class GameAPIController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}")
-        public ResponseEntity<?> movePlayer(@PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
+    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}")
+        public ResponseEntity<?> movePlayer(
+                @PathVariable String gameId,
+                @PathVariable String username,
+                @PathVariable int coordinateX,
+                @PathVariable int coordinateY,
+                @PathVariable int coordinateZ
+    ) {
         Game existingGame = gameService.getGameById(gameId);
 
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
         try {
-            boolean success = gameService.move(username, coordinateX, coordinateY);
+            boolean success = gameService.move(username, coordinateX, coordinateY, coordinateZ);
             if (success) {
                 return createOkResponse(existingGame);
             } else {
