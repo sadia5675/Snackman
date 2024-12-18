@@ -261,8 +261,6 @@ public class GameAPIController {
     // soll username oder playerobj von frontend bekommen?
 
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
-    public ResponseEntity<?> kickUser(@PathVariable String gameId, @PathVariable String usernameKicker,
-                                      @PathVariable String usernameKicked) {
     @SendTo("/topic/game/{lobbyid}")
     public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
