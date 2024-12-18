@@ -44,17 +44,18 @@ public class GameAPIControllerTest {
         String username = "player1";
         int coordinateX = 1;
         int coordinateY = 1;
+        int coordinateZ = 1;
         Player player = new Player(username);
         
         Game mockGame = new Game(player); // Erstellen Sie ein Mock-Spiel
 
          // Mockt die Rückgabe des Spiels
         when(gameService.getGameById(gameId)).thenReturn(mockGame);
-        when(gameService.move(username, coordinateX, coordinateY)).thenReturn(true);  // Bewegung erfolgreich
+        when(gameService.move(username, coordinateX, coordinateY, coordinateZ)).thenReturn(true);  // Bewegung erfolgreich
 
         // Führt einen POST-Request aus, um die Bewegung zu testen
-        mockMvc.perform(post("/api/game/move/{gameId}/{username}/{coordinateX}/{coordinateY}", gameId, username,
-                coordinateX, coordinateY)
+        mockMvc.perform(post("/api/game/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}", gameId, username,
+                coordinateX, coordinateY, coordinateZ)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ok"));
@@ -68,16 +69,17 @@ public class GameAPIControllerTest {
         String username = "player1";
         int coordinateX = 1;
         int coordinateY = 0;
+        int coordinateZ = 1;
         Player player = new Player(username);
 
         Game mockGame = new Game(player); 
 
         when(gameService.getGameById(gameId)).thenReturn(mockGame);
-        when(gameService.move(username, coordinateX, coordinateY)).thenReturn(false);  // Bewegung schlägt fehl
+        when(gameService.move(username, coordinateX, coordinateY, coordinateZ)).thenReturn(false);  // Bewegung schlägt fehl
 
         // Führt einen POST-Request aus und erwartet eine Fehlermeldung
-        mockMvc.perform(post("/api/game/move/{gameId}/{username}/{coordinateX}/{coordinateY}", gameId, username,
-                coordinateX, coordinateY)
+        mockMvc.perform(post("/api/game/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}", gameId, username,
+                coordinateX, coordinateY, coordinateZ)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Failed to move player --> Tile is Wall, Invalid Coordinates or OutOfBounds"));
