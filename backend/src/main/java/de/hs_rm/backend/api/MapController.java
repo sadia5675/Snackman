@@ -11,8 +11,10 @@ import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +38,11 @@ public class MapController {
     @Autowired
     PlayMapService playMapService;
 
+    @Value("${maps.dir}")
+    private String mapsDirectory;
+
+   
+
     @PostMapping
     public ResponseEntity<String> saveMap(@RequestBody Map<String,Object> requestMap) {
         //TODO: process POST request
@@ -53,7 +60,7 @@ public class MapController {
         //Map speichern 
         try{
             // die Map speichert sich in dem gegebenen Ordner verzeichnis
-            File mapFile= new File("src/main/resources/maps");
+            File mapFile= new File(mapsDirectory);
             // wenn dieser nicht existieren sollte wird dieser ertsllt
             if(!mapFile.exists()){
                 mapFile.mkdirs();

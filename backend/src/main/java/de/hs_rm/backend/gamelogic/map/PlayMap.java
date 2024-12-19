@@ -11,8 +11,6 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultUndirectedGraph;
-import org.python.core.Py;
-import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +19,16 @@ public class PlayMap {
 
 private char[][] map;
 private List <Tile> tilesList = new ArrayList<>();
-
-
-private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
-
 private int mapRow;
 private int mapCol;
 private DefaultUndirectedGraph<Vertex, DefaultEdge> graph;
+private String mapsDirectory;
+private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
 
-public PlayMap(String filePath) {
+
+public PlayMap(String filePath, String mapsDirectory) {
+    this.mapsDirectory = mapsDirectory;
     try {
        
         loadMap(filePath);
@@ -100,7 +98,7 @@ public void loadMap(String filePath) throws IOException, IllegalArgumentExceptio
     int width = 0;
 
     // Datei einlesen und die Zeilen speichern
-    try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/maps/" + filePath + ".txt"))) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(mapsDirectory + filePath + ".txt"))) {
         String line;
         while ((line = reader.readLine()) != null) {
             lines.add(line);// Speichert die Zeilen der Datei

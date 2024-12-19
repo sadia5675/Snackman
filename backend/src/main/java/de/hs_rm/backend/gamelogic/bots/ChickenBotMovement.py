@@ -6,6 +6,7 @@ from de.hs_rm.backend.gamelogic.map import PlayMap
 from de.hs_rm.backend.gamelogic.characters.players import Chicken
 from de.hs_rm.backend.gamelogic.characters.players import FoodItems
 from de.hs_rm.backend.gamelogic.map import Vertex
+import os
 
 
 
@@ -28,10 +29,23 @@ class ChickenBotMovement:
 
 
 # ---------------Test: Instanz erstellen und Parameter mitgeben-----------------
+maps_directory = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/base/maps/"
 
+
+
+# Debugging: Überprüfe die Existenz und den Inhalt der Map-Datei
+map_file_path = os.path.join(maps_directory, "testMap.txt")
+if os.path.exists(map_file_path):
+    with open(map_file_path, "r") as file:
+        lines = file.readlines()
+        print("Map File Content:")
+        for line in lines:
+            print(line.strip())
+else:
+    print("Map file not found: {map_file_path}")
 
 # ChickenBotMovmeent Objekt an einem Ort initialisieren der PlayMap, Chicken und FoodItems verwaltet
-playMap = PlayMap("testMap")
+playMap = PlayMap("testMap", maps_directory)
 chicken = Chicken(1,1)
 footItem = FoodItems(None, 2, 2, None)
 
@@ -47,7 +61,6 @@ ziel = Vertex(2,2)
 # ]
 
 chickenBotMovementInstanz = ChickenBotMovement(playMap)
-
 
 shortestPath = playMap.getShortestPathWithDijkstra(start, ziel)
 

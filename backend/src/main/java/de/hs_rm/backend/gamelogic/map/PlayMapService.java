@@ -6,10 +6,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlayMapService {
+
+    @Value("${maps.dir}")
+    String mapsDirectory;
+
+
+
     List<String> mapNames;
 
 
@@ -18,7 +25,7 @@ public class PlayMapService {
     }
 
     public PlayMap createPlayMap(String name){
-        PlayMap playmap = new PlayMap(name);
+        PlayMap playmap = new PlayMap(name, mapsDirectory);
         playmap.createTiles();
         return playmap;
     }
@@ -43,7 +50,7 @@ public class PlayMapService {
         Map<String, char[][]> allMaps = new HashMap<>();
 
         for (String mapName : mapNames) {
-            PlayMap playMap = new PlayMap(mapName);
+            PlayMap playMap = new PlayMap(mapName, mapsDirectory);
             allMaps.put(mapName, playMap.getMap());
         }
         return allMaps;
