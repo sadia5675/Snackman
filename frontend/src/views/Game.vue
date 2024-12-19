@@ -192,10 +192,10 @@ function cameraPositionBewegen(delta: number) {
 function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
   const modelLoader = new GLTFLoader()
   playerPositions.forEach((playerPosition) => {
-    modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (objekt) => {
+    modelLoader.load('/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf', (objekt) => {
       const model = objekt.scene
       model.position.set(playerPosition.x, 1, playerPosition.y)
-      model.scale.set(0.5, 0.5, 0.5)
+      model.scale.set(0.2, 0.2, 0.2)
       model.rotateY(playerPosition.angle)
       scene.add(model)
     })
@@ -210,6 +210,8 @@ function loadMap(map: String[]) {
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture })
   const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture })
 
+  const modelLoader = new GLTFLoader()
+
   let rowCounter = 0
   map.forEach((e) => {
     for (let i = 0; i < e.length; i++) {
@@ -223,6 +225,23 @@ function loadMap(map: String[]) {
           const groundCube = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCube.position.set(rowCounter, 0, i)
           scene.add(groundCube)
+          break
+        case 'E': // Wenn 'E' gefunden wird
+          // Zufällig Kuchen oder Schokolade auswählen
+          const modelPath = Math.random() > 0.5
+            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.gltf'
+            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf'
+
+          modelLoader.load(modelPath, (objekt) => {
+            const model = objekt.scene
+            model.position.set(rowCounter, 0.5, i)
+          if (modelPath.includes('chocolate_bar')) {
+            model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+          } else {
+            model.scale.set(0.5, 0.5, 0.5) // sonst normal
+          }
+            scene.add(model)
+          })
           break
       }
     }
