@@ -26,6 +26,8 @@ public class Game {
     private PlayMap playmap;
     private int chickenNum;
     private String selectedMap;
+    private boolean privateLobby;
+    private String password;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
@@ -72,7 +74,18 @@ public class Game {
     private static final int ITEMS_NUM = 1;
 
 
-    public Game(Player gamemaster) {
+    // public Game(Player gamemaster) {
+    //     this.id = generateId(5);
+    //     this.players = new ArrayList<>();
+    //     this.chickens = new ArrayList<>();
+    //     this.gamemaster = gamemaster;
+    //     this.players.add(this.gamemaster);
+    //     this.started = false;
+    //     this.characters = new HashMap<>();
+    //     this.selectedMap = selectedMap;
+    // }
+
+    public Game(Player gamemaster){
         this.id = generateId(5);
         this.players = new ArrayList<>();
         this.chickens = new ArrayList<>();
@@ -81,6 +94,17 @@ public class Game {
         this.started = false;
         this.characters = new HashMap<>();
         this.selectedMap = selectedMap;
+
+        
+        if (gamemaster.getPassword() != null && !gamemaster.getPassword().isEmpty()) {
+            this.password = gamemaster.getPassword();
+            this.privateLobby = true;
+        } else {
+            this.password = null;
+            this.privateLobby = false;
+        }
+
+        
     }
 
     public String getSelectedMap() {
@@ -390,5 +414,28 @@ public class Game {
 
     public void addCharacter(String username, Character character) {
         this.characters.put(username, character);
+    }
+
+    public String getPassword(){
+        if (!privateLobby) {
+            return null;
+        }
+        return password;
+    }
+
+    public void setPassword(String password) {
+        if (privateLobby) {
+            this.password = password;
+        } else {
+            LOGGER.warn("Kein PW für offene Lobby!");
+        }
+    }
+
+    public void setPrivateLobby(boolean privateLobby){
+        this.privateLobby = privateLobby;
+    }
+
+    public boolean getPrivateLobby(){
+        return privateLobby;
     }
 }

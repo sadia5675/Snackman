@@ -5,126 +5,99 @@
       <div class="mb-4">
         <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
         <div class="flex items-center space-x-2">
-          <input
-            type="text"
-            class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300"
-            disabled="true"
-            v-model="lobbyId"
-          />
-          <button
-            class="bg-yellow-500 text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
-            @click="copyToClipboard()"
-          >
+          <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" disabled="true"
+            v-model="lobbyId" />
+          <button class="bg-yellow-500 text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
+            @click="copyToClipboard()">
             Copy
           </button>
         </div>
       </div>
 
-      <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-        <li
-          v-for="(player, i) in players"
-          :key="player.name"
-          class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors"
-        >
-          <PlayerTile v-model="players[i]" :lobby-id="lobbyId"/>
-        </li>
-        <li
-          v-for="placeholder in placeholderCount"
-          class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors"
-        >
-          Empty
-        </li>
-      </ul>
+      <div v-if="isGamemaster" class="mb-4">
+        <p class="text-lg font-semibold text-zinc-200">Lobby Passwort:</p>
+        <div class="flex items-center space-x-2">
+          <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" :value="gamePassword"
+            disabled="false" />
+        </div>
+      </div>
+    </div>
 
-            <div class="flex items-center space-x-2 mt-3">
-                <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-                <input
-                    type="number"
-                    v-model="chickenCount"
-                    class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-                />
-        <button
-        v-if="isGamemaster"
-    class="w-80 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-    @click="randomizeRoles()"
-      >
+    <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
+      <li v-for="(player, i) in players" :key="player.name"
+        class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
+        <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
+      </li>
+      <li v-for="placeholder in placeholderCount"
+        class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
+        Empty
+      </li>
+    </ul>
+
+    <div class="flex items-center space-x-2 mt-3">
+      <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
+      <input type="number" v-model="chickenCount" class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600" />
+      <button v-if="isGamemaster" class="w-80 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        @click="randomizeRoles()">
         Randomize Roles
       </button>
     </div>
 
-      <div class="flex items-center space-x-2 mt-3">
-        <button
-        v-if="isGamemaster"
-            class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
-            @click="openMapPopup()"
-        >
+    <div class="flex items-center space-x-2 mt-3">
+      <button v-if="isGamemaster" class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+        @click="openMapPopup()">
         Select Map
-        </button>
-        <div
-        class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-        >
+      </button>
+      <div class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600">
         <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
-        </div>
-     </div>
-
-      <button
-        :class="{
-          'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
-          'bg-gray-600': !isHost,
-        }"
-        :disabled="!isHost"
-        class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
-        @click="startGame()"
-      >
-        {{ isHost ? 'Start Game' : '---' }}
-      </button>
-      <button :class="{
-                'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
-                'bg-gray-600': !isHost
-            }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
-        leave
-      </button>
-    </div>
-  </div>
-    <!--Pop up-->
-    <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
-    <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full">
-    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
-
-    <!-- Grid mit Map-Bildern -->
-    <div class="grid grid-cols-2 gap-4">
-      <div
-        v-for="map in mapStore.mapsDTD.maps"
-        :key="map.id"
-        :class="[
-    'p-4 rounded-lg shadow-lg transition cursor-pointer',
-    map.id === selectedMap?.id ? 'bg-blue-700 border-blue-400' : 'bg-gray-800 hover:bg-gray-700'
-     ]"
-        @click="selectMap(map)"
-      >
-        <!-- Canvas für die Map -->
-        <canvas :id="'mapCanvas-' + map.id" class="w-full h-40 border border-zinc-500 bg-blue-600"></canvas>
-        <p class="text-center text-zinc-200 font-semibold">{{ map.name }}</p>
       </div>
     </div>
 
-    <div class="flex justify-between mt-4">
-      <button
-        class="bg-blue-600 hover:bg-blue-700 text-zinc-200 py-1 px-4 rounded-lg transition"
-        @click="selectRandomMap()"
-      >
-        Random Map
-      </button>
+    <button :class="{
+      'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
+      'bg-gray-600': !isHost,
+    }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+      @click="startGame()">
+      {{ isHost ? 'Start Game' : '---' }}
+    </button>
+    <button :class="{
+      'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
+      'bg-gray-600': !isHost
+    }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
+      leave
+    </button>
+  </div>
 
-      <button
-        class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition"
-        @click="closeMapPopup()"
-      >
-        OK
-      </button>
+  <!--Pop up-->
+  <div v-if="isMapPopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+    <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full">
+      <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
+
+      <!-- Grid mit Map-Bildern -->
+      <div class="grid grid-cols-2 gap-4">
+        <div v-for="map in mapStore.mapsDTD.maps" :key="map.id" :class="[
+          'p-4 rounded-lg shadow-lg transition cursor-pointer',
+          map.id === selectedMap?.id ? 'bg-blue-700 border-blue-400' : 'bg-gray-800 hover:bg-gray-700'
+        ]" @click="selectMap(map)">
+          <!-- Canvas für die Map -->
+          <canvas :id="'mapCanvas-' + map.id" class="w-full h-40 border border-zinc-500 bg-blue-600"></canvas>
+          <p class="text-center text-zinc-200 font-semibold">{{ map.name }}</p>
+        </div>
+      </div>
+
+      <div class="flex justify-between mt-4">
+        <button class="bg-blue-600 hover:bg-blue-700 text-zinc-200 py-1 px-4 rounded-lg transition"
+          @click="selectRandomMap()">
+          Random Map
+        </button>
+
+        <button class="bg-red-600 hover:bg-red-700 text-zinc-200 py-1 px-4 rounded-lg transition"
+          @click="closeMapPopup()">
+          OK
+        </button>
+      </div>
     </div>
   </div>
-</div>
 </template>
 
 <script setup lang="ts">
@@ -152,23 +125,27 @@ const isMapPopupVisible = ref(false)
 // Die ausgewählte Map
 const selectedMap = ref<MapDTD | null>(null);
 
-    // TODO: gamemaster.id mit clientplayer.id vergleichen
-    const isHost = ref(true);
+// TODO: gamemaster.id mit clientplayer.id vergleichen
+const isHost = ref(true);
 
-    // Eventuell erst starten wenn alle Ready
-    const isReady = ref(false);
+// Eventuell erst starten wenn alle Ready
+const isReady = ref(false);
 
 // ID in der aktuellen Lobby
 const lobbyId = route.params.id.toString()
 
-    // Maximale Anzahl an Spielern in der Lobby
-    const maxPlayers = 7;
+// Maximale Anzahl an Spielern in der Lobby
+const maxPlayers = 7;
 
-    // Spieler-Liste aus dem Store oder leeres Array
-    const players = computed(() => gameStore.gameState.gamedata?.players || []);
+// Spieler-Liste aus dem Store oder leeres Array
+const players = computed(() => gameStore.gameState.gamedata?.players || []);
 
-    // Anzahl der Platzhalter
-    const placeholderCount = computed(() => maxPlayers - players.value.length);
+// Anzahl der Platzhalter
+const placeholderCount = computed(() => maxPlayers - players.value.length);
+
+// Hole Passwort aus gamestore
+const gamePassword = computed(() => gameStore.gameState.gamedata?.password || null);
+
 
 // Anzahl der festgelegten Chickens im Game
 const chickenCount = computed({
@@ -233,37 +210,38 @@ function copyToClipboard() {
 }
 
 async function leaveGame(lobbyId: string) {
-    try {
+  try {
 
-        const playerName = sessionStorage.getItem("myName");
+    const playerName = sessionStorage.getItem("myName");
 
-        if (!playerName) {
-            console.error("nicht gefunden");
-            return;
-        }
-
-        const leavingPlayer = players.value.find(p => p.name === playerName);
-
-        if (!leavingPlayer) {
-            console.error("Spieler nicht in der Liste gefunden!");
-            return;
-        }
-
-        console.log("Lobby-Daten vor leaveGame:", players.value);
-        const success = await gameStore.leaveGame(lobbyId, leavingPlayer);
-        console.log("Leaving Game succeeded:", success);
-        console.log("Lobby-Daten nach leaveGame:", players.value);
-
-
-    } catch (error) {
-        console.log("Fehler beim ausfueren des leaven", error);
+    if (!playerName) {
+      console.error("nicht gefunden");
+      return;
     }
+
+    const leavingPlayer = players.value.find(p => p.name === playerName);
+
+    if (!leavingPlayer) {
+      console.error("Spieler nicht in der Liste gefunden!");
+      return;
+    }
+
+    console.log("Lobby-Daten vor leaveGame:", players.value);
+    const success = await gameStore.leaveGame(lobbyId, leavingPlayer);
+    console.log("Leaving Game succeeded:", success);
+    console.log("Lobby-Daten nach leaveGame:", players.value);
+
+
+  } catch (error) {
+    console.log("Fehler beim ausfueren des leaven", error);
+  }
 }
 
 
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus();
+    console.log("Passwort von gamestate", gameStore.gameState.gamedata?.password);
   } catch (error) {
     console.error('Error fetching game status:', error);
   }
@@ -313,28 +291,28 @@ function closeMapPopup() {
   isMapPopupVisible.value = false;
 }
 window.addEventListener('beforeunload', (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    const playerName = sessionStorage.getItem("myName");
-    if (playerName) {
-        const leavingPlayer = players.value.find(p => p.name === playerName);
-        if (leavingPlayer) {
-            leaveGame(lobbyId);
-        }
+  const playerName = sessionStorage.getItem("myName");
+  if (playerName) {
+    const leavingPlayer = players.value.find(p => p.name === playerName);
+    if (leavingPlayer) {
+      leaveGame(lobbyId);
     }
+  }
 });
 
 onMounted(async () => {
-    try {
-        await gameStore.fetchGameStatus();
-        //Log zum testen
-        //gamestore.joinLobby(lobbyId,);
+  try {
+    await gameStore.fetchGameStatus();
+    //Log zum testen
+    //gamestore.joinLobby(lobbyId,);
 
-    } catch (error) {
-        console.error("Error fetching game status:", error);
-    }
+  } catch (error) {
+    console.error("Error fetching game status:", error);
+  }
 
-    });
+});
 
 function selectRandomMap() {
   const maps = mapStore.mapsDTD.maps;
@@ -350,8 +328,8 @@ function selectRandomMap() {
 }
 
 function selectMap(map: MapDTD) {
- selectedMap.value = map;
- mapStore.mapsDTD.selectedMap = map;
+  selectedMap.value = map;
+  mapStore.mapsDTD.selectedMap = map;
 }
 
 function drawMapCanvas(map: MapDTD) {
@@ -386,4 +364,5 @@ function drawMapCanvas(map: MapDTD) {
 
   console.log(`Map ${map.id} drawn successfully.`);
 }
+
 </script>

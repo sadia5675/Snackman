@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
@@ -85,6 +86,11 @@ public class GameService {
         boolean containsName = game.getPlayers().stream().anyMatch(existingPlayer -> existingPlayer.getName().equals(player.getName()));
 
         logger.info("Game: {}, Player {}, ContainsName: {}", gameId, player.getName(),containsName);
+        logger.info("PrivateLobby: {}, Player Password: {}, Game Password: {}", game.getPrivateLobby(), player.getPassword(), game.getPassword());
+
+        if(game.getPrivateLobby() && !Objects.equals(player.getPassword(), game.getPassword())){
+            throw new GameJoinException("Wrong Password!");
+        }
 
         if(!containsName){
             game.joinGame(player);
