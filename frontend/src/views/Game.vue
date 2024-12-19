@@ -192,7 +192,7 @@ function cameraPositionBewegen(delta: number) {
 function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
   const modelLoader = new GLTFLoader()
   playerPositions.forEach((playerPosition) => {
-    modelLoader.load('/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf', (objekt) => {
+    modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (objekt) => {
       const model = objekt.scene
       model.position.set(playerPosition.x, 1, playerPosition.y)
       model.scale.set(0.2, 0.2, 0.2)
@@ -226,7 +226,7 @@ function loadMap(map: String[]) {
           groundCube.position.set(rowCounter, 0, i)
           scene.add(groundCube)
           break
-        case 'E': // Wenn 'E' gefunden wird
+        case 'E':
           // Zufällig Kuchen oder Schokolade auswählen
           const modelPath = Math.random() > 0.5
             ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.gltf'
