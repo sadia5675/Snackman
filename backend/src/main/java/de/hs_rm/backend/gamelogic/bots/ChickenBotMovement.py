@@ -11,7 +11,7 @@ import os
 
 
 
-
+# Noch Fehlerhaft und versehntlich in dieser Branch gelandet
 class ChickenBotMovement:
     def __init__(self, playMap):
         self.playMap = playMap
