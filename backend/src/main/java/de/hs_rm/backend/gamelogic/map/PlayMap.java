@@ -42,6 +42,7 @@ public PlayMap(String filePath, String mapsDirectory) {
         map = new char[0][0]; // Karte zurücksetzen
     }
 
+    // Noch Fehlerhaft und versehntlich in dieser Branch gelandet
     this.graph = new DefaultUndirectedGraph<>(DefaultEdge.class);
     buildGraph(map);
     this.mapRow = map.length;
@@ -49,6 +50,8 @@ public PlayMap(String filePath, String mapsDirectory) {
     LOGGER.info("Geladene Map: Höhe = {}, Breite = {}", map.length, map[0].length);
 }
 
+
+// Noch Fehlerhaft und versehntlich in dieser Branch gelandet
 public void buildGraph(char [][]map) {
     // Knoten hinzufügen
     LOGGER.info("Map Dimensionen: {} {}", map.length, map[1].length);
@@ -85,6 +88,8 @@ public void buildGraph(char [][]map) {
     LOGGER.info("Alle Kanten im Graphen: {}", graph.edgeSet());
 }
 
+
+// Noch Fehlerhaft und versehntlich in dieser Branch gelandet
 public List<DefaultEdge> getShortestPathWithDijkstra(Vertex start, Vertex ziel) {
     LOGGER.info("Übergebene Werte: ({}, {})", start, ziel);
     DijkstraShortestPath<Vertex, DefaultEdge> dijkstra = new DijkstraShortestPath<>(graph);
