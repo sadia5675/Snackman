@@ -28,6 +28,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -50,6 +51,8 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/api/game")
 public class GameAPIController {
 
+    @Value("${scripts.dir}")
+    private String scriptsDirectory;
 
     @Autowired
     GameMessagingService messagingService;
@@ -81,14 +84,17 @@ public class GameAPIController {
         Player gamemaster = new Player(gamemasterFromFrontend.getName());
         gamemaster.setGamemaster(true);
         gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
+
+        // Nur zu Testzwecken hier
         PythonInterpreter interpreter = new PythonInterpreter();
         try {
-            String scriptPath = "src/main/java/de/hs_rm/backend/gamelogic/bots/ChickenBotMovement.py";
-            File scriptFile = new File(scriptPath);
+            String scriptPath = "ChickenBotMovement.py";
+            
+            File scriptFile = new File(scriptsDirectory, scriptPath);
 
             if (scriptFile.exists()) {
                 LOGGER.info("Starte Python Skript...");
-                interpreter.execfile(scriptPath);
+                interpreter.execfile(scriptsDirectory + "/" + scriptPath);
                 LOGGER.info("Python Skript erfolgreich gestartet");
             } else {
                 LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
