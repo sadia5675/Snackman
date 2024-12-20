@@ -13,6 +13,8 @@ import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import jakarta.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -71,7 +73,7 @@ public class MapController {
             }
 
             //Dieser Part beschäftigt sich mit der txt-Datei, dabei wird eine Json-Datei vom Frontend in einer .txt umgewandetlt
-            File file= new File (mapFile, mapName + fileExtension);
+            File file= new File (mapFile, mapName + ".txt");
             //liest die Daten aus der json datei
             try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
                 //geht zeilen weise durch 

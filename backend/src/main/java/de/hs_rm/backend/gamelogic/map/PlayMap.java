@@ -51,42 +51,43 @@ public PlayMap(String filePath, String mapsDirectory) {
     LOGGER.info("Geladene Map: Höhe = {}, Breite = {}", map.length, map[0].length);
 }
 
-
-// Noch Fehlerhaft und versehntlich in dieser Branch gelandet
 public void buildGraph(char [][]map) {
+    if (map == null || map.length == 0 || map[0].length == 0) {
+        throw new IllegalArgumentException("The map is invalid or empty.");
+    }
     // Knoten hinzufügen
-    LOGGER.info("Map Dimensionen: {} {}", map.length, map[1].length);
+    //LOGGER.info("Map Dimensionen: {} {}", map.length, map[0].length);
     for (int x = 0; x < map.length; x++) {
-        for(int y = 0; y < map[1].length; y++) {
+        for(int y = 0; y < map[0].length; y++) {
             if (map[x][y] == ' '){
                 Vertex vertex = new Vertex(x, y);
-                LOGGER.info("Knoten hinzugefügt: ({}, {})",x ,y );
+                //LOGGER.info("Knoten hinzugefügt: ({}, {})",x ,y );
                 graph.addVertex(vertex);
 
             }
         }
     }
 
-    LOGGER.info("Alle Knoten im Graphen: {}", graph.vertexSet());
+    //LOGGER.info("Alle Knoten im Graphen: {}", graph.vertexSet());
     // Kanten hinzufügen
     for (int x = 0; x < map.length; x++) {
-        for(int y = 0; y < map[1].length; y++) {
+        for(int y = 0; y < map[0].length; y++) {
             if (map[x][y] == ' '){
                 Vertex currentVertex = new Vertex(x, y);
                 if(x > 0 && map[x-1][y] == ' '){
                     Vertex neighborTop = new Vertex(x-1, y);
                     graph.addEdge(currentVertex, neighborTop);
-                    LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x-1, y);
+                    //LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x-1, y);
                 }
                 if(y > 0 && map[x][y-1] == ' '){
                     Vertex neighborLeft = new Vertex(x, y-1);
                     graph.addEdge(currentVertex, neighborLeft);
-                    LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x, y-1);
+                    //LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x, y-1);
                 }
             }
         }
     }
-    LOGGER.info("Alle Kanten im Graphen: {}", graph.edgeSet());
+    //LOGGER.info("Alle Kanten im Graphen: {}", graph.edgeSet());
 }
 
 
