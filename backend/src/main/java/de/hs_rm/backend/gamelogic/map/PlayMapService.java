@@ -24,12 +24,6 @@ public class PlayMapService {
     @Value("${maps.dir}")
     String mapsDirectory;
 
-    @Value("${map.grid.min}")
-    private int gridMin;
-
-    @Value("${map.grid.max}")
-    private int gridMax;
-
 
     public PlayMapService() {
         this.mapNames = new ArrayList<>();
