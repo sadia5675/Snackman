@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from org.jgrapht.graph import DefaultUndirectedGraph
-from org.jgrapht.graph import DefaultEdge
-from org.jgrapht.alg.shortestpath import DijkstraShortestPath
+
 from de.hs_rm.backend.gamelogic.map import PlayMap
 from de.hs_rm.backend.gamelogic.characters.players import Chicken
 from de.hs_rm.backend.gamelogic.characters.players import FoodItems

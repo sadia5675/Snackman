@@ -9,6 +9,7 @@ import wall from '@/assets/game/realistic/wall.png'
 import type { IPlayerpositionDTD } from '@/stores/game/dtd/IPlayerpositionDTD'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { useGameStore } from '@/stores/game/gamestore'
+import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 
 const gameStore = useGameStore()
 
@@ -112,7 +113,7 @@ sphere.position.y = 2
 sphere.position.x = 3
 sphere.position.z = -4
 
-scene.add(sphere)
+// scene.add(sphere)
 
 //lightning
 const ambientLight = new THREE.AmbientLight(0x404040, 10)
@@ -202,6 +203,21 @@ function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
   })
 }
 
+function renderChicken(chickenPosition: IChickenPositionDTD[]){
+  const modelLoader = new GLTFLoader()
+  chickenPosition.forEach((chickenPosition) => {
+    modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
+      const model = objekt.scene
+
+    
+      model.position.set(chickenPosition.x, 1, chickenPosition.y)
+      model.scale.set(0.01, 0.01, 0.01)
+      model.rotateY(chickenPosition.angle)
+      scene.add(model)
+    })
+  })
+}
+
 function loadMap(map: String[]) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1)
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
@@ -281,6 +297,15 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
+  const mockPosition: IChickenPositionDTD[] = [
+    {
+      x: 3,
+      y: 2,
+      angle: Math.PI,
+    }
+  ]
+
+  renderChicken(mockPosition)
   renderCharacters(mockPositions)
   animate()
 })
