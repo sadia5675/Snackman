@@ -13,6 +13,17 @@ package de.hs_rm.backend.gamelogic.characters.players;
                return nutriScore;
            }
 
+    public char getSymbol() {
+        return switch (this.getNutriScore()) {
+            case A -> 'A';
+            case B -> 'B';
+            case C -> 'C';
+            case D -> 'D';
+            case E -> 'E';
+            default -> '?';
+        };
+    }
+
        //TODO: muss noch gemacht werden
            @Override
            public void applyEffect(Player player) {

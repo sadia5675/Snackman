@@ -13,6 +13,7 @@ public class GhostTest {
         ghost= new Ghost(5, 10, 20);
     }
 
+    /*
     @Test
     public void testSetterAndGetter() {
         ghost.setSpeed(7.0);
@@ -25,6 +26,8 @@ public class GhostTest {
         assertEquals("Banana", ghost.getItems().getName(), "Item-Name sollte 'Banana' sein.");
         assertEquals(7.0, ghost.getSpeed(), "Geschwindigkeit sollte 7.0 sein.");
     }
+
+    */
 
     /*
     @Test

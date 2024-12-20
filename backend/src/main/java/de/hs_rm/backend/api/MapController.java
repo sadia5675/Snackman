@@ -41,7 +41,11 @@ public class MapController {
     @Value("${maps.dir}")
     private String mapsDirectory;
 
-   
+    @Value("${map.grid.min}")
+    private int minGridSize;
+
+    @Value("${map.grid.max}")
+    private int maxGridSize;
 
     @PostMapping
     public ResponseEntity<String> saveMap(@RequestBody Map<String,Object> requestMap) {
@@ -67,7 +71,7 @@ public class MapController {
             }
 
             //Dieser Part beschäftigt sich mit der txt-Datei, dabei wird eine Json-Datei vom Frontend in einer .txt umgewandetlt
-            File file= new File (mapFile, mapName + ".txt");
+            File file= new File (mapFile, mapName + fileExtension);
             //liest die Daten aus der json datei
             try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
                 //geht zeilen weise durch 
@@ -84,6 +88,15 @@ public class MapController {
             return ResponseEntity.status(500).body("Somethink went Wrong :( " + e.getMessage());
         }
     }
+
+    @GetMapping("/grid-limits")
+    public ResponseEntity<Map<String, Integer>> getGridLimits() {
+        Map<String, Integer> limits = new HashMap<>();
+        limits.put("min", minGridSize);
+        limits.put("max", maxGridSize);
+        return ResponseEntity.ok(limits);
+    }
+
 
     @GetMapping// name und array mit symbolen
     public ResponseEntity<Map<String, Object>> getAllMaps() {

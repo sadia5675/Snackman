@@ -11,13 +11,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PlayMapService {
+    
+    private List<String> mapNames;
 
+    
     @Value("${maps.dir}")
     String mapsDirectory;
 
+    @Value("${map.grid.min}")
+    private int gridMin;
 
-
-    List<String> mapNames;
+    @Value("${map.grid.max}")
+    private int gridMax;
 
 
     public PlayMapService() {

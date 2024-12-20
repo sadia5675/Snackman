@@ -21,11 +21,12 @@
       <option :value="Playerrole.SNACKMAN">Snackman</option>
       <option :value="Playerrole.GHOST">Ghost</option>
     </select>
+    <!--
     <button
         class="px-2 py-1 text-sm font-small text-white bg-blue-500 rounded hover:bg-blue-600 transition"
         @click="randomizeRole(player.name)">
       Randomize Role
-    </button>
+    </button> -->
     <button
       v-if="isGamemaster"
       class="px-2 py-1 text-sm font-small text-white bg-red-500 rounded hover:bg-red-600 transition"

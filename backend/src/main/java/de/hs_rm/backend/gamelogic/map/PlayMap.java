@@ -19,6 +19,7 @@ public class PlayMap {
 
 private char[][] map;
 private List <Tile> tilesList = new ArrayList<>();
+private int countSurface = 0;
 private int mapRow;
 private int mapCol;
 private DefaultUndirectedGraph<Vertex, DefaultEdge> graph;
@@ -133,6 +134,14 @@ public void loadMap(String filePath) throws IOException, IllegalArgumentExceptio
     }
 }
 
+public void updateMapState(int x, int y, char symbol) {
+    if (x >= 0 && x < map.length && y >= 0 && y < map.length && map[x][y] == ' ') {
+        map[x][y] = symbol;
+    } else {
+        LOGGER.warn("Invalid position to update map: ({}, {})", x, y);
+    }
+}
+
 public void createTiles(){
     tilesList.clear(); // zurücksetzen
     if (map == null || map.length == 0) {
@@ -152,6 +161,7 @@ private Tile createTile(char symbol) {
         case '*': // Wand
             return new Tile(TileType.WALL);
         case ' ': // Frei
+            countSurface++;
             return new Tile(TileType.SURFACE);
             default:
             // Dies sollte nie passieren, da wir bereits in loadMap() prüfen
@@ -209,5 +219,12 @@ public void setGraph(DefaultUndirectedGraph<Vertex, DefaultEdge> graph) {
     this.graph = graph;
 }
 
+public int getCountSurface() {
+    return countSurface;
+}
+
+public void setCountSurface(int countSurface) {
+    this.countSurface = countSurface;
+}
 
 }

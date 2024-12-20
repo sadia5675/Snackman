@@ -1,33 +1,45 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 public class PlayerPosition {
-    private int x;
-    private int y;
-    
-
-    public PlayerPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+    double posX;
+    double posY;
+    double angle;
+    public double getAngle() {
+        return angle;
     }
 
-
-    public int getX() {
-        return x;
+    public void setAngle(double angle) {
+        this.angle = angle;
     }
 
+    String playerName;
 
-    public void setX(int x) {
-        this.x = x;
+    PlayerPosition(){
+
     }
 
-
-    public int getY() {
-        return y;
+    public double getPosX() {
+        return posX;
     }
 
-
-    public void setY(int y) {
-        this.y = y;
+    public void setPosX(float posX) {
+        this.posX = posX;
     }
-    
+
+    public double getPosY() {
+        return posY;
+    }
+
+    public void setPosY(float posY) {
+        this.posY = posY;
+    }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+    }
+
     
 }
