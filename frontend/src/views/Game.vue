@@ -228,26 +228,128 @@ function loadMap(map: String[]) {
           break
         case 'E':
           // Zufällig Kuchen oder Schokolade auswählen
-          const modelPath = Math.random() > 0.5
+          const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem)
+          const modelPathE = Math.random() > 0.5
             ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.gltf'
-            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf'
+            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf';
 
-          modelLoader.load(modelPath, (objekt) => {
+          modelLoader.load(modelPathE, (objekt) => {
             const model = objekt.scene
-            model.position.set(rowCounter, 0.5, i)
-          if (modelPath.includes('chocolate_bar')) {
-            model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-          } else {
-            model.scale.set(0.5, 0.5, 0.5) // sonst normal
-          }
-            scene.add(model)
+
+            if (modelPathE.includes('chocolate_bar')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model) 
           })
           break
-      }
-    }
+          case 'D':
+          // Zufällig Kuchen oder Schokolade auswählen
+          const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem1.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem1)
+          const modelPathD = Math.random() > 0.5
+            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.gltf'
+            : '/src/assets/game/items/D/popcorn/popcorn.gltf';
+
+          modelLoader.load(modelPathD, (objekt) => {
+            const model = objekt.scene
+
+            if (modelPathD.includes('popcorn')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model) 
+          })
+          break
+          case 'C':
+          // Zufällig Kuchen oder Schokolade auswählen
+          const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem2.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem2)
+          const modelPathC = Math.random() > 0.5
+            ? '/src/assets/game/items/C/candy_cane/candycane.gltf'
+            : '/src/assets/game/items/C/chips/chips.gltf';
+
+          modelLoader.load(modelPathC, (objekt) => {
+            const model = objekt.scene
+
+            if (modelPathC.includes('candycane')) {
+              model.position.set(rowCounter - 2, 1, i)
+              model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.3) // sonst normal
+            }
+            scene.add(model) 
+          })
+          break
+          case 'B':
+          // Zufällig Kuchen oder Schokolade auswählen
+          const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem3.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem3)
+          const modelPathB = Math.random() > 0.5
+            ? '/src/assets/game/items/B/apple/apple.gltf'
+            : '/src/assets/game/items/B/banana/banana.gltf';
+
+          modelLoader.load(modelPathB, (objekt) => {
+            const model = objekt.scene
+
+            if (modelPathB.includes('apple')) {
+              model.position.set(rowCounter - 3, 0.75, i)
+              model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 0.5, i)
+              model.scale.set(0.2, 0.2, 0.2) // sonst normal
+            }
+            scene.add(model) 
+          })
+          break
+          case 'A':
+          // Zufällig Kuchen oder Schokolade auswählen
+          const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem4.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem4)
+          const modelPathA = Math.random() > 0.5
+            ? '/src/assets/game/items/A/ginger/ginger.gltf'
+            : '/src/assets/game/items/A/lemon/lemon.gltf';
+
+          modelLoader.load(modelPathA, (objekt) => {
+            const model = objekt.scene
+
+            if (modelPathA.includes('ginger')) {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal 
+            }
+            scene.add(model) 
+          })
+          break
+          default:
+          const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem5.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem5)
+      } 
+    }  
     rowCounter++
   })
-}
+} 
 
 onMounted(async () => {
   try {
