@@ -38,7 +38,7 @@ public class GameService {
 
     public Game startGame(String gameId, PlayMap playMap) {
         Game game = gameList.get(gameId);
-        
+
         if(game == null){
             return null;
         }
@@ -58,7 +58,7 @@ public class GameService {
         game.end();
 
         return game;
-    
+
     }
 
     public Game leaveGame(String gameId,Player player){
@@ -72,7 +72,7 @@ public class GameService {
 
         return game;
     }
-    
+
     public Game joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 
@@ -89,7 +89,7 @@ public class GameService {
         }else{
             throw new GameJoinException("Name already in Lobby!");
         }
-        
+
         return game;
     }
 
@@ -130,23 +130,31 @@ public class GameService {
     }
 
     public boolean move(String username, int targetX, int targetY) {
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Username and direction must not be empty.");
-        }
-
-        // Iteriert über alle Games, um den Spieler zu finden
+        // Um den Spieler zu finden
         for (Game game : gameList.values()) {
             Player player = game.findPlayerByUsername(username);
             if (player != null) {
-                return game.move(username, targetX, targetY);
+                // Spielfeldgrenzen
+                if (targetX < 0 || targetY < 0 || targetX >= game.getPlaymap().getWidth()
+                        || targetY >= game.getPlaymap().getHeight()) {
+                    throw new IllegalArgumentException(
+                            "Target position (" + targetX + ", " + targetY + ") is out of bounds.");
+                }
+                //Bewegung
+                boolean success = game.move(username, targetX, targetY);
+                if (!success) {
+                    throw new IllegalArgumentException(
+                            "Failed to move Player '" + username + "'. Tile is a wall");
+                } else {
+                    return success;
+                }
             }
         }
-        throw new IllegalArgumentException("Player not found in any game.");
+        throw new IllegalArgumentException("Player '" + username + "' not found in any game.");
     }
 
     public void setGameList(Map<String, Game> gameList) {
         this.gameList = gameList;
     }
 
-    
 }

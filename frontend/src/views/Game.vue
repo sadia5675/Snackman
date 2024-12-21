@@ -33,7 +33,7 @@ function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene()
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000)
-  camera.position.set(0, 1, 2)
+  camera.position.set(1, 1, 2)
 
   const renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -129,10 +129,14 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
+
 function cameraPositionBewegen(delta: number) {
   let cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
+
+  /*let newPosition = camera.position.clone();*/
+
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (movingForward) {
       if (movingRight) {
@@ -185,10 +189,40 @@ function cameraPositionBewegen(delta: number) {
         movementSpeed * delta,
       )
     }
-    camera.position.y = 2
+    camera.position.y = 2;
+
+    const roundedX = Math.floor(camera.position.x);
+    const roundedZ = Math.floor(camera.position.z);
+
+    console.log(`Camera position: X=${roundedX}, Z=${roundedZ}`);
+    /*
+    const map = gameStore.gameState.gamedata.playmap?.map;
+    //Kollision lokal
+    if (map && isPositionBlocked(roundedX, roundedZ, map)) {
+      console.warn("Position blockiert. Bewegung abgebrochen.");
+      return;
+    }
+    //aktualiesieren
+    camera.position.copy(newPosition);
+    //visuelle darstellung
+    if (map) {
+      displayMapWithPlayer(roundedX, roundedZ, map);
+    }
+      */
   }
 }
-
+/*
+function isPositionBlocked(x: number, z: number, map: string[] | undefined): boolean {
+  if (z < 0 || z >= map.length || x < 0 || x >= map[0].length) {
+    console.warn("Position außerhalb der Karte:", { x, z });
+    return true; 
+  }
+  const cell = map[z][x];
+  //console.log(`Map[z][x]: ${cell}`);
+  return cell === '*';
+}
+  */
+ 
 function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
   const modelLoader = new GLTFLoader()
   playerPositions.forEach((playerPosition) => {
@@ -227,7 +261,6 @@ function loadMap(map: String[]) {
           scene.add(groundCube)
           break
         case 'E':
-          // Zufällig Kuchen oder Schokolade auswählen
           const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem)
@@ -236,6 +269,7 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf';
 
           modelLoader.load(modelPathE, (objekt) => {
+            console.log('Model geladen:', modelPathE);
             const model = objekt.scene
 
             if (modelPathE.includes('chocolate_bar')) {
@@ -247,10 +281,15 @@ function loadMap(map: String[]) {
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model) 
-          })
+            console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+          },
+          undefined,
+        (error) => {
+          console.error('Fehler beim Laden des Modells:', error);
+        }
+        )
           break
           case 'D':
-          // Zufällig Kuchen oder Schokolade auswählen
           const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem1.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem1)
@@ -259,6 +298,7 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/D/popcorn/popcorn.gltf';
 
           modelLoader.load(modelPathD, (objekt) => {
+            console.log('Model geladen:', modelPathD);
             const model = objekt.scene
 
             if (modelPathD.includes('popcorn')) {
@@ -269,11 +309,16 @@ function loadMap(map: String[]) {
               model.position.set(rowCounter - 2, 0.5, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
-            scene.add(model) 
-          })
+            scene.add(model);
+            console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
           break
           case 'C':
-          // Zufällig Kuchen oder Schokolade auswählen
           const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem2.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem2)
@@ -282,6 +327,7 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/C/chips/chips.gltf';
 
           modelLoader.load(modelPathC, (objekt) => {
+            console.log('Model geladen:', modelPathC);
             const model = objekt.scene
 
             if (modelPathC.includes('candycane')) {
@@ -292,11 +338,16 @@ function loadMap(map: String[]) {
               model.position.set(rowCounter - 3, 1, i)
               model.scale.set(0.5, 0.5, 0.3) // sonst normal
             }
-            scene.add(model) 
-          })
+            scene.add(model);
+            console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
           break
           case 'B':
-          // Zufällig Kuchen oder Schokolade auswählen
           const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem3.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem3)
@@ -305,6 +356,7 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/B/banana/banana.gltf';
 
           modelLoader.load(modelPathB, (objekt) => {
+            console.log('Model geladen:', modelPathB);
             const model = objekt.scene
 
             if (modelPathB.includes('apple')) {
@@ -315,11 +367,16 @@ function loadMap(map: String[]) {
               model.position.set(rowCounter - 3, 0.5, i)
               model.scale.set(0.2, 0.2, 0.2) // sonst normal
             }
-            scene.add(model) 
-          })
+            scene.add(model);
+            console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
           break
           case 'A':
-          // Zufällig Kuchen oder Schokolade auswählen
           const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem4.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem4)
@@ -328,6 +385,7 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/A/lemon/lemon.gltf';
 
           modelLoader.load(modelPathA, (objekt) => {
+            console.log('Model geladen:', modelPathA);
             const model = objekt.scene
 
             if (modelPathA.includes('ginger')) {
@@ -338,8 +396,14 @@ function loadMap(map: String[]) {
               model.position.set(rowCounter - 3, 0.5, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal 
             }
-            scene.add(model) 
-          })
+            scene.add(model);
+            console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
           break
           default:
           const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)

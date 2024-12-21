@@ -327,16 +327,12 @@ public class GameAPIController {
             return createErrorResponse("No game found.");
         }
         try {
-            boolean success = gameService.move(username, coordinateX, coordinateY);
-            if (success) {
-                return createOkResponse(existingGame);
-            } else {
-                return ResponseEntity.badRequest().body("Failed to move player --> Tile is Wall, Invalid Coordinates or OutOfBounds");
-            }
+            gameService.move(username, coordinateX, coordinateY);
+            return createOkResponse(existingGame);
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());
         } catch (Exception e) {
-            return createErrorResponse("An unexpected error occurred.");
+            return createErrorResponse("An unexpected error occurred: " + e.getMessage());
         }
     }
 

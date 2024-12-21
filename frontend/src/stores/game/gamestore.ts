@@ -144,6 +144,20 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
+  async function movePlayer(username: string, targetX: number, targetZ: number): Promise<boolean> {
+    try {
+      const response = await fetch(`${apiUrl}/move/${gameState.gamedata.id}/${username}/${targetX}/${targetZ}`, {
+        method: 'POST',
+      })
+      const gameResponse = await handleResponse(response)
+      setGameStateFromResponse(gameResponse)
+      return true; 
+    } catch (error) {
+      console.error('Error moving player:', error)
+      return false; 
+    }
+  }
+
   function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
     return new Promise((resolve) => {
       try {
@@ -314,6 +328,7 @@ export const useGameStore = defineStore('gameStore', () => {
     createGame,
     startGame,
     endGame,
+    movePlayer,
     leaveGame,
     kickUser,
     joinLobby,

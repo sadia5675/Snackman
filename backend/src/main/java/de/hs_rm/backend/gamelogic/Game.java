@@ -286,25 +286,28 @@ public class Game {
     }
 
     public boolean move(String username, int posX, int posY) {
-        // DONE: Tile obj von x und y überprüfen
+        // ziel abrufen
         int targetIndex = posY * playmap.getWidth() + posX;
         Tile targetTile = playmap.getTilesList().get(targetIndex);
+        //wand
+        if (targetTile.getType() == TileType.WALL) {
+            return false; 
+        }
+
         Character curCharacter = characters.get(username);
 
+        //aktuelle pos
         int curIndex = curCharacter.getPosY() * playmap.getWidth() + curCharacter.getPosX();
         Tile curTile = playmap.getTilesList().get(curIndex);
 
-        if (targetTile.getType() == TileType.WALL) {
-            return false;
-        }
-        // DONE: position von character aktualisieren für frontend
-        curCharacter.move(posX, posY);
-        // TODO: hier fehlt noch Kollision in addCharacter
+        //Entfernen und bewegen
         curTile.removeCharacter(curCharacter);
+        curCharacter.move(posX, posY);
         targetTile.addCharacter(curCharacter);
 
         return true;
     }
+    
 
     public Player findPlayerByUsername(String username) {
         if (players == null || players.isEmpty()) {
