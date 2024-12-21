@@ -11,8 +11,6 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultUndirectedGraph;
-import org.python.core.Py;
-import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +19,17 @@ public class PlayMap {
 
 private char[][] map;
 private List <Tile> tilesList = new ArrayList<>();
-
-
-private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
-
+private int countSurface = 0;
 private int mapRow;
 private int mapCol;
 private DefaultUndirectedGraph<Vertex, DefaultEdge> graph;
+private String mapsDirectory;
+private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
 
-public PlayMap(String filePath) {
+
+public PlayMap(String filePath, String mapsDirectory) {
+    this.mapsDirectory = mapsDirectory;
     try {
        
         loadMap(filePath);
@@ -44,6 +43,7 @@ public PlayMap(String filePath) {
         map = new char[0][0]; // Karte zurücksetzen
     }
 
+    // Noch Fehlerhaft und versehntlich in dieser Branch gelandet
     this.graph = new DefaultUndirectedGraph<>(DefaultEdge.class);
     buildGraph(map);
     this.mapRow = map.length;
@@ -52,41 +52,46 @@ public PlayMap(String filePath) {
 }
 
 public void buildGraph(char [][]map) {
+    if (map == null || map.length == 0 || map[0].length == 0) {
+        throw new IllegalArgumentException("The map is invalid or empty.");
+    }
     // Knoten hinzufügen
-    LOGGER.info("Map Dimensionen: {} {}", map.length, map[1].length);
+    //LOGGER.info("Map Dimensionen: {} {}", map.length, map[0].length);
     for (int x = 0; x < map.length; x++) {
-        for(int y = 0; y < map[1].length; y++) {
+        for(int y = 0; y < map[0].length; y++) {
             if (map[x][y] == ' '){
                 Vertex vertex = new Vertex(x, y);
-                LOGGER.info("Knoten hinzugefügt: ({}, {})",x ,y );
+                //LOGGER.info("Knoten hinzugefügt: ({}, {})",x ,y );
                 graph.addVertex(vertex);
 
             }
         }
     }
 
-    LOGGER.info("Alle Knoten im Graphen: {}", graph.vertexSet());
+    //LOGGER.info("Alle Knoten im Graphen: {}", graph.vertexSet());
     // Kanten hinzufügen
     for (int x = 0; x < map.length; x++) {
-        for(int y = 0; y < map[1].length; y++) {
+        for(int y = 0; y < map[0].length; y++) {
             if (map[x][y] == ' '){
                 Vertex currentVertex = new Vertex(x, y);
                 if(x > 0 && map[x-1][y] == ' '){
                     Vertex neighborTop = new Vertex(x-1, y);
                     graph.addEdge(currentVertex, neighborTop);
-                    LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x-1, y);
+                    //LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x-1, y);
                 }
                 if(y > 0 && map[x][y-1] == ' '){
                     Vertex neighborLeft = new Vertex(x, y-1);
                     graph.addEdge(currentVertex, neighborLeft);
-                    LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x, y-1);
+                    //LOGGER.info("Kante hinzugefügt: ({}, {}) -> ({}, {})", x, y, x, y-1);
                 }
             }
         }
     }
-    LOGGER.info("Alle Kanten im Graphen: {}", graph.edgeSet());
+    //LOGGER.info("Alle Kanten im Graphen: {}", graph.edgeSet());
 }
 
+
+// Noch Fehlerhaft und versehntlich in dieser Branch gelandet
 public List<DefaultEdge> getShortestPathWithDijkstra(Vertex start, Vertex ziel) {
     LOGGER.info("Übergebene Werte: ({}, {})", start, ziel);
     DijkstraShortestPath<Vertex, DefaultEdge> dijkstra = new DijkstraShortestPath<>(graph);
@@ -100,7 +105,7 @@ public void loadMap(String filePath) throws IOException, IllegalArgumentExceptio
     int width = 0;
 
     // Datei einlesen und die Zeilen speichern
-    try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/maps/" + filePath + ".txt"))) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(mapsDirectory + filePath + ".txt"))) {
         String line;
         while ((line = reader.readLine()) != null) {
             lines.add(line);// Speichert die Zeilen der Datei
@@ -130,6 +135,14 @@ public void loadMap(String filePath) throws IOException, IllegalArgumentExceptio
     }
 }
 
+public void updateMapState(int x, int y, char symbol) {
+    if (x >= 0 && x < map.length && y >= 0 && y < map.length && map[x][y] == ' ') {
+        map[x][y] = symbol;
+    } else {
+        LOGGER.warn("Invalid position to update map: ({}, {})", x, y);
+    }
+}
+
 public void createTiles(){
     tilesList.clear(); // zurücksetzen
     if (map == null || map.length == 0) {
@@ -149,6 +162,7 @@ private Tile createTile(char symbol) {
         case '*': // Wand
             return new Tile(TileType.WALL);
         case ' ': // Frei
+            countSurface++;
             return new Tile(TileType.SURFACE);
             default:
             // Dies sollte nie passieren, da wir bereits in loadMap() prüfen
@@ -206,5 +220,12 @@ public void setGraph(DefaultUndirectedGraph<Vertex, DefaultEdge> graph) {
     this.graph = graph;
 }
 
+public int getCountSurface() {
+    return countSurface;
+}
+
+public void setCountSurface(int countSurface) {
+    this.countSurface = countSurface;
+}
 
 }

@@ -5,9 +5,9 @@
     <input type="text" v-model="mapStore.mapName" placeholder="Map Name" />
     <p>Definiere die Größe des Spielfelds:</p>
     <p> Zeilen:</p>
-    <input type="number" v-model="mapStore.rows" placeholder="Anzahl der Reihen" min="1" max="15"  />
-    <p>Spalten</p>
-    <input type="number" v-model="mapStore.cols" placeholder="Anzahl der Spalten" min="1" max="15" />
+    <input type="number" v-model="mapStore.rows" placeholder="Anzahl der Reihen" :min="mapStore.minGridSize" :max="mapStore.maxGridSize" />
+    <p>Spalten:</p>
+    <input type="number" v-model="mapStore.cols" placeholder="Anzahl der Spalten" :min="mapStore.minGridSize" :max="mapStore.maxGridSize" />
     <button class="buttons-top-bottom" @click="mapStore.createGrid">Spielfeld erstellen</button>
   </div>
   <br>
@@ -60,6 +60,12 @@ onMounted (async() => {
   await mapStore.fetchMaps();
   console.log("Aktuelle Maps:", mapStore.mapsDTD.maps);
 })
+
+onMounted(async () => {
+    await mapStore.fetchGridLimits();
+    console.log("grid min:", mapStore.minGridSize);
+    console.log("grid max:", mapStore.maxGridSize);
+});
 
 </script>
 

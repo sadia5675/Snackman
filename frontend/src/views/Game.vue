@@ -2,16 +2,27 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { onMounted, ref } from 'vue'
+import {onBeforeMount, onMounted, ref} from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
-import type { IPlayerpositionDTD } from '@/stores/game/dtd/IPlayerpositionDTD'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { useGameStore } from '@/stores/game/gamestore'
+import type { IMessageDTD } from '@/stores/game/dtd/IMessageDTD'
+import { sendMessage, subscribeTo } from '@/config/stompWebsocket'
+import { useRoute } from 'vue-router'
+import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 
 const gameStore = useGameStore()
+
+const route = useRoute()
+const lobbyId = route.params.id.toString()
+
+let nextPosition: THREE.Vector3
+let lastSend: number = 0
+const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 
 let movingForward: boolean,
   movingBackward: boolean,
@@ -124,49 +135,59 @@ pointLight.position.set(10, 20, 10) //extra Lightning for the ball
 scene.add(pointLight)
 
 function animate() {
-  requestAnimationFrame(animate)
+  setTimeout( function() {
+    requestAnimationFrame(animate)
+  }, 1000 / 60 );
   renderer.render(scene, camera)
   const delta = clock.getDelta()
   cameraPositionBewegen(delta)
 }
 
 function cameraPositionBewegen(delta: number) {
-  let cameraViewDirection = new THREE.Vector3()
+  const cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
+
+  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
+  cameraViewDirection.y = 0
+  cameraViewDirection.normalize()
+
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
+
+  nextPosition = camera.position.clone()
+
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (movingForward) {
       if (movingRight) {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
           movementSpeed * delta,
         )
       } else if (movingLeft) {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4),
           movementSpeed * delta,
         )
       } else if (movingBackward) {
         //foward und backward canceln sich
       } else {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI),
           movementSpeed * delta,
         )
       }
     } else if (movingBackward) {
       if (movingRight) {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
           movementSpeed * delta,
         )
       } else if (movingLeft) {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
           movementSpeed * delta,
         )
       } else {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI),
           movementSpeed * delta,
         )
@@ -175,34 +196,94 @@ function cameraPositionBewegen(delta: number) {
       if (movingLeft) {
         //right und left canceln sich
       } else {
-        camera.position.addScaledVector(
+        nextPosition.addScaledVector(
           cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
           movementSpeed * delta,
         )
       }
     } else if (movingLeft) {
-      camera.position.addScaledVector(
+      nextPosition.addScaledVector(
         cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2),
         movementSpeed * delta,
       )
     }
-    camera.position.y = 2
+    nextPosition.y = 1
+    validatePosition(nextPosition)
+
+    camera.position.y = 1
   }
 }
 
-function renderCharacters(playerPositions: IPlayerpositionDTD[]) {
-  const modelLoader = new GLTFLoader()
-  playerPositions.forEach((playerPosition) => {
-    modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (objekt) => {
-      const model = objekt.scene
-      model.position.set(playerPosition.x, 1, playerPosition.y)
-      model.scale.set(0.5, 0.5, 0.5)
-      model.rotateY(playerPosition.angle)
-      scene.add(model)
+function validatePosition(nextPosition: THREE.Vector3) {
+  const currentTime: number = Date.now()
+
+  if (currentTime - lastSend > 50) {
+
+    sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
+      playerName: sessionStorage.getItem('myName'),
+      posX: nextPosition.x,
+      posY: nextPosition.z,
+      angle: camera.rotation.z,
     })
-  })
+    lastSend = currentTime
+  } else {
+    moveCamera()
+  }
 }
 
+
+function moveCamera() {
+  camera.position.copy(nextPosition)
+}
+
+function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
+  console.log("INSIDE RENDER: ", playerPositions);
+
+  const modelLoader = new GLTFLoader();
+  const adjustAngle = Math.PI;
+  const fehlerndeSpieler = Array.from(players.keys()).filter((playerName) =>
+    !playerPositions.map((position)=>position.playerName).includes(playerName))
+
+  fehlerndeSpieler.forEach((player)=>{
+    const index: number | undefined = players.get(player)
+    if(index){
+      const object = scene.getObjectById(index)
+      players.delete(player)
+      if(object){
+        scene.remove(object)
+      }
+    }
+  })
+
+    playerPositions.forEach((playerPosition) => {
+    if (!players.has(playerPosition.playerName)) {
+      //Modell initial rendern
+      modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (gltf) => {
+        const model = gltf.scene;
+        model.scale.set(0.5, 0.5, 0.5);
+        players.set(playerPosition.playerName, model.id);
+        scene.add(model);
+
+        model.position.set(playerPosition.x, 1, playerPosition.y);
+        model.rotation.y = playerPosition.angle + adjustAngle;
+      });
+    } else {
+      //Modell updaten
+      const index: number | undefined = players.get(playerPosition.playerName)
+      if(index) {
+        const model = scene.getObjectById(index);
+        if (model) {
+          const messungsBox = new THREE.Box3()
+          const breite = new THREE.Vector3()
+          messungsBox.getSize(breite)
+          messungsBox.expandByObject(model)
+          model.position.set(playerPosition.x - (breite.x/2), 1, playerPosition.y);
+          model.rotation.y = playerPosition.angle + adjustAngle;
+        }
+      }
+    }
+  });
+}
 function renderChicken(chickenPosition: IChickenPositionDTD[]){
   const modelLoader = new GLTFLoader()
   chickenPosition.forEach((chickenPosition) => {
@@ -211,7 +292,7 @@ function renderChicken(chickenPosition: IChickenPositionDTD[]){
 
     
       model.position.set(chickenPosition.x, 1, chickenPosition.y)
-      model.scale.set(0.01, 0.01, 0.01)
+      model.scale.set(0.03, 0.03, 0.03)
       model.rotateY(chickenPosition.angle)
       scene.add(model)
     })
@@ -246,12 +327,52 @@ function loadMap(map: String[]) {
   })
 }
 
+async function handleCharacters(data: ICharacterDTD[]) {
+  let playerPositions: IPlayerPositionDTD[] = [];
+  data.forEach(character => {
+    if(sessionStorage.getItem('myName') !== character.name){
+      playerPositions.push({
+        playerName: character.name,
+        x: character.posX,
+        y: character.posY,
+        angle: character.angleInDegrees,
+      })
+    }
+  });
+  renderCharactersTest(playerPositions);
+}
+
+
 onMounted(async () => {
   try {
-    await gameStore.fetchGameStatus();
+    await gameStore.fetchGameStatus()
   } catch (error) {
-    console.error('Error fetching game status:', error);
+    console.error('Error fetching game status:', error)
   }
+
+  subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
+    switch (message.type) {
+      case 'playerPosition':
+        console.log("FROM PLAYER POSITON: ", message.feedback)
+        await handleCharacters(message.feedback);
+        break;
+    }
+  });
+
+  subscribeTo(`/ingame/${lobbyId}`, async (messageValidation: IMessageDTD) => {
+    switch (messageValidation.type) {
+      case 'playerMoveValidation':
+        const playerPosition: any = messageValidation.feedback
+
+        if (playerPosition.playerName === sessionStorage.getItem('myName')) {
+          console.log("FROM PLAYER MOVE VALIDATION: ", messageValidation.feedback)
+          console.log('recevied validation')
+          moveCamera()
+        }
+
+        break;
+    }
+  })
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
@@ -285,13 +406,17 @@ onMounted(async () => {
     console.error('No map found')
   }
 
-  const mockPositions: IPlayerpositionDTD[] = [
+
+
+  const mockPositions: IPlayerPositionDTD[] = [
     {
+      playerName: 'test',
       x: 1,
       y: 1,
       angle: Math.PI,
     },
     {
+      playerName: 'test',
       x: 2,
       y: 2,
       angle: 2 * Math.PI,
@@ -306,7 +431,7 @@ onMounted(async () => {
   ]
 
   renderChicken(mockPosition)
-  renderCharacters(mockPositions)
+  renderCharactersTest(mockPositions)
   animate()
 })
 </script>
