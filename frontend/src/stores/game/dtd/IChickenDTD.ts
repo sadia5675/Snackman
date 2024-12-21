@@ -1,3 +1,5 @@
 export interface IChickenDTD {
-  // TODO: Add properties
+  x: number,
+  y: number,
+  angle: number
 }

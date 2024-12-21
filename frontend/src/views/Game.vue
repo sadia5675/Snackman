@@ -37,6 +37,10 @@ const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
+// Typ falsch?
+let chickenPositions: IChickenPositionDTD[];
+
+
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
 }
@@ -284,13 +288,12 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     }
   });
 }
-function renderChicken(chickenPosition: IChickenPositionDTD[]){
+function renderChicken(chickenPositions: IChickenPositionDTD[]){
   const modelLoader = new GLTFLoader()
-  chickenPosition.forEach((chickenPosition) => {
+
+  chickenPositions.forEach((chickenPosition) => {
     modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
       const model = objekt.scene
-
-    
       model.position.set(chickenPosition.x, 1, chickenPosition.y)
       model.scale.set(0.03, 0.03, 0.03)
       model.rotateY(chickenPosition.angle)
@@ -343,12 +346,26 @@ async function handleCharacters(data: ICharacterDTD[]) {
 }
 
 
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
+
+  if (gameStore.gameState.gamedata.chickens == null) {
+    chickenPositions = []
+    console.log("Keine Positionsdaten weil Chicken Array leer")
+  } else {
+    chickenPositions = gameStore.gameState.gamedata.chickens;
+    console.log("Chickens-Positionsdaten: " + chickenPositions)
+  }
+
+ 
+
+  const chickenList = gameStore.gameState.gamedata.chickens
+  console
 
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
@@ -407,7 +424,6 @@ onMounted(async () => {
   }
 
 
-
   const mockPositions: IPlayerPositionDTD[] = [
     {
       playerName: 'test',
@@ -430,7 +446,7 @@ onMounted(async () => {
     }
   ]
 
-  renderChicken(mockPosition)
+  renderChicken(chickenPositions)
   renderCharactersTest(mockPositions)
   animate()
 })
