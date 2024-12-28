@@ -38,7 +38,7 @@ const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // Typ falsch?
-let chickenPositions: IChickenPositionDTD[];
+let chickenPositions = ref<IChickenPositionDTD[]>([]);
 
 
 function addItem(itemName: string) {
@@ -355,11 +355,11 @@ onMounted(async () => {
   }
 
   if (gameStore.gameState.gamedata.chickens == null) {
-    chickenPositions = []
+    chickenPositions.value = []
     console.log("Keine Positionsdaten weil Chicken Array leer")
   } else {
-    chickenPositions = gameStore.gameState.gamedata.chickens;
-    console.log("Chickens-Positionsdaten: " + chickenPositions)
+    chickenPositions.value = gameStore.gameState.gamedata.chickens;
+    console.log("Chickens-Positionsdaten: " + chickenPositions.value)
   }
 
  
@@ -438,15 +438,15 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
-  const mockPosition: IChickenPositionDTD[] = [
-    {
-      x: 3,
-      y: 2,
-      angle: Math.PI,
-    }
-  ]
+  // const mockPosition: IChickenPositionDTD[] = [
+  //   {
+  //     x: 3,
+  //     y: 2,
+  //     angle: Math.PI,
+  //   }
+  // ]
 
-  renderChicken(chickenPositions)
+  renderChicken(chickenPositions.value)
   renderCharactersTest(mockPositions)
   animate()
 })
