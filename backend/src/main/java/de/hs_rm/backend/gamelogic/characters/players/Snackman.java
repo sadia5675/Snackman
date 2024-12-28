@@ -1,7 +1,7 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
 import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +19,9 @@ public class Snackman extends Character {
 
     private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
 
-    public Instant lastDamageTimestamp; // Speichert die Zeit, zu der der Snackman zuletzt Schaden bekommen hat.
+    public LocalDateTime lastDamageTimestamp; // Speichert die Zeit, zu der der Snackman zuletzt Schaden bekommen hat.
     public final Duration invincibilityDuration = Duration.ofSeconds(5); //  Legt fest, wie lange Snackman unverwundbar bleibt
+
     public Snackman(double speed, int posX, int posY, int life,int maxLife){
         super(speed,posX,posY);
         this.life=life; 
@@ -84,14 +85,14 @@ public class Snackman extends Character {
 
     //Methode: Prüft ob der Spieler unverwundbar ist und wenn nicht, reduziert es die Lebenspunkte und aktiviert die Invincibility.
     public void caught() {
-        Instant now = Instant.now(); // Aktuelle Zeit speichern
+         LocalDateTime now = LocalDateTime.now(); // Aktuelle Zeit speichern
 
         // Prüfet: Invincibility Frames aktiv ist
-        if (lastDamageTimestamp != null && Duration.between(lastDamageTimestamp, now).compareTo(invincibilityDuration) < 0) { //Snackman wurde getroffen und wenn berechnete Zeit weniger als 5 sek= schaden wird ignoriert
+        if (lastDamageTimestamp != null &&
+            Duration.between(lastDamageTimestamp, now).compareTo(invincibilityDuration) < 0) {
             logger.info("Snackman is currently invincible. Damage ignored.");
             return;
         }
-    
 
         this.life--;
         lastDamageTimestamp = now; // Speichert aktuelle Zeit als neuen Treffer-Zeitstempel
@@ -109,9 +110,9 @@ public class Snackman extends Character {
             return false;
         }
         //Berechnet die vergangene Zeit seit dem letzten Schaden.
-        Duration elapsedTime = Duration.between(lastDamageTimestamp, Instant.now());
-        System.out.println("Elapsed time: " + elapsedTime.toMillis()); 
+        Duration timeSinceLastDamage = Duration.between(lastDamageTimestamp, LocalDateTime.now());
+        System.out.println("Time since last damage: " + timeSinceLastDamage.toMillis()); 
         //vergleivht vergangene Zeit mit der Invincibillity-Dauer also 5 sek
-        return elapsedTime.compareTo(invincibilityDuration) < 0; //ja= true
+        return timeSinceLastDamage.compareTo(invincibilityDuration) < 0; //ja= true
     }
 }
