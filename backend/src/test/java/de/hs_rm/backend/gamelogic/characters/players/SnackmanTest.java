@@ -51,24 +51,25 @@ public class SnackmanTest {
     public void testCaughtWithInvincibilityFrames() throws InterruptedException {
        // Erster:
     snackman.caught();
-    System.out.println("Nach erstem Treffer: Leben = " + snackman.getLife() + ", Unverwundbar = " + snackman.isInvincible());
-    assertEquals(2, snackman.getLife(), "Leben sollte nach erstem Treffer 2 sein.");
-    assertTrue(snackman.isInvincible(), "Snackman sollte nach dem ersten Treffer unverwundbar sein.");
+    System.out.println("After first hit: Life = " + snackman.getLife() + ", Invincible = " + snackman.isInvincible());
+    assertEquals(2, snackman.getLife(), "Life should be 2 after the first hit.");
+    assertTrue(snackman.isInvincible(), "nackman should be invincible after the first hit.");
 
     // Zweiter: während der Invincibility
     snackman.caught();
-    System.out.println("Während der Unverwundbarkeit: Leben = " + snackman.getLife() + ", Unverwundbar = " + snackman.isInvincible());
-    assertEquals(2, snackman.getLife(), "Leben sollte während der Invincibility gleich bleiben.");
+    System.out.println("During invincibility: Life = " + snackman.getLife() + ", Invincible = " + snackman.isInvincible());
+    assertEquals(2, snackman.getLife(), "Life should remain the same during invincibility.");
 
     // Warten, bis die Invincibility Frames ablaufen
     Thread.sleep(snackman.invincibilityDuration.toMillis() + 100);
 
     // Prüfen, dass Invincibility vorbei ist
-    assertFalse(snackman.isInvincible(), "Snackman sollte nicht mehr unverwundbar sein.");
+    assertFalse(snackman.isInvincible(), "Snackman should no longer be invincible.");
 
     // Dritter: nach Ablauf der Invincibility
     snackman.caught();
-    assertEquals(1, snackman.getLife(), "Leben sollte nach drittem Treffer 1 sein.");
-    assertTrue(snackman.isInvincible(), "Snackman sollte nach dem dritten Treffer erneut unverwundbar sein.");
+    System.out.println("After third hit: Life = " + snackman.getLife() + ", Invincible = " + snackman.isInvincible());
+    assertEquals(1, snackman.getLife(), "Life should be 1 after the third hit.");
+    assertTrue(snackman.isInvincible(), "Snackman should be invincible again after the third hit.");
     }
 }
