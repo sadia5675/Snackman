@@ -37,10 +37,14 @@ const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // für springen
+let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
+const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
+let isChargingJump = false // Ob der Spieler einen Sprung auflädt
 let isJumping = false // Verhindert doppeltes Springen
 let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
 const gravity = -9.8 // Schwerkraft
-const jumpSpeed = 5 // Startgeschwindigkeit des Sprungs
+const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
+const maxJumpSpeed = 15 //Geschwindigkeit für großen Sprung
 
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
@@ -91,10 +95,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         movingRight = true
         break
       case 'Space':
-        if (!isJumping) { // Nur springen, wenn nicht in der Luft
-          isJumping = true
-          jumpVelocity = jumpSpeed // Setze die Sprunggeschwindigkeit
-        }
+        isChargingJump = true;         
         break
     }
   })
@@ -112,6 +113,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         break
       case 'KeyD':
         movingRight = false
+        break
+        case 'Space':
+          isChargingJump = false;
         break
     }
   })
@@ -154,6 +158,31 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
+// Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
+function triggerJumpAfterChargeTime(delta: number) {
+  if (isChargingJump) {
+    // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
+    jumpChargeTime += delta; // Ladezeit hochzählen
+
+    if (jumpChargeTime >= maxJumpChargeTime) {
+      jumpChargeTime = 0; // Ladezeit zurücksetzen
+      // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
+      isChargingJump = false; // Leertaste kann losgelassen werden
+      jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
+      isJumping = true; // Der Spieler springt jetzt
+      console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+    }
+
+  }
+  else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
+      jumpChargeTime = 0;
+      jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
+      isJumping = true; // Sprung aktivieren
+      console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+      
+  }
+
+}
 function cameraPositionBewegen(delta: number) {
   const cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
@@ -170,7 +199,6 @@ function cameraPositionBewegen(delta: number) {
     jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
     nextPosition.y += jumpVelocity * delta
     camera.position.y = nextPosition.y;
-    console.log("isJumping:", isJumping, "jumpVelocity:", jumpVelocity, "nextPosition.y:", nextPosition.y);
 
     // Bodenberührung
     if (nextPosition.y <= 1) {
@@ -178,6 +206,7 @@ function cameraPositionBewegen(delta: number) {
       camera.position.y = nextPosition.y;
       jumpVelocity = 0
       isJumping = false
+      jumpChargeTime =0
     }
   }
   else{
@@ -242,6 +271,11 @@ function cameraPositionBewegen(delta: number) {
       camera.position.y = 1
     }
   }
+   // Überprüfe und führe den Sprung aus, wenn nötig
+   if(!isJumping){
+    triggerJumpAfterChargeTime(delta);
+   }
+
 
 }
 
