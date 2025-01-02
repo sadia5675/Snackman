@@ -21,7 +21,7 @@
   </Modal>
 
 
-  <div class="homeMenue" :style="{ backgroundImage: `url('/src/assets/TestBackground1.jpg')` }">
+  <div class="homeMenue" :style="{ backgroundImage: `url('${backgroundImage}')` }">
     <h1>Snackman</h1>
     <div class="form-container">
       <button class="buttons-top-bottom" @click="modal.openModal(ModalType.NEW_GAME,'')">New Game</button>
@@ -51,6 +51,7 @@ import { PlayerType } from '@/stores/game/dtd/PlayerType';
 import router from '@/router';
 import { ModalType } from '@/stores/game/dtd/EModalType';
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import backgroundImage from '@/assets/TestBackground1.jpg'
 
 
 const modal = useModalStore()

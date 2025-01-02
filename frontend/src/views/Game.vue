@@ -256,8 +256,9 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
     playerPositions.forEach((playerPosition) => {
     if (!players.has(playerPosition.playerName)) {
+      const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       //Modell initial rendern
-      modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (gltf) => {
+      modelLoader.load(snackmanModelURL, (gltf) => {
         const model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
         players.set(playerPosition.playerName, model.id);
