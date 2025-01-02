@@ -36,6 +36,12 @@ const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
+// für springen
+let isJumping = false // Verhindert doppeltes Springen
+let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
+const gravity = -9.8 // Schwerkraft
+const jumpSpeed = 5 // Startgeschwindigkeit des Sprungs
+
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
 }
@@ -83,6 +89,12 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         break
       case 'KeyD':
         movingRight = true
+        break
+      case 'Space':
+        if (!isJumping) { // Nur springen, wenn nicht in der Luft
+          isJumping = true
+          jumpVelocity = jumpSpeed // Setze die Sprunggeschwindigkeit
+        }
         break
     }
   })
@@ -153,64 +165,84 @@ function cameraPositionBewegen(delta: number) {
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
 
   nextPosition = camera.position.clone()
+  // Sprungberechnung
+  if (isJumping) {
+    jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
+    nextPosition.y += jumpVelocity * delta
+    camera.position.y = nextPosition.y;
+    console.log("isJumping:", isJumping, "jumpVelocity:", jumpVelocity, "nextPosition.y:", nextPosition.y);
 
-  if (movingForward || movingBackward || movingLeft || movingRight) {
-    if (movingForward) {
-      if (movingRight) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingLeft) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingBackward) {
-        //foward und backward canceln sich
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingBackward) {
-      if (movingRight) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingLeft) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingRight) {
-      if (movingLeft) {
-        //right und left canceln sich
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingLeft) {
-      nextPosition.addScaledVector(
-        cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2),
-        movementSpeed * delta,
-      )
+    // Bodenberührung
+    if (nextPosition.y <= 1) {
+      nextPosition.y = 1
+      camera.position.y = nextPosition.y;
+      jumpVelocity = 0
+      isJumping = false
     }
-    nextPosition.y = 1
-    validatePosition(nextPosition)
-
-    camera.position.y = 1
   }
+  else{
+    if (movingForward || movingBackward || movingLeft || movingRight) {
+      if (movingForward) {
+        if (movingRight) {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
+            movementSpeed * delta,
+          )
+        } else if (movingLeft) {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4),
+            movementSpeed * delta,
+          )
+        } else if (movingBackward) {
+          //foward und backward canceln sich
+        } else {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI),
+            movementSpeed * delta,
+          )
+        }
+      } else if (movingBackward) {
+        if (movingRight) {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
+            movementSpeed * delta,
+          )
+        } else if (movingLeft) {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
+            movementSpeed * delta,
+          )
+        } else {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI),
+            movementSpeed * delta,
+          )
+        }
+      } else if (movingRight) {
+        if (movingLeft) {
+          //right und left canceln sich
+        } else {
+          nextPosition.addScaledVector(
+            cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
+            movementSpeed * delta,
+          )
+        }
+      } else if (movingLeft) {
+        nextPosition.addScaledVector(
+          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2),
+          movementSpeed * delta,
+        )
+      }
+
+
+
+      nextPosition.y = 1
+      validatePosition(nextPosition)
+
+      camera.position.y = 1
+    }
+  }
+
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
