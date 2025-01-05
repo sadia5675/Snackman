@@ -1,0 +1,11 @@
+Model Information:
+* title:	Cotton Candy
+* source:	https://sketchfab.com/3d-models/cotton-candy-ffdb3a0034104fb9a101983c04ae5960
+* author:	HopeTohme (https://sketchfab.com/HopeTohme)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Cotton Candy" (https://sketchfab.com/3d-models/cotton-candy-ffdb3a0034104fb9a101983c04ae5960) by HopeTohme (https://sketchfab.com/HopeTohme) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

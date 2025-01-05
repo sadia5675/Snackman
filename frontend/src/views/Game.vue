@@ -2,7 +2,7 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import {onBeforeMount, onMounted, ref} from 'vue'
+import { onMounted, ref} from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
@@ -44,7 +44,7 @@ function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene()
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000)
-  camera.position.set(0, 1, 2)
+  camera.position.set(1, 1, 2)
 
   const renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -284,6 +284,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     }
   });
 }
+
 function loadMap(map: String[]) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1)
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
@@ -291,6 +292,8 @@ function loadMap(map: String[]) {
   const wallTexture = new THREE.TextureLoader().load(wall)
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture })
   const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture })
+
+  const modelLoader = new GLTFLoader()
 
   let rowCounter = 0
   map.forEach((e) => {
@@ -306,6 +309,155 @@ function loadMap(map: String[]) {
           groundCube.position.set(rowCounter, 0, i)
           scene.add(groundCube)
           break
+        case 'E':
+          const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem)
+          const modelPathE = Math.random() > 0.5
+            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb'
+            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.glb';
+
+          modelLoader.load(modelPathE, (objekt) => {
+            console.log('Model geladen:', modelPathE);
+            const model = objekt.scene
+
+            if (modelPathE.includes('chocolate_bar')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model)
+            console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+          },
+          undefined,
+        (error) => {
+          console.error('Fehler beim Laden des Modells:', error);
+        }
+        )
+          break
+          case 'D':
+          const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem1.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem1)
+          const modelPathD = Math.random() > 0.5
+            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.glb'
+            : '/src/assets/game/items/D/popcorn/popcorn.glb';
+
+          modelLoader.load(modelPathD, (objekt) => {
+            console.log('Model geladen:', modelPathD);
+            const model = objekt.scene
+
+            if (modelPathD.includes('popcorn')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          case 'C':
+          const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem2.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem2)
+          const modelPathC = Math.random() > 0.5
+            ? '/src/assets/game/items/C/candy_cane/candycane.glb'
+            : '/src/assets/game/items/C/chips/chips.glb';
+
+          modelLoader.load(modelPathC, (objekt) => {
+            console.log('Model geladen:', modelPathC);
+            const model = objekt.scene
+
+            if (modelPathC.includes('candycane')) {
+              model.position.set(rowCounter - 2, 1, i)
+              model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.3) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          case 'B':
+          const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem3.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem3)
+          const modelPathB = Math.random() > 0.5
+            ? '/src/assets/game/items/B/apple/apple.glb'
+            : '/src/assets/game/items/B/banana/banana.glb';
+
+          modelLoader.load(modelPathB, (objekt) => {
+            console.log('Model geladen:', modelPathB);
+            const model = objekt.scene
+
+            if (modelPathB.includes('apple')) {
+              model.position.set(rowCounter - 3, 0.75, i)
+              model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 0.5, i)
+              model.scale.set(0.2, 0.2, 0.2) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          case 'A':
+          const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem4.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem4)
+          const modelPathA = Math.random() > 0.5
+            ? '/src/assets/game/items/A/ginger/ginger.glb'
+            : '/src/assets/game/items/A/lemon/lemon.glb';
+
+          modelLoader.load(modelPathA, (objekt) => {
+            console.log('Model geladen:', modelPathA);
+            const model = objekt.scene
+
+            if (modelPathA.includes('ginger')) {
+              model.position.set(rowCounter - 3, 1, i-1)
+              model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          default:
+          const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem5.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem5)
       }
     }
     rowCounter++

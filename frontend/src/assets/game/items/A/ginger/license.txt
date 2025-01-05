@@ -1,0 +1,11 @@
+Model Information:
+* title:	Ginger (LowPoly)
+* source:	https://sketchfab.com/3d-models/ginger-lowpoly-be1f2a8f992443b0911e7d5b5cb7f269
+* author:	Kenny Kwok. (https://sketchfab.com/motpanda)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Ginger (LowPoly)" (https://sketchfab.com/3d-models/ginger-lowpoly-be1f2a8f992443b0911e7d5b5cb7f269) by Kenny Kwok. (https://sketchfab.com/motpanda) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)

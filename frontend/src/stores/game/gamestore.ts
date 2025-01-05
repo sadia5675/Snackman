@@ -54,7 +54,7 @@ export const useGameStore = defineStore('gameStore', () => {
     try {
       gamemaster.playerrole = Playerrole.SNACKMAN
       console.log("Erstelle Spiel mit: ",gamemaster);
-      
+
       const response: Response = await fetch(`${restUrl}/create`, {
         method: 'POST',
         headers: {
@@ -170,6 +170,20 @@ export const useGameStore = defineStore('gameStore', () => {
     } catch (error) {
       handleGameStateError()
       console.error('Error ending game:', error)
+    }
+  }
+
+  async function movePlayer(username: string, targetX: number, targetZ: number): Promise<boolean> {
+    try {
+      const response = await fetch(`${restUrl}/move/${gameState.gamedata.id}/${username}/${targetX}/${targetZ}`, {
+        method: 'POST',
+      })
+      const gameResponse = await handleResponse(response)
+      setGameStateFromResponse(gameResponse)
+      return true;
+    } catch (error) {
+      console.error('Error moving player:', error)
+      return false;
     }
   }
 
@@ -359,7 +373,7 @@ export const useGameStore = defineStore('gameStore', () => {
       try {
         const response = await fetch(`${restUrl}/${gameId}/isPrivate`);
         const result = await response.json();
-  
+
         if (result.status === "ok") {
           return result.isPrivate;
         } else {
@@ -370,12 +384,13 @@ export const useGameStore = defineStore('gameStore', () => {
         return false;
       }
     }
-    
+
   return {
     gameState,
     createGame,
     startGameViaStomp,
     endGame,
+    movePlayer,
     leaveGame,
     kickUser,
     joinLobby,

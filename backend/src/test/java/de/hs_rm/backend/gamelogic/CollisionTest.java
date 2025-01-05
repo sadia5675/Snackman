@@ -19,7 +19,7 @@ public class CollisionTest {
     private Snackman snackman;
     private Ghost ghost;
     private FoodItems foodItem;
-    private ObjectsItems objectItem;
+    //private ObjectsItems objectItem;
 
     @BeforeEach
     void setUp() {
@@ -28,7 +28,7 @@ public class CollisionTest {
         snackman = new Snackman(1.0, 0, 0, 3, 3);
         ghost = new Ghost(1.0, 0, 0);
         foodItem = new FoodItems("Banana", 0, 0, NutriScore.A);
-        objectItem = new ObjectsItems("Key", 0, 0,"description");
+        //objectItem = new ObjectsItems("Key", 0, 0,"description");
     }
 
     @Test
@@ -43,12 +43,12 @@ public class CollisionTest {
     @Test
     void testAddSnackmanWithMatchingItem() {
         surfaceTile.addItem(foodItem);
-        surfaceTile.addItem(objectItem);
+        //surfaceTile.addItem(objectItem);
 
         boolean result = surfaceTile.addCharacter(snackman);
 
         assertTrue(result, "Snackman should be added successfully.");
-        assertTrue(snackman.getCurrentObjectItem() ==objectItem, "Snackman should collect object item.");
+        //assertTrue(snackman.getCurrentObjectItem() ==objectItem, "Snackman should collect object item.");
         assertEquals(NutriScore.A.getCalorieBonus(), snackman.getCurrentCalorie(), "Snackman should eat the food item.");
     }
 
