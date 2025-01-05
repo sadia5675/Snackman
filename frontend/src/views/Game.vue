@@ -265,8 +265,8 @@ function loadMap(map: String[]) {
           groundCubeUnderItem.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem)
           const modelPathE = Math.random() > 0.5
-            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.gltf'
-            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.gltf';
+            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb'
+            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.glb';
 
           modelLoader.load(modelPathE, (objekt) => {
             console.log('Model geladen:', modelPathE);
@@ -294,8 +294,8 @@ function loadMap(map: String[]) {
           groundCubeUnderItem1.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem1)
           const modelPathD = Math.random() > 0.5
-            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.gltf'
-            : '/src/assets/game/items/D/popcorn/popcorn.gltf';
+            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.glb'
+            : '/src/assets/game/items/D/popcorn/popcorn.glb';
 
           modelLoader.load(modelPathD, (objekt) => {
             console.log('Model geladen:', modelPathD);
@@ -323,8 +323,8 @@ function loadMap(map: String[]) {
           groundCubeUnderItem2.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem2)
           const modelPathC = Math.random() > 0.5
-            ? '/src/assets/game/items/C/candy_cane/candycane.gltf'
-            : '/src/assets/game/items/C/chips/chips.gltf';
+            ? '/src/assets/game/items/C/candy_cane/candycane.glb'
+            : '/src/assets/game/items/C/chips/chips.glb';
 
           modelLoader.load(modelPathC, (objekt) => {
             console.log('Model geladen:', modelPathC);
@@ -352,8 +352,8 @@ function loadMap(map: String[]) {
           groundCubeUnderItem3.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem3)
           const modelPathB = Math.random() > 0.5
-            ? '/src/assets/game/items/B/apple/apple.gltf'
-            : '/src/assets/game/items/B/banana/banana.gltf';
+            ? '/src/assets/game/items/B/apple/apple.glb'
+            : '/src/assets/game/items/B/banana/banana.glb';
 
           modelLoader.load(modelPathB, (objekt) => {
             console.log('Model geladen:', modelPathB);
@@ -381,19 +381,19 @@ function loadMap(map: String[]) {
           groundCubeUnderItem4.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem4)
           const modelPathA = Math.random() > 0.5
-            ? '/src/assets/game/items/A/ginger/ginger.gltf'
-            : '/src/assets/game/items/A/lemon/lemon.gltf';
+            ? '/src/assets/game/items/A/ginger/ginger.glb'
+            : '/src/assets/game/items/A/lemon/lemon.glb';
 
           modelLoader.load(modelPathA, (objekt) => {
             console.log('Model geladen:', modelPathA);
             const model = objekt.scene
 
             if (modelPathA.includes('ginger')) {
-              model.position.set(rowCounter - 3, 1, i)
+              model.position.set(rowCounter - 3, 1, i-1)
               model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
             }
             else {
-              model.position.set(rowCounter - 3, 0.5, i)
+              model.position.set(rowCounter - 3, 1, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal 
             }
             scene.add(model);
