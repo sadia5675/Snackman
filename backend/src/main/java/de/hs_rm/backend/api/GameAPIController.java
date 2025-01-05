@@ -78,11 +78,13 @@ public class GameAPIController {
         Player gamemaster = new Player(gamemasterFromFrontend.getName());
         gamemaster.setGamemaster(true);
         gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
+        gamemaster.setPassword(gamemasterFromFrontend.getPassword());
         // #63 NEW: gameservice now creates game
-        Game newGame = gameService.createGame(gamemaster);
+        Game newGame = gameService.createGame(gamemasterFromFrontend);
 
         return createOkResponse(newGame);
     }
+
     // Method to join an existing game
     // @PostMapping("/join/{gameId}")
     // public ResponseEntity<?> joinGame(@PathVariable String gameId) {
@@ -161,6 +163,7 @@ public class GameAPIController {
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
+            response.put("password",existingGame.getPassword());
 
             messagingService.sendPlayerList(lobbyid, response);
 
@@ -441,6 +444,7 @@ public class GameAPIController {
         String gameJSON;
         feedbackData.put("status", "ok");
         feedbackData.put("time", LocalDateTime.now().toString());
+        feedbackData.put("password", game.getPassword()); 
         try {
             gameJSON = ow.writeValueAsString(game);
             feedbackData.put("feedback", game);
@@ -450,5 +454,23 @@ public class GameAPIController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(feedbackData);
+    }
+
+    @GetMapping("/{gameId}/isPrivate")
+    public ResponseEntity<Map<String, Object>> isPrivate(@PathVariable String gameId) {
+        Game existingGame = gameService.getGameById(gameId);
+
+        if (existingGame == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "Lobby nicht gefunden",
+                            "isPrivate", false));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", "ok",
+                "isPrivate", existingGame.getPrivateLobby(),
+                "password", existingGame.getPassword()));
     }
 }

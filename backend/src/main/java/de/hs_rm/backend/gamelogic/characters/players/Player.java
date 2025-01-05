@@ -41,7 +41,7 @@ public class Player{
 
     //Dadurch das wir das Passwort während der Ausgabe also von backend zu Frontend eigentlich verbergen möchten
     //Die Ausgabe erfolgt über ein Json-Format 
-    @JsonIgnore 
+    //@JsonIgnore 
     private String password; 
 
     PlayerType playertype; 
@@ -59,7 +59,6 @@ public class Player{
         this.email=email; 
         this.password=password; 
         this.playertype=PlayerType.REGISTERED; 
-
     }
 
     //Konstruktor für Gastspieler 
@@ -84,7 +83,9 @@ public class Player{
 
     public String getPassword() {
         return password;
-    }public void setPassword(String password) {
+    }
+    
+    public void setPassword(String password) {
         this.password = password;
     }
 
