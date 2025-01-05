@@ -11,6 +11,7 @@ import de.hs_rm.backend.gamelogic.map.PlayMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import de.hs_rm.backend.exception.GameJoinException;
@@ -19,6 +20,24 @@ import de.hs_rm.backend.gamelogic.characters.players.Player;
 
 @Service
 public class GameService {
+
+    @Value("${snackman.life}")
+    private int snackmanLife;
+
+    @Value("${snackman.maxLife}")
+    private int snackmanMaxLife;
+
+    @Value("${snackman.speed}")
+    private double snackmanSpeed;
+
+    @Value("${ghost.speed}")
+    private double ghostSpeed;
+
+    @Value("${game.itemsPerSurfaceRatio}")
+    private int itemsPerSurfaceRatio;
+
+    @Value("${snackman.nutriscore}")
+    private int nutriscore;
 
     private Map<String,Game> gameList = new HashMap<String,Game>();
     Logger logger = LoggerFactory.getLogger(GameService.class);
@@ -32,7 +51,7 @@ public class GameService {
     }
 
     public Game createGame(Player gamemaster){
-        Game newGame = new Game(gamemaster);
+        Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio, nutriscore);
         gameList.put(newGame.getId(), newGame);
 
         return newGame;
