@@ -358,6 +358,8 @@ export const useGameStore = defineStore('gameStore', () => {
           case 'gameStart':
             gameState.gamedata = message.feedback as IGameDTD
             break
+          case 'playerMoveValidation':
+            console.log("test")
           default:
             console.error('Unknown message type:', message.type)
         }
