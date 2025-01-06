@@ -23,6 +23,8 @@ let nextPosition: THREE.Vector3
 let lastSend: number = 0
 let lastMoveValid = false;
 const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
+const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
+
 
 let movingForward: boolean,
   movingBackward: boolean,
@@ -252,9 +254,12 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     }
   })
 
-    playerPositions.forEach((playerPosition) => {
-    if (!players.has(playerPosition.playerName)) {
+    playerPositions.forEach(async (playerPosition) => {
+    if (!players.has(playerPosition.playerName) && !loadingPlayers.get(playerPosition.playerName)) {
       const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
+
+      loadingPlayers.set(playerPosition.playerName, true);
+
       //Modell initial rendern
       modelLoader.load(snackmanModelURL, (gltf) => {
         const model = gltf.scene;
@@ -264,6 +269,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
         model.position.set(playerPosition.x, 1, playerPosition.y);
         model.rotation.y = playerPosition.angle + adjustAngle;
+
+        loadingPlayers.delete(playerPosition.playerName);
       });
     } else {
       //Modell updaten
