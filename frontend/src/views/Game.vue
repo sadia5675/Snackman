@@ -217,7 +217,7 @@ function cameraPositionBewegen(delta: number) {
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
 
-  if (currentTime - lastSend > 10) {
+  if (currentTime - lastSend > 50) {
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,

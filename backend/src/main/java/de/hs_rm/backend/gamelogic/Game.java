@@ -363,7 +363,9 @@ public class Game {
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
         if (curIndex == targetIndex) {
             LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
-            curCharacter.move(posX, posY, angle); // Aktualisiere nur die Position des Charakters
+
+            //posy und posx vertauscht 
+            curCharacter.move(posY, posX, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
     
@@ -375,7 +377,9 @@ public class Game {
     
         // Charakter bewegen
         curTile.removeCharacter(curCharacter);
-        curCharacter.move(posX, posY, angle);
+
+        //posy und posx vertauscht
+        curCharacter.move(posY, posX, angle);
         targetTile.addCharacter(curCharacter);
     
         LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
