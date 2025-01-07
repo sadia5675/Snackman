@@ -211,27 +211,40 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/leave")
     @SendTo("/topic/game/{lobbyid}")
     public void leaveLobby(Player player, @DestinationVariable String lobbyid) {
-        // #63 NEW: gameService now handles Player join
-        HashMap<String, Object> response = new HashMap<>();
-        try {
-            Game existingGame = gameService.leaveGame(lobbyid, player);
-            logger.info("Player: {}, leaved game: {}", player.getName(), lobbyid);
+    HashMap<String, Object> response = new HashMap<>();
 
-            response.put("feedback", existingGame.getPlayers());
-            response.put("status", "ok");
-            response.put("time", LocalDateTime.now().toString());
+    try {
+        Game existingGame = gameService.getGameById(lobbyid);
 
-            messagingService.sendPlayerList(lobbyid, response);
-
-        } catch (GameLeaveException e) {
-            response.put("type", "playerJoin");
-            response.put("feedback", e.getMessage());
+        if (existingGame == null) {
+            logger.error("No game found with ID: {}", lobbyid);
+            response.put("type", "playerLeave");
+            response.put("feedback", "Game with ID " + lobbyid + " not found.");
             response.put("status", "error");
             response.put("time", LocalDateTime.now().toString());
-
             messagingService.sendPlayerList(lobbyid, response);
+            return;
         }
+
+        // Spieler aus dem Spiel entfernen
+        existingGame = gameService.leaveGame(lobbyid, player);
+        logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
+
+        response.put("feedback", existingGame.getPlayers());
+        response.put("status", "ok");
+        response.put("time", LocalDateTime.now().toString());
+
+        messagingService.sendPlayerList(lobbyid, response);
+
+    } catch (GameLeaveException e) {
+        response.put("type", "playerLeave");
+        response.put("feedback", e.getMessage());
+        response.put("status", "error");
+        response.put("time", LocalDateTime.now().toString());
+
+        messagingService.sendPlayerList(lobbyid, response);
     }
+}
 
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
