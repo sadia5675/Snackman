@@ -178,18 +178,28 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/join")
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
-        // #63 NEW: gameService now handles Player join
         HashMap<String, Object> response = new HashMap<>();
 
         try {
-            Game existingGame = gameService.joinGame(lobbyid, player);
+            Game existingGame = gameService.getGameById(lobbyid);
+
+            if (existingGame == null) {
+                logger.error("No game found with ID: {}", lobbyid);
+                response.put("type", "playerJoin");
+                response.put("feedback", "Game with ID " + lobbyid + " not found.");
+                response.put("status", "error");
+                response.put("time", LocalDateTime.now().toString());
+                messagingService.sendPlayerList(lobbyid, response);
+                return;
+            }
+
+            existingGame = gameService.joinGame(lobbyid, player);
             logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
 
             response.put("type", "playerJoin");
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
-            response.put("password",existingGame.getPassword());
 
             messagingService.sendPlayerList(lobbyid, response);
 
