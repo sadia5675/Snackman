@@ -7,4 +7,10 @@ export interface IGameDTD {
   chickens: IChickenDTD[]
   gamemaster: IPlayerDTD | null
   started: boolean
+  password: string | null
+  playmap?: {
+    map: string[]
+    width: number
+    height: number
+  }
 }

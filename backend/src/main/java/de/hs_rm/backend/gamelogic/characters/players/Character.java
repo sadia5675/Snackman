@@ -1,4 +1,10 @@
 package de.hs_rm.backend.gamelogic.characters.players;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+
 // Bauplan der Characters --> hierbei handelt es sich um eine abstrakte Klasse!
 public abstract class Character{
     //Initialisierung 
@@ -9,10 +15,15 @@ public abstract class Character{
     private double speed;
     // PlayerPosition playerposition;
     // Player player;
-    private int posX, posY;
+    private double posX, posY;
     private int currentcalorie;
-    //private int life;
-    private Item item; 
+    private ObjectsItems currentObjectItem;
+    private static final Logger logger = LoggerFactory.getLogger(Character.class);
+
+    //private static final int MAX_LIFE =3;
+
+    private double angleInDegrees; //der Winkel info, die von FE bekommt
+
 
 
 
@@ -25,9 +36,6 @@ public abstract class Character{
         //this.player = player;
         this.posX=posX;
         this.posY=posY;
-        //this.life = life; 
-        this.currentcalorie= 0;
-        //this.item = item; 
     }
 
     //Getter udn Setter 
@@ -49,53 +57,66 @@ public abstract class Character{
     // public void setGamiId(String gamiId) {
     //     this.gameId = gamiId;
     // }
+
+    public void move(double x, double y, double angle){
+        this.posX = x;
+        this.posY = y;
+        this.angleInDegrees = angle;
+    }
+
     public double getSpeed() {
         return speed;
     }
     public void setSpeed(double playerSpeed) {
         this.speed = playerSpeed;
     }
-    public int getPosX() {
+    public double getPosX() {
         return posX;
     }
     public void setPosX(int posX) {
         this.posX = posX;
     }
-    public int getPosY() {
+    public double getPosY() {
         return posY;
     }
     public void setPosY(int posY) {
         this.posY = posY;
     }
-    public Item getItems() {
-        return item;
+    public ObjectsItems getCurrentObjectItem() {
+        return currentObjectItem;
     }
 
-    public void setItem(Item item) {
-        this.item=item; 
-    }
-    
-    //Methode: addieren der Kalorien
-    public void mycurrentItem(){
-      Item currentItem= item;
-        if (currentItem instanceof FoodItems foodItem) {
-            currentcalorie += foodItem.getNutriScore().getCalorieBonus();}
+    public void setCurrentObjectItem(ObjectsItems objectItem) {
+        this.currentObjectItem = objectItem;
     }
 
-    //Abstrakte Methoden 
-    public abstract PlayerPosition move(); 
-    
-    // Methode: Sammeln von Items
-    public void pickUpItemLogic(Item item) {
-        setItem(item);
-            System.out.println(item.getName() + "is picked up");
+
+    public void collectObjectItem(ObjectsItems item) {
+        if (currentObjectItem == null) {
+            currentObjectItem = item;
+            logger.info("ObjectItem '{}' collected.", item.getName());
+        } else {
+            logger.warn("Cannot collect '{}': Character already has an ObjectItem '{}'.", item.getName(), currentObjectItem.getName());
+        }
     }
-    
+    public abstract void useItem(ObjectsItems item);
+
     //TODO: muss noch ausgearbietet werden
     // Methode: Leben verloren
     public void caught() {
        // life--;
     }
 
-    
+
+
+    public double getAngleInDegrees() {
+        return angleInDegrees;
+    }
+
+    public void setAngleInDegrees(double angleInDegrees) {
+        this.angleInDegrees = angleInDegrees;
+    }
+
+
+
 }

@@ -1,6 +1,8 @@
 import { Client, type Message } from '@stomp/stompjs';
+import { type IMessageDTD as IMessage } from '@/stores/game/dtd/IMessageDTD';
 
-const protocol = window.location.protocol === 'http' ? 'ws' : 'wss'
+
+const protocol = window.location.protocol === 'http:' ? 'ws' : 'wss'
 
 const stompClient = new Client({
   brokerURL: `${protocol}://${window.location.host}/ws`,
@@ -18,15 +20,23 @@ const stompClient = new Client({
 });
 
 // Funktion zum Abonnieren einer Lobby
-function subscribeToLobby(lobbyId: string, callback: (message: any) => void) {
-  if (!lobbyId) {
+function subscribeTo(path: string, callback: (message: any) => void) {
+  if (!path) {
     console.error('Lobby ID is required to subscribe.');
     return;
   }
-  stompClient.subscribe(`/topic/game/${lobbyId}`, (message: Message) => {
-    callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
+  stompClient.subscribe(`/topic${path}`, (message: Message) => {
+
+    const response: IMessage = JSON.parse(message.body);
+
+    switch(response.type){
+
+      default:
+        callback(response);
+    }
   });
 }
+
 
 // Funktion zum Senden von Nachrichten
 function sendMessage(destination: string, body: any) {
@@ -40,5 +50,7 @@ function sendMessage(destination: string, body: any) {
   }
 }
 
+
+
 // Exportiere den STOMP-Client und die Funktionen
-export { stompClient, subscribeToLobby, sendMessage };
+export { stompClient, subscribeTo, sendMessage };
