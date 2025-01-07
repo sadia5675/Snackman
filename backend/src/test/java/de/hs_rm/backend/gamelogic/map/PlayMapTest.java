@@ -2,6 +2,7 @@ package de.hs_rm.backend.gamelogic.map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir; 
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,10 +10,13 @@ import java.nio.file.Path;
 
 public class PlayMapTest {
 
+    @TempDir
+    Path tempDir;
+
     @Test // Test für eine gültige Karte
     void testLoadMapValidFile() throws IOException {
          // Pfad zur temporären Test-Datei
-        Path resourcePath = Path.of("src/main/resources/maps/tempMap.txt");
+         Path resourcePath = tempDir.resolve("tempMap.txt");
         // Test-Datei
         Files.write(resourcePath, """
             ****
@@ -22,7 +26,7 @@ public class PlayMapTest {
             ****
             """.stripIndent().getBytes());
 
-            PlayMap playMap = new PlayMap("tempMap");
+            PlayMap playMap = new PlayMap("tempMap", tempDir.toString() + "/");
 
             // Erwartete Karte
             char[][] expectedMap = {
@@ -37,13 +41,11 @@ public class PlayMapTest {
             assertEquals(5, playMap.getHeight());
             assertEquals(4, playMap.getWidth());
         
-            // Datei löschen
-            Files.delete(resourcePath);
         }
 
         @Test //Test für den Fall, dass ein ungültiges Symbol in der Karte ist
         void testIllegalArgumentException() throws IOException {
-            Path resourcePath = Path.of("src/main/resources/maps/tempMap.txt");
+            Path resourcePath = tempDir.resolve("tempMap.txt");
             Files.write(resourcePath, """
                 ****
                 *  *
@@ -54,37 +56,80 @@ public class PlayMapTest {
         
             // Test auf IllegalArgumentException
             assertThrows(IllegalArgumentException.class, () -> {
-                new PlayMap("tempMap");
+                new PlayMap("tempMap", tempDir.toString() + "/");
             });
         
-            Files.delete(resourcePath);
         }
 
 
     
         @Test // Test für eine leere Karte, die keine Daten enthält
         void testEmptyMapFile() throws IOException {
-            Path resourcePath = Path.of("src/main/resources/maps/emptyMap.txt");
+            Path resourcePath = tempDir.resolve("emptyMap.txt");
             Files.write(resourcePath, "".getBytes()); // Leere Datei erstellen
         
             // // Test auf IllegalArgumentException
             assertThrows(IllegalArgumentException.class, () -> {
-                new PlayMap("emptyMap"); 
+                new PlayMap("tempMap", tempDir.toString() + "/");
             });
-        
-            Files.delete(resourcePath); // Datei nach Test löschen
+    
         }
         
 
     @Test // Test für den Fall, dass der Dateiname null oder ungültig ist
     void testNullFileName() {
-        PlayMap playMap = new PlayMap("null");
-        
-        // map/tiles sollte leer sein
-        assertEquals(0, playMap.getMap().length);
-        assertTrue(playMap.getTilesList().isEmpty());
-        assertEquals(0, playMap.getWidth());
-        assertEquals(0, playMap.getHeight());
+        assertThrows(IllegalArgumentException.class, () -> {
+            new PlayMap(null, tempDir.toString() + "/");
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new PlayMap("", tempDir.toString() + "/");
+        });
+    }
+
+
+    @Test // Test für updateMapState
+    void testUpdateMapStateTest() throws IOException {
+        Path resourcePath = tempDir.resolve("tempMap.txt");
+        Files.write(resourcePath, """
+            ****
+            *  *
+            * **
+            *  *
+            ****
+            """.stripIndent().getBytes());
+    
+        PlayMap playMap = new PlayMap("tempMap", tempDir.toString() + "/");
+    
+        char[][] initialMap = {
+            { '*', '*', '*', '*' },
+            { '*', ' ', ' ', '*' },
+            { '*', ' ', '*', '*' },
+            { '*', ' ', ' ', '*' },
+            { '*', '*', '*', '*' }
+        };
+    
+        assertArrayEquals(initialMap, playMap.getMap(), "Die Karte entspricht nicht der erwarteten Anfangskonfiguration.");
+    
+        char[][] expectedMap = {
+            { '*', '*', '*', '*' },
+            { '*', 'G', 'G', '*' },
+            { '*', 'S', '*', '*' },
+            { '*', 'G', ' ', '*' },
+            { '*', '*', '*', '*' }
+        };
+    
+        playMap.updateMapState(2, 1, 'S');  
+        playMap.updateMapState(1, 1, 'G');  
+        playMap.updateMapState(1, 2, 'G'); 
+        playMap.updateMapState(3, 1, 'G'); 
+    
+        assertArrayEquals(expectedMap, playMap.getMap(), "Die Karte nach den Änderungen entspricht nicht der erwarteten Karte.");
+
+        // ungültige pos
+        playMap.updateMapState(0, 0, 'G'); 
+        assertEquals('*', playMap.getMap()[0][0]);
+
     }
 
 

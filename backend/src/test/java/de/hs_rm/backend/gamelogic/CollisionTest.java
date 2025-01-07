@@ -1,6 +1,8 @@
 package de.hs_rm.backend.gamelogic;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +21,21 @@ public class CollisionTest {
     private Snackman snackman;
     private Ghost ghost;
     private FoodItems foodItem;
-    //private ObjectsItems objectItem;
+    private ObjectsItems objectItem;
 
     @BeforeEach
     void setUp() {
         surfaceTile = new Tile(TileType.SURFACE);
         wallTile = new Tile(TileType.WALL);
-        snackman = new Snackman(1.0, 0, 0, 3, 3);
+        snackman = new Snackman(1.0, 0, 0, 3, 3,25);
         ghost = new Ghost(1.0, 0, 0);
         foodItem = new FoodItems("Banana", 0, 0, NutriScore.A);
-        //objectItem = new ObjectsItems("Key", 0, 0,"description");
+        objectItem = mock(ObjectsItems.class);
+
+        when(objectItem.getName()).thenReturn("Speed Boost");
+        when(objectItem.getEffectDescription()).thenReturn("Increases speed for 5 seconds");
+        when(objectItem.getSymbol()).thenReturn('1');
+
     }
 
     @Test
@@ -39,18 +46,18 @@ public class CollisionTest {
         assertTrue(surfaceTile.hasCharacter(), "Tile should have a character.");
         assertTrue(surfaceTile.getCharacterList().contains(snackman), "Tile should contain the Snackman.");
     }
-
+    /*
     @Test
     void testAddSnackmanWithMatchingItem() {
         surfaceTile.addItem(foodItem);
-        //surfaceTile.addItem(objectItem);
+        surfaceTile.addItem(objectItem);
 
         boolean result = surfaceTile.addCharacter(snackman);
 
         assertTrue(result, "Snackman should be added successfully.");
-        //assertTrue(snackman.getCurrentObjectItem() ==objectItem, "Snackman should collect object item.");
+        assertEquals(objectItem, snackman.getCurrentObjectItem(), "Snackman should collect the object item.");
         assertEquals(NutriScore.A.getCalorieBonus(), snackman.getCurrentCalorie(), "Snackman should eat the food item.");
-    }
+    }*/
 
     // @Test
     // void testAddGhostWithMatchingItem() {

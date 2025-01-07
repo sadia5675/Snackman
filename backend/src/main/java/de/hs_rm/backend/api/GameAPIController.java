@@ -21,6 +21,7 @@ import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +53,9 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/api/game")
 public class GameAPIController {
 
+    @Value("${scripts.dir}")
+    private String scriptsDirectory;
+
     @Autowired
     GameMessagingService messagingService;
 
@@ -60,6 +66,8 @@ public class GameAPIController {
     PlayMapService playMapService;
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
+
 
     // private Game game;
 
@@ -79,6 +87,24 @@ public class GameAPIController {
         gamemaster.setGamemaster(true);
         gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
         gamemaster.setPassword(gamemasterFromFrontend.getPassword());
+
+        // Nur zu Testzwecken hier
+        PythonInterpreter interpreter = new PythonInterpreter();
+        try {
+            String scriptPath = "ChickenBotMovement.py";
+            
+            File scriptFile = new File(scriptsDirectory, scriptPath);
+
+            if (scriptFile.exists()) {
+                LOGGER.info("Starte Python Skript...");
+                interpreter.execfile(scriptsDirectory + "/" + scriptPath);
+                LOGGER.info("Python Skript erfolgreich gestartet");
+            } else {
+                LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // #63 NEW: gameservice now creates game
         Game newGame = gameService.createGame(gamemasterFromFrontend);
 
