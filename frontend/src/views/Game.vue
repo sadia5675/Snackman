@@ -64,8 +64,13 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
   })
 
   window.addEventListener('resize',(e) => {
+    //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
+
+    //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
   })
 
   window.addEventListener('keydown', (e) => {
