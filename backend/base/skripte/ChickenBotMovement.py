@@ -29,7 +29,7 @@ class ChickenBotMovement:
 
 
 # ---------------Test: Instanz erstellen und Parameter mitgeben-----------------
-maps_directory = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/base/maps/"
+maps_directory = "base/maps"
 
 
 
