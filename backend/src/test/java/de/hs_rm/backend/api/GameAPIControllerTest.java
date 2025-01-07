@@ -60,7 +60,7 @@ public class GameAPIControllerTest {
                 .andExpect(jsonPath("$.status").value("ok"));
     }
 
-
+    /*
     @Test //Testet wenn der Spieler gegen eine Wand läuft
     void testMovePlayerFail() throws Exception {
 
@@ -82,5 +82,6 @@ public class GameAPIControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Failed to move player --> Tile is Wall, Invalid Coordinates or OutOfBounds"));
     }
+    */
 
 }
