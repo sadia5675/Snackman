@@ -13,7 +13,7 @@ public class SnackmanTest {
     private Snackman snackman;
     @BeforeEach
     public void setUp(){
-        snackman = new Snackman(5.0,10,20,3, 3);
+        snackman = new Snackman(5.0,10,20,3, 3,25);
     }
 
      @Test
@@ -23,7 +23,6 @@ public class SnackmanTest {
         snackman.setPosX(30);
         snackman.setPosY(40);
         snackman.setLife(5);
-        snackman.setNutriscore(25.0);
 
         // Teste Getter
         assertEquals(15.0, snackman.getSpeed(), "Geschwindigkeit sollte 15.0 sein.");
@@ -43,10 +42,10 @@ public class SnackmanTest {
     @Test
     public void testIncreaseNutriScore() {
         snackman.increaseNutriScore(10.0);
-        assertEquals(10.0, snackman.getNutriscore());
+        assertEquals(35.0, snackman.getNutriscore());
 
         snackman.increaseNutriScore(5.0);
-        assertEquals(15.0, snackman.getNutriscore());
+        assertEquals(40.0, snackman.getNutriscore());
     }
 
     @Test

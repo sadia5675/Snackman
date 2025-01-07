@@ -17,69 +17,113 @@ public class PlayMapServiceTest {
     @BeforeEach
     void setUp() {
         playMapService = new PlayMapService();
+        playMapService.mapsDirectory = "src/test/resources/maps/"; //Testverzeichnis
     }
 
-    @Test
+    @Test // Überprüft, ob eine PlayMap erfolgreich erstellt werden kann
     void testCreatePlayMap() {
-        String mapName = "testMap";
-        PlayMap playMap = playMapService.createPlayMap(mapName);
+        Path testDir = null;
 
-        assertNotNull(playMap, "PlayMap should not be null");
+    try {
+        // Testverzeichnis
+        testDir = Path.of("src/test/resources/maps");
+        Files.createDirectories(testDir);
+
+        // Testkarte
+        Path testFile = testDir.resolve("testMap.txt");
+        Files.write(testFile, "****\n*  *\n****".getBytes());
+
+        // Kartenverzeichnis setzen
+        playMapService.mapsDirectory = testDir.toString() + "/";
+
+        PlayMap playMap = playMapService.createPlayMap("testMap");
+
+        assertNotNull(playMap, "PlayMap sollte nicht null sein");
+        assertArrayEquals(
+            new char[][] {
+                {'*', '*', '*', '*'},
+                {'*', ' ', ' ', '*'},
+                {'*', '*', '*', '*'}
+            },
+            playMap.getMap(),
+            "Die Karte entspricht nicht der erwarteten Struktur"
+        );
+
+    } catch (IOException e) {
+        System.err.println("Fehler bei Dateioperationen: " + e.getMessage());
+        e.printStackTrace();
+        fail("Fehler bei Dateioperationen");
+    } finally {
+        // Löschen von Testdateien und Testverzeichnis
+        try {
+            if (testDir != null) {
+                Files.deleteIfExists(testDir.resolve("testMap.txt"));
+                Files.deleteIfExists(testDir);
+            }
+        } catch (IOException cleanupException) {
+            System.err.println("Fehler beim Löschen der Testdateien: " + cleanupException.getMessage());
+        }
+    }
     }
 
-    @Test// Überprüfen, ob die Karten korrekt abgerufen wurden
-    void testGetAllMapNames() throws IOException {
-        // Temporäre Test-Dateien
-        Path mapFolderPath = Path.of("src/main/resources/maps");
-        Files.createDirectories(mapFolderPath);
-        Files.write(mapFolderPath.resolve("testMap1.txt"), "****\n*  *\n****".getBytes());
-        Files.write(mapFolderPath.resolve("testMap2.txt"), "****\n*  *\n****".getBytes());
 
-        List<String> mapNames = playMapService.getAllMapNames();
-
-        assertTrue(mapNames.contains("testMap1"), "Map names should include 'testMap1'");
-        assertTrue(mapNames.contains("testMap2"), "Map names should include 'testMap2'");
-
-        // Dateien löschen
-        Files.deleteIfExists(mapFolderPath.resolve("testMap1.txt"));
-        Files.deleteIfExists(mapFolderPath.resolve("testMap2.txt"));
-    }
-
-
-    @Test // Überprüfen, ob die Karten korrekt abgerufen wurden
+    @Test // Überprüft, ob alle Karten korrekt geladen werden
     void testGetAllMaps() throws IOException {
-        // Temporäre Test-Dateien
-        Path mapFolderPath = Path.of("src/main/resources/maps");
-        Files.createDirectories(mapFolderPath);
-        Files.write(mapFolderPath.resolve("testMap1.txt"), "****\n*  *\n****".getBytes());
-        Files.write(mapFolderPath.resolve("testMap2.txt"), "****\n* **\n****".getBytes());
-
+        Path testDir = Path.of("src/test/resources/maps");
+        Files.createDirectories(testDir);
+        Files.write(testDir.resolve("testMap1.txt"), "****\n*  *\n****".getBytes());
+        Files.write(testDir.resolve("testMap2.txt"), "****\n* **\n****".getBytes());
+        
+        playMapService.mapsDirectory = testDir.toString() + "/";
+    
         Map<String, char[][]> allMaps = playMapService.getAllMaps();
-
-        assertTrue(allMaps.containsKey("testMap1"), "Map collection should include 'testMap1'");
-        assertTrue(allMaps.containsKey("testMap2"), "Map collection should include 'testMap2'");
-
-        // Erwartete
-        char[][] expectedMap1 = {
+    
+        assertTrue(allMaps.containsKey("testMap1"));
+        assertTrue(allMaps.containsKey("testMap2"));
+    
+        assertArrayEquals(new char[][] {
             {'*', '*', '*', '*'},
             {'*', ' ', ' ', '*'},
             {'*', '*', '*', '*'}
-        };
-
-        char[][] expectedMap2 = {
+        }, allMaps.get("testMap1"));
+    
+        assertArrayEquals(new char[][] {
             {'*', '*', '*', '*'},
             {'*', ' ', '*', '*'},
             {'*', '*', '*', '*'}
-        };
-
-        assertArrayEquals(expectedMap1, allMaps.get("testMap1"), "'testMap1' content should match expected content");
-        assertArrayEquals(expectedMap2, allMaps.get("testMap2"), "'testMap2' content should match expected content");
-
-        // Dateien löschen
-        Files.deleteIfExists(mapFolderPath.resolve("testMap1.txt"));
-        Files.deleteIfExists(mapFolderPath.resolve("testMap2.txt"));
-    }
+        }, allMaps.get("testMap2"));
     
+        Files.deleteIfExists(testDir.resolve("testMap1.txt"));
+        Files.deleteIfExists(testDir.resolve("testMap2.txt"));
+    }
+
+    @Test // Überprüft, ob bei einem ungültigen Verzeichnis keine Karten geladen werden
+    void testInvalidMapsDirectory() {
+        playMapService.mapsDirectory = "invalid/path/";
+
+        List<String> mapNames = playMapService.getAllMapNames();
+        assertTrue(mapNames.isEmpty(), "Map names should be empty for an invalid directory");
+    }
+
+    @Test // Überprüft, ob ein leeres Verzeichnis keine Karten zurückgibt
+    void testEmptyMapsDirectory() throws IOException {
+        Path testDir = Path.of("src/test/resources/emptyMaps");
+        Files.createDirectories(testDir);
+
+        playMapService.mapsDirectory = testDir.toString() + "/";
+
+        List<String> mapNames = playMapService.getAllMapNames();
+        assertTrue(mapNames.isEmpty(), "Map names should be empty for an empty directory");
+    }
+
+    @Test // Überprüft, ob das Erstellen einer PlayMap mit einem ungültigen Namen fehlschlägt
+    void testCreatePlayMapWithInvalidName() {
+        playMapService.mapsDirectory = "src/test/resources/maps/";
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            playMapService.createPlayMap("nonExistentMap");
+        });
+    }
 
     @Test //getter und setter
     void testSetAndGetMapNames() {
@@ -88,4 +132,5 @@ public class PlayMapServiceTest {
 
         assertEquals(testMapNames, playMapService.getMapNames(), "Map names should match the set value");
     }
+    
 }

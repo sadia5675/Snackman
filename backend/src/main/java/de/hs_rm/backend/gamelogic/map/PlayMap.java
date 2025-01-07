@@ -29,10 +29,16 @@ private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
 
 
 public PlayMap(String filePath, String mapsDirectory) {
+    if (filePath == null || filePath.isBlank()) {
+        throw new IllegalArgumentException("File path cannot be null or empty.");
+    }
     this.mapsDirectory = mapsDirectory;
+    
     try {
-       
         loadMap(filePath);
+        if (map == null || map.length == 0) {
+            throw new IllegalArgumentException("Loaded map is invalid or empty.");
+        }
         //createTiles();
         
     } catch (IllegalArgumentException e) {
