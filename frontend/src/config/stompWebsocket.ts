@@ -30,7 +30,7 @@ function subscribeTo(path: string, callback: (message: any) => void) {
     const response: IMessage = JSON.parse(message.body);
 
     switch(response.type){
-      
+
       default:
         callback(response);
     }
