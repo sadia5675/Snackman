@@ -2,7 +2,7 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { onMounted, ref} from 'vue'
+import { onMounted, ref, watch} from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
@@ -462,6 +462,19 @@ function loadMap(map: String[]) {
     }
     rowCounter++
   })
+  localStorage.setItem('gameMap-${lobbyId}',JSON.stringify(map));
+}
+
+function loadMapFromLocalStorage(): string[] | null {
+  const savedMap = localStorage.getItem(`gameMap-${lobbyId}`);
+  if (savedMap) {
+    try {
+      return JSON.parse(savedMap);
+    } catch (error) {
+      console.error('Error parsing saved map:', error);
+    }
+  }
+  return null;
 }
 
 async function handleCharacters(data: ICharacterDTD[]) {

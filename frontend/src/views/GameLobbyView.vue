@@ -303,6 +303,83 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 onMounted(async () => {
+  const savedData = localStorage.getItem(`gameState-${lobbyId}`);
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      if (parsedData?.id === lobbyId) {
+        gameStore.gameState.gamedata = parsedData;
+      }
+    } catch (error) {
+      console.error('Error parsing stored game state:', error);
+    }
+  }
+
+  try {
+    await gameStore.fetchGameStatus();
+  } catch (error) {
+    console.error('Error fetching game status:', error);
+  }
+});
+
+
+watch(
+  () => gameStore.gameState.gamedata,
+  (newGameData) => {
+    if (newGameData?.id) {
+      localStorage.setItem(`gameState-${newGameData.id}`, JSON.stringify(newGameData));
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  () => mapStore.mapsDTD,
+  (newMapData) => {
+    if (newMapData?.maps?.length > 0) {
+      localStorage.setItem(`maps-${lobbyId}`, JSON.stringify(newMapData.maps));
+      if (newMapData.selectedMap) {
+        localStorage.setItem(`selectedMap-${lobbyId}`, JSON.stringify(newMapData.selectedMap));
+      }
+    }
+  },
+  { deep: true }
+);
+
+onMounted(async () => {
+  try {
+    // Lade Maps aus localStorage
+    const savedMaps = localStorage.getItem(`maps-${lobbyId}`);
+    const savedSelectedMap = localStorage.getItem(`selectedMap-${lobbyId}`);
+
+    if (savedMaps) {
+      mapStore.mapsDTD.maps = JSON.parse(savedMaps);
+    }
+
+    if (savedSelectedMap) {
+      mapStore.mapsDTD.selectedMap = JSON.parse(savedSelectedMap);
+      selectedMap.value = mapStore.mapsDTD.selectedMap;
+    }
+
+    // Falls Maps nicht vorhanden sind, vom Backend laden
+    if (!savedMaps) {
+      await mapStore.fetchMaps();
+    }
+
+    // Standardauswahl, falls keine Map ausgewählt ist
+    if (!savedSelectedMap && mapStore.mapsDTD.maps.length > 0) {
+      mapStore.mapsDTD.selectedMap = mapStore.mapsDTD.maps[0];
+      selectedMap.value = mapStore.mapsDTD.selectedMap;
+    }
+
+  } catch (error) {
+    console.error('Error during map setup:', error);
+  }
+});
+
+
+
+onMounted(async () => {
   try {
     await gameStore.fetchGameStatus();
     //Log zum testen
@@ -330,6 +407,7 @@ function selectRandomMap() {
 function selectMap(map: MapDTD) {
   selectedMap.value = map;
   mapStore.mapsDTD.selectedMap = map;
+  localStorage.setItem(`map-${lobbyId}`, JSON.stringify(map));
 }
 
 function drawMapCanvas(map: MapDTD) {
