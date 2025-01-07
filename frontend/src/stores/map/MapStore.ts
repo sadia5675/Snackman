@@ -9,6 +9,8 @@ const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
 const mapName = ref<string>(""); // Map-Name
+const  minGridSize = ref<number>(0);
+const  maxGridSize = ref<number>(0);
 const mapsDTD = ref<MapsDTD>({
   maps: [],
   selectedMap: null
@@ -35,6 +37,17 @@ async function fetchMaps(){
     console.log("Fetched Maps:", mapsDTD.value.maps);
   } catch (error) {
     console.error("Error fetching maps:", error);
+  }
+}
+
+async function fetchGridLimits() {
+  try {
+      const response = await fetch("/api/maps/grid-limits");
+      const data = await response.json();
+      minGridSize.value = data.min;
+      maxGridSize.value = data.max;
+  } catch (error) {
+      console.error("Error fetching grid limits:", error);
   }
 }
 
@@ -149,6 +162,6 @@ async function saveMap(){
 
 // Rückgabe der Funktionen und Variablen, die im Store verfügbar sind
   return{
-    mapName, rows, cols, grid, mapsDTD,fetchMaps,saveMap,createGrid,updateCell,
+    mapName, rows, cols, grid,minGridSize,maxGridSize, mapsDTD,fetchMaps,saveMap,fetchGridLimits,createGrid,updateCell,
   };
 });
