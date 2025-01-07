@@ -63,6 +63,11 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     renderer.domElement.requestPointerLock()
   })
 
+  window.addEventListener('resize',(e) => {
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(window.innerWidth, window.innerHeight)
+  })
+
   window.addEventListener('keydown', (e) => {
     switch (e.code) {
       case 'ShiftLeft':
