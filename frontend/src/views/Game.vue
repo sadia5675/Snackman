@@ -343,7 +343,7 @@ function loadMap(map: String[]) {
           scene.add(groundCubeUnderItem)
 
           const modelPathE = Math.random() > 0.5
-            ? new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url).href : new URL("@/assets/game/items/E/strawberry_shortcake/chocolate_bar.glb", import.meta.url).href;
+            ? new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url).href : new URL("@/assets/game/items/E/chocolate_bar/chocolate_bar.glb", import.meta.url).href;
 
           modelLoader.load(modelPathE, (objekt) => {
             console.log('Model geladen:', modelPathE);

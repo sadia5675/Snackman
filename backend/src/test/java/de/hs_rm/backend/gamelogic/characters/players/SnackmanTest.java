@@ -41,10 +41,10 @@ public class SnackmanTest {
 
     @Test
     public void testIncreaseNutriScore() {
-        snackman.increaseNutriScore(10.0);
+        snackman.increasePoints(10.0);
         assertEquals(35.0, snackman.getNutriscore());
 
-        snackman.increaseNutriScore(5.0);
+        snackman.increasePoints(5.0);
         assertEquals(40.0, snackman.getNutriscore());
     }
 
