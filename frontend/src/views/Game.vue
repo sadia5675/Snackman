@@ -2,7 +2,7 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { onMounted, ref} from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
@@ -14,6 +14,7 @@ import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
+import Modal from '@/components/Modal.vue'
 
 const gameStore = useGameStore()
 
@@ -27,6 +28,7 @@ const players = new Map<string, number>(); // Spieler mit Namen als Key auf Char
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 
 
+//Movement
 let movingForward: boolean,
   movingBackward: boolean,
   movingLeft: boolean,
@@ -35,24 +37,34 @@ const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
 
-//#für HuD
+const showSettings = ref(false)
+const musicVolume = ref(50)
+const effectVolume = ref(50)
+
+let chickenPositions = ref<IChickenPositionDTD[]>([]);
+
+//für HuD
 const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
-// Typ falsch?
-let chickenPositions = ref<IChickenPositionDTD[]>([]);
-
+function lockPointer() {
+  pointerLockControls.lock();
+  pointerLockControls.isLocked = true;
+}
 
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
 }
 
-function createSceneCameraRendererControlsClock() {
+function createSceneCameraRendererControlsClockListener() {
   const scene = new THREE.Scene()
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.001, 1000)
   camera.position.set(1, 1, 2)
+
+  const listener = new THREE.AudioListener();
+  camera.add(listener);
 
   const renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -63,7 +75,7 @@ function createSceneCameraRendererControlsClock() {
   pointerLockControls.pointerSpeed = 1
 
   const clock = new THREE.Clock()
-  return { scene, camera, renderer, pointerLockControls, clock }
+  return { scene, camera, renderer, pointerLockControls, clock, listener }
 }
 
 function registerListeners(window: Window, renderer: WebGLRenderer) {
@@ -79,6 +91,15 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
+  })
+
+  document.addEventListener('pointerlockchange', (e) => {
+    if (!document.pointerLockElement) {
+      showSettings.value = true;
+    } else {
+      showSettings.value = false;
+    }
+    console.log(showSettings)
   })
 
   window.addEventListener('keydown', (e) => {
@@ -123,9 +144,63 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
   })
 }
 
-const { scene, camera, renderer, pointerLockControls, clock } =
-  createSceneCameraRendererControlsClock()
+//Diese Funktion lädt die Hintergrundmusik
+function loadMusic() {
+  const audioLoader = new THREE.AudioLoader();
+
+  // Liste der Sound-Dateien
+  const soundFilenames = ['bg-music.mp3', 'walking.mp3', 'hit.mp3'];
+  const soundList: THREE.Audio[] = []
+
+  const bgSound = new THREE.Audio(listener);
+  const bgSoundURL = new URL(`@/assets/game/realistic/sounds/bg-music.mp3`, import.meta.url).href;
+
+  audioLoader.load(bgSoundURL, function (buffer) {
+    bgSound.setBuffer(buffer);
+    bgSound.setLoop(true);
+    bgSound.setVolume(musicVolume.value / 100);
+    bgSound.play()
+  });
+  soundList.push(bgSound);
+
+  const walkingSound = new THREE.Audio(listener);
+  const walkingSoundURL = new URL(`@/assets/game/realistic/sounds/walking.mp3`, import.meta.url).href;
+
+  audioLoader.load(walkingSoundURL, function (buffer) {
+    walkingSound.setBuffer(buffer);
+    walkingSound.setLoop(true);
+    walkingSound.setVolume(effectVolume.value / 100);
+  });
+  soundList.push(walkingSound);
+
+  const hitSound = new THREE.Audio(listener);
+  const hitSoundURL = new URL(`@/assets/game/realistic/sounds/hit.mp3`, import.meta.url).href;
+
+  audioLoader.load(hitSoundURL, function (buffer) {
+    hitSound.setBuffer(buffer);
+    hitSound.setLoop(true);
+    hitSound.setVolume(effectVolume.value / 100);
+  });
+  soundList.push(hitSound);
+
+  return soundList
+}
+
+const { scene, camera, renderer, pointerLockControls, clock, listener } =
+  createSceneCameraRendererControlsClockListener()
+
+let controllLocked = watch(pointerLockControls, async (oldValue, newValue) => {
+  console.log("CHANGE");
+  newValue.isLocked;
+});
+
 registerListeners(window, renderer)
+const [bgMusic, walkingSound, hitSound] = loadMusic()
+watch(musicVolume, (newVolume) => bgMusic.setVolume(newVolume / 100))
+watch(effectVolume, (newVolume) => {
+  walkingSound.setVolume(newVolume / 100);
+  hitSound.setVolume(newVolume / 100)
+})
 
 const threeContainer = ref<null | HTMLElement>(null)
 
@@ -173,6 +248,9 @@ function cameraPositionBewegen(delta: number) {
   nextPosition = camera.position.clone()
 
   if (movingForward || movingBackward || movingLeft || movingRight) {
+    if (!walkingSound.isPlaying) {
+      walkingSound.play()
+    }
     if (movingForward) {
       if (movingRight) {
         nextPosition.addScaledVector(
@@ -227,6 +305,10 @@ function cameraPositionBewegen(delta: number) {
     nextPosition.y = 1
     validatePosition(nextPosition)
     camera.position.y = 1
+  } else {
+    if (walkingSound.isPlaying) {
+      walkingSound.pause()
+    }
   }
 }
 
@@ -359,21 +441,20 @@ function loadMap(map: String[]) {
             if (modelPathE.includes('chocolate_bar')) {
               model.position.set(rowCounter - 2 + mapOffset, 0.75, i + mapOffset)
               model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-            }
-            else {
-              model.position.set(rowCounter - 2 + mapOffset, 0.5, i + mapOffset)
+            } else {
+              model.position.set(rowCounter - 2, 0.5, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model)
             console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
           },
-          undefined,
-        (error) => {
-          console.error('Fehler beim Laden des Modells:', error);
-        }
-        )
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          )
           break
-          case 'D':
+        case 'D':
           const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem1.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem1)
@@ -389,21 +470,20 @@ function loadMap(map: String[]) {
             if (modelPathD.includes('popcorn')) {
               model.position.set(rowCounter - 2 + mapOffset, 0.75, i + mapOffset)
               model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-            }
-            else {
-              model.position.set(rowCounter - 2 +mapOffset, 0.5, i + mapOffset)
+            } else {
+              model.position.set(rowCounter - 2, 0.5, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          case 'C':
+        case 'C':
           const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem2.position.set(rowCounter + mapOffset , 0, i + mapOffset)
           scene.add(groundCubeUnderItem2)
@@ -418,21 +498,20 @@ function loadMap(map: String[]) {
             if (modelPathC.includes('candycane')) {
               model.position.set(rowCounter - 2 + mapOffset, 1, i + mapOffset)
               model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
-            }
-            else {
-              model.position.set(rowCounter - 3 + mapOffset, 1, i + mapOffset)
+            } else {
+              model.position.set(rowCounter - 3, 1, i)
               model.scale.set(0.5, 0.5, 0.3) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          case 'B':
+        case 'B':
           const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem3.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem3)
@@ -447,21 +526,20 @@ function loadMap(map: String[]) {
             if (modelPathB.includes('apple')) {
               model.position.set(rowCounter - 3 + mapOffset, 0.75, i +mapOffset)
               model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
-            }
-            else {
-              model.position.set(rowCounter - 3 + mapOffset, 0.5, i + mapOffset)
+            } else {
+              model.position.set(rowCounter - 3, 0.5, i)
               model.scale.set(0.2, 0.2, 0.2) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          case 'A':
+        case 'A':
           const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem4.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem4)
@@ -475,23 +553,22 @@ function loadMap(map: String[]) {
             const model = objekt.scene
 
             if (modelPathA.includes('ginger')) {
-              model.position.set(rowCounter - 3 + mapOffset, 1, i - 1 + mapOffset)
+              model.position.set(rowCounter - 3, 1, i - 1)
               model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
-            }
-            else {
-              model.position.set(rowCounter - 3 + mapOffset, 1, i + mapOffset)
+            } else {
+              model.position.set(rowCounter - 3, 1, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          default:
+        default:
           const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem5.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem5)
@@ -504,7 +581,7 @@ function loadMap(map: String[]) {
 async function handleCharacters(data: ICharacterDTD[]) {
   let playerPositions: IPlayerPositionDTD[] = [];
   data.forEach(character => {
-    if(sessionStorage.getItem('myName') !== character.name){
+    if (sessionStorage.getItem('myName') !== character.name) {
       playerPositions.push({
         playerName: character.name,
         x: character.posX,
@@ -515,6 +592,7 @@ async function handleCharacters(data: ICharacterDTD[]) {
   });
   renderCharactersTest(playerPositions);
 }
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
@@ -611,10 +689,7 @@ onMounted(async () => {
 <template>
   <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
   <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
-    <div
-      id="items"
-      class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45"
-    >
+    <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
       <!-- Items anzeigen, wenn vorhanden -->
 
       <div v-if="collectedItems.length > 0">
@@ -625,24 +700,52 @@ onMounted(async () => {
     <div id="hud" class="hud absoute text-white font-bold">
       <div class="flex gap-2">
         <div v-for="index in maxLife" :key="index">
-          <img
-            v-if="index <= life"
-            src="../assets/game/realistic/herz.png"
-            alt="Full Heart"
-            width="40"
-            height="40"
-          />
-          <img
-            v-else
-            src="../assets/game/realistic/emptyHerz.png"
-            alt="Empty Heart"
-            width="40"
-            height="40"
-          />
+          <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40" />
+          <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40" />
         </div>
       </div>
     </div>
   </div>
+
+
+
+  <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-bold mb-4">Lautstärke</h3>
+      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{ musicVolume }}%
+      <br>
+      Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
+      {{ effectVolume }}%
+      <br>
+      <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
+      <button @click="lockPointer" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        Close
+      </button>
+    </div>
+  </div>
+
+
+  <!-- <Modal>
+    <template #titel>
+      <h3 class="header-modal-adventure">Lautstärke</h3>
+    </template>
+    <template #content>
+      <div flex flex-col gap-3>
+        Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume">
+        {{ musicVolume }}%
+        <br>
+        Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
+        {{ effectVolume }}%
+        <br>
+        <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
+        <button @click="lockPointer" class="button-small-adventure">
+          Close
+        </button>
+      </div>
+    </template>
+  </Modal> -->
+
 </template>
+
 
 <style scoped></style>
