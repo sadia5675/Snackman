@@ -6,21 +6,23 @@
       </h2>
     </template>
     <template #content>
-      <input v-model="newPlayer.name" type="text" name="name" id="name"
-        class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-        placeholder="Username eingeben" />
-      <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
-      <!-- TODO: überprüfen ob name eingeben worden ist -->
+      <div class="flex flex-col gap-3">
+        <input v-model="newPlayer.name" type="text" name="name" id="name"
+          class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+          placeholder="Username eingeben" />
+        <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
+        <!-- TODO: überprüfen ob name eingeben worden ist -->
 
-      <div v-if="modal.modalType === ModalType.NEW_GAME">
-        <label class="mt-4 mb-4 mflex itmes-center space-x-2">
-          <input type="checkbox" v-model="modal.requirePassword" id="requirePassword"
-            class="form-checkbox rounded shadow-sm hover:shadow-md transition-shadow duration-300" />
-          <span>Privates Spiel</span>
-        </label>
-        <input v-if="modal.requirePassword" v-model="newPlayer.password" type="text" id="password"
-          class="block w-full rounded-md mt-2 border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-          placeholder="Passwort eingeben" />
+        <div v-if="modal.modalType === ModalType.NEW_GAME">
+          <label class="mt-4 mb-4 mflex itmes-center space-x-2">
+            <input type="checkbox" v-model="modal.requirePassword" id="requirePassword"
+              class="form-checkbox rounded shadow-sm hover:shadow-md transition-shadow duration-300" />
+            <span>Privates Spiel</span>
+          </label>
+          <input v-if="modal.requirePassword" v-model="newPlayer.password" type="text" id="password"
+            class="block w-full rounded-md mt-2 border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+            placeholder="Passwort eingeben" />
+        </div>
       </div>
 
       <!-- TODO: überprüfen ob name eingeben worden ist -->
@@ -33,21 +35,22 @@
 
 
       <div class="flex space-x-4">
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3"
+        <button class="button-small-adventure"
           @click=" modal.modalType === ModalType.NEW_GAME ? modal.newGame(newPlayer) : modal.joinGame(newPlayer)">Weiter</button>
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
+        <button class="button-small-adventure" @click="modal.closeModal()">Schließen</button>
       </div>
-
-
     </template>
-
-
   </Modal>
 
 
-  <div class="homeMenue" :style="{ backgroundImage: `url('${backgroundImage}')` }">
-    <h1>Snackman</h1>
-    <div class="form-container">
+  <div class="layout-main">
+    <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
+    </video>
+    <h1 class="header-adventure">Snackman</h1>
+
+    <div class="flex flex-col gap-3">
       <button class="buttons-top-bottom" @click="modal.openModal(ModalType.NEW_GAME, '', false)">New Game</button>
       <div>
         <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="gameid-input-field">
@@ -144,7 +147,9 @@ function toMapCreator() {
   }
 
 
-
-
 }
 </style>
+
+
+
+<style></style>

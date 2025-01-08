@@ -51,45 +51,46 @@ async function getAllGames(){
 <template>
   <Modal v-if="modal.isModalOpen">
     <template #titel>
-      <h2 class="font-bold text-3xl text-center">Join Game</h2>
+      <h2 class="header-modal-adventure">Join Game</h2>
     </template>
     <template #content>
+      <div class="flex flex-col gap-3">
       <input v-model="newPlayer.name" type="text" name="name" id="name"
-        class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+        class="input-form"
         placeholder="Username eingeben" />
       <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
+    </div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
-
-        <input v-if="modal.isGamePrivate" v-model="newPlayer.password" type="text" id="password"
-          class="block w-full rounded-md mt-2 border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-          placeholder="Passwort eingeben" />
-      
-
        <div class="flex space-x-4">
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.joinGame(newPlayer)">Weiter</button>
-        <button class="rounded-lg bg-gray-300 hover:bg-gray-400 p-3" @click="modal.closeModal()">Schließen</button>
+        <button class="button-small-adventure" @click="modal.joinGame(newPlayer)">Weiter</button>
+        <button class="button-small-adventure" @click="modal.closeModal()">Schließen</button>
        </div>
-      
+
     </template>
   </Modal>
 
-    <div class="flex items-center justify-center min-h-screen bg-gray-100">
-      <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-4xl">
+
+    <div class="flex items-center justify-center min-h-screen">
+      <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
+      <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
+    </video>
+      <div class="card-adventure max-w-4xl">
         <table class="table-auto w-full border-rounded-lg border-collapse border border-gray-300">
           <thead>
-            <tr class="bg-gray-100">
+            <tr class="bg-gray-100 opacity-60">
               <th class="px-6 py-3 text-gray-700">Lobby</th>
               <th class="px-6 py-3 text-gray-700">Host</th>
               <th class="px-6 py-3 text-gray-700">Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="game in games" 
-                :key="game.id" 
+            <tr v-for="game in games"
+                :key="game.id"
                 :game="game">
-                <LobbyTabellenZeile 
+                <LobbyTabellenZeile
                     :game="game"
-                    @open-modal="modal.checkPrivateGame(game.id)"
+                    @open-modal="modal.openModal"
                 />
             </tr>
           </tbody>
