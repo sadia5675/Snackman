@@ -1,14 +1,34 @@
 package de.hs_rm.backend.api;
 
+import de.hs_rm.backend.exception.SetRoleException;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.hs_rm.backend.exception.GameJoinException;
+import de.hs_rm.backend.exception.GameLeaveException;
+import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMapService;
+import de.hs_rm.backend.messaging.GameMessagingService;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-import org.python.util.PythonInterpreter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,24 +40,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.hs_rm.backend.exception.GameJoinException;
-import de.hs_rm.backend.exception.GameLeaveException;
-import de.hs_rm.backend.exception.SetRoleException;
-import de.hs_rm.backend.gamelogic.Game;
-import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Player;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
-import de.hs_rm.backend.gamelogic.map.PlayMap;
-import de.hs_rm.backend.gamelogic.map.PlayMapService;
-import de.hs_rm.backend.messaging.GameMessagingService;
+import org.python.util.PythonInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST controller for managing game-related operations.
@@ -211,40 +216,27 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/leave")
     @SendTo("/topic/game/{lobbyid}")
     public void leaveLobby(Player player, @DestinationVariable String lobbyid) {
-    HashMap<String, Object> response = new HashMap<>();
+        // #63 NEW: gameService now handles Player join
+        HashMap<String, Object> response = new HashMap<>();
+        try {
+            Game existingGame = gameService.leaveGame(lobbyid, player);
+            logger.info("Player: {}, leaved game: {}", player.getName(), lobbyid);
 
-    try {
-        Game existingGame = gameService.getGameById(lobbyid);
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
 
-        if (existingGame == null) {
-            logger.error("No game found with ID: {}", lobbyid);
-            response.put("type", "playerLeave");
-            response.put("feedback", "Game with ID " + lobbyid + " not found.");
+            messagingService.sendPlayerList(lobbyid, response);
+
+        } catch (GameLeaveException e) {
+            response.put("type", "playerJoin");
+            response.put("feedback", e.getMessage());
             response.put("status", "error");
             response.put("time", LocalDateTime.now().toString());
+
             messagingService.sendPlayerList(lobbyid, response);
-            return;
         }
-
-        // Spieler aus dem Spiel entfernen
-        existingGame = gameService.leaveGame(lobbyid, player);
-        logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
-
-        response.put("feedback", existingGame.getPlayers());
-        response.put("status", "ok");
-        response.put("time", LocalDateTime.now().toString());
-
-        messagingService.sendPlayerList(lobbyid, response);
-
-    } catch (GameLeaveException e) {
-        response.put("type", "playerLeave");
-        response.put("feedback", e.getMessage());
-        response.put("status", "error");
-        response.put("time", LocalDateTime.now().toString());
-
-        messagingService.sendPlayerList(lobbyid, response);
     }
-}
 
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
@@ -498,25 +490,19 @@ public class GameAPIController {
 
     @GetMapping("/{gameId}/isPrivate")
     public ResponseEntity<Map<String, Object>> isPrivate(@PathVariable String gameId) {
-    Game existingGame = gameService.getGameById(gameId);
+        Game existingGame = gameService.getGameById(gameId);
 
-    if (existingGame == null) {
-        logger.error("Game with ID {} not found", gameId);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "status", "error",
-                        "message", "Lobby nicht gefunden",
-                        "isPrivate", false
-                ));
+        if (existingGame == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "Lobby nicht gefunden",
+                            "isPrivate", false));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", "ok",
+                "isPrivate", existingGame.getPrivateLobby(),
+                "password", existingGame.getPassword()));
     }
-
-    Boolean isPrivate = existingGame.getPrivateLobby();
-    String password = existingGame.getPassword();
-
-    return ResponseEntity.ok(Map.of(
-            "status", "ok",
-            "isPrivate", isPrivate != null ? isPrivate : false,
-            "password", password != null ? password : ""
-    ));
-}
 }
