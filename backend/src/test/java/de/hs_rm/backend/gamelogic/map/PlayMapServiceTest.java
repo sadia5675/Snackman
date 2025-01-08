@@ -17,7 +17,7 @@ public class PlayMapServiceTest {
     @BeforeEach
     void setUp() {
         playMapService = new PlayMapService();
-        playMapService.mapsDirectory = "src/test/resources/maps/"; //Testverzeichnis
+        playMapService.mapsDirectory = "../base/maps"; //Testverzeichnis
     }
 
     @Test // Überprüft, ob eine PlayMap erfolgreich erstellt werden kann
@@ -26,7 +26,7 @@ public class PlayMapServiceTest {
 
     try {
         // Testverzeichnis
-        testDir = Path.of("src/test/resources/maps");
+        testDir = Path.of("../base/maps");
         Files.createDirectories(testDir);
 
         // Testkarte
@@ -69,7 +69,7 @@ public class PlayMapServiceTest {
 
     @Test // Überprüft, ob alle Karten korrekt geladen werden
     void testGetAllMaps() throws IOException {
-        Path testDir = Path.of("src/test/resources/maps");
+        Path testDir = Path.of("../base/maps");
         Files.createDirectories(testDir);
         Files.write(testDir.resolve("testMap1.txt"), "****\n*  *\n****".getBytes());
         Files.write(testDir.resolve("testMap2.txt"), "****\n* **\n****".getBytes());
@@ -107,7 +107,7 @@ public class PlayMapServiceTest {
 
     @Test // Überprüft, ob ein leeres Verzeichnis keine Karten zurückgibt
     void testEmptyMapsDirectory() throws IOException {
-        Path testDir = Path.of("src/test/resources/emptyMaps");
+        Path testDir = Path.of("../base/emptymaps");
         Files.createDirectories(testDir);
 
         playMapService.mapsDirectory = testDir.toString() + "/";
@@ -118,7 +118,7 @@ public class PlayMapServiceTest {
 
     @Test // Überprüft, ob das Erstellen einer PlayMap mit einem ungültigen Namen fehlschlägt
     void testCreatePlayMapWithInvalidName() {
-        playMapService.mapsDirectory = "src/test/resources/maps/";
+        playMapService.mapsDirectory = "../base/maps";
 
         assertThrows(IllegalArgumentException.class, () -> {
             playMapService.createPlayMap("nonExistentMap");

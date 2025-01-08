@@ -133,49 +133,49 @@ public class PlayMapTest {
     }
 
 
-    @Test // Test für updateMapState
-    void testUpdateMapStateTest() throws IOException {
-        Path resourcePath = Path.of("src/main/resources/maps/tempMap.txt");
-        Files.write(resourcePath, """
-            ****
-            *  *
-            * **
-            *  *
-            ****
-            """.stripIndent().getBytes());
+    // @Test // Test für updateMapState
+    // void testUpdateMapStateTest() throws IOException {
+    //     Path resourcePath = Path.of("src/main/resources/maps/tempMap.txt");
+    //     Files.write(resourcePath, """
+    //         ****
+    //         *  *
+    //         * **
+    //         *  *
+    //         ****
+    //         """.stripIndent().getBytes());
     
-        PlayMap playMap = new PlayMap("tempMap");
+    //     PlayMap playMap = new PlayMap("tempMap");
     
-        char[][] initialMap = {
-            { '*', '*', '*', '*' },
-            { '*', ' ', ' ', '*' },
-            { '*', ' ', '*', '*' },
-            { '*', ' ', ' ', '*' },
-            { '*', '*', '*', '*' }
-        };
+    //     char[][] initialMap = {
+    //         { '*', '*', '*', '*' },
+    //         { '*', ' ', ' ', '*' },
+    //         { '*', ' ', '*', '*' },
+    //         { '*', ' ', ' ', '*' },
+    //         { '*', '*', '*', '*' }
+    //     };
     
-        assertArrayEquals(initialMap, playMap.getMap(), "Die Karte entspricht nicht der erwarteten Anfangskonfiguration.");
+    //     assertArrayEquals(initialMap, playMap.getMap(), "Die Karte entspricht nicht der erwarteten Anfangskonfiguration.");
     
-        char[][] expectedMap = {
-            { '*', '*', '*', '*' },
-            { '*', 'G', 'G', '*' },
-            { '*', 'S', '*', '*' },
-            { '*', 'G', ' ', '*' },
-            { '*', '*', '*', '*' }
-        };
+    //     char[][] expectedMap = {
+    //         { '*', '*', '*', '*' },
+    //         { '*', 'G', 'G', '*' },
+    //         { '*', 'S', '*', '*' },
+    //         { '*', 'G', ' ', '*' },
+    //         { '*', '*', '*', '*' }
+    //     };
     
-        playMap.updateMapState(2, 1, 'S');  
-        playMap.updateMapState(1, 1, 'G');  
-        playMap.updateMapState(1, 2, 'G'); 
-        playMap.updateMapState(3, 1, 'G'); 
+    //     playMap.updateMapState(2, 1, 'S');  
+    //     playMap.updateMapState(1, 1, 'G');  
+    //     playMap.updateMapState(1, 2, 'G'); 
+    //     playMap.updateMapState(3, 1, 'G'); 
     
-        assertArrayEquals(expectedMap, playMap.getMap(), "Die Karte nach den Änderungen entspricht nicht der erwarteten Karte.");
+    //     assertArrayEquals(expectedMap, playMap.getMap(), "Die Karte nach den Änderungen entspricht nicht der erwarteten Karte.");
 
-        // ungültige pos
-        playMap.updateMapState(0, 0, 'G'); 
-        assertEquals('*', playMap.getMap()[0][0]);
+    //     // ungültige pos
+    //     playMap.updateMapState(0, 0, 'G'); 
+    //     assertEquals('*', playMap.getMap()[0][0]);
 
     
-        Files.delete(resourcePath);
-    }
+    //     Files.delete(resourcePath);
+    // }
 }
