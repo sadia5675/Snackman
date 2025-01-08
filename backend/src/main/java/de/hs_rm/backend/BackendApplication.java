@@ -11,7 +11,7 @@ public class BackendApplication {
 	public static void main(String[] args) {
 
 		/* if base/maps not exist, create base/maps outside of java */
-		ensureDirectoriesExist("../base/maps");
+		ensureDirectoriesExist("base/maps");
 
 		SpringApplication.run(BackendApplication.class, args);
 	}
