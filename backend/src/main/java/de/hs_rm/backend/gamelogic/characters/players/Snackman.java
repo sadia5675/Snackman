@@ -24,10 +24,10 @@ public class Snackman extends Character {
 
     public Snackman(double speed, int posX, int posY, int life,int maxLife){
         super(speed,posX,posY);
-        this.life=life; 
+        this.life= maxLife; 
         this.nutriscore=0; 
         this.item= null;
-        this.maxLife=maxLife;
+        this.maxLife= 3;
         this.lastDamageTimestamp = null;
     }
 
@@ -43,7 +43,7 @@ public class Snackman extends Character {
         return life;
     }
     public void setLife(int life) {
-        this.life = life;
+        this.life = Math.min(life, maxLife); // Begrenzen auf maxLife
     }
 
     public double getNutriscore() {
