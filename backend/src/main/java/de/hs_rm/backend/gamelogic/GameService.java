@@ -168,7 +168,7 @@ public class GameService {
                             "Target position (" + targetX + ", " + targetY + ") is out of bounds.");
                 }
                 //Bewegung
-                boolean success = game.move(username, targetX, targetY);
+                boolean success = game.move(username, targetX, targetY, (double)0);
                 if (!success) {
                     throw new IllegalArgumentException(
                             "Failed to move Player '" + username + "'. Tile is a wall");
