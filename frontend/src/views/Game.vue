@@ -13,6 +13,7 @@ import { useRoute } from 'vue-router'
 import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
+import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 
 const gameStore = useGameStore()
 
@@ -35,6 +36,10 @@ let movementSpeed = slowMovementSpeed
 const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
+
+// Typ falsch?
+let chickenPositions = ref<IChickenPositionDTD[]>([]);
+
 
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
@@ -218,7 +223,6 @@ function cameraPositionBewegen(delta: number) {
     }
     nextPosition.y = 1
     validatePosition(nextPosition)
-
     camera.position.y = 1
   }
 }
@@ -264,7 +268,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     }
   })
 
-  playerPositions.forEach((playerPosition) => {
+    playerPositions.forEach((playerPosition) => {
     if (!players.has(playerPosition.playerName)) {
       const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       //Modell initial rendern
@@ -293,6 +297,20 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
       }
     }
   });
+}
+
+function renderChicken(chickenPositions: IChickenPositionDTD[]){
+  const modelLoader = new GLTFLoader()
+
+  chickenPositions.forEach((chickenPosition) => {
+    modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
+      const model = objekt.scene
+      model.position.set(chickenPosition.x, 1, chickenPosition.y)
+      model.scale.set(0.03, 0.03, 0.03)
+      model.rotateY(chickenPosition.angle)
+      scene.add(model)
+    })
+  })
 }
 
 function loadMap(map: String[]) {
@@ -328,27 +346,27 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.glb';
 
           modelLoader.load(modelPathE, (objekt) => {
-              console.log('Model geladen:', modelPathE);
-              const model = objekt.scene
+            console.log('Model geladen:', modelPathE);
+            const model = objekt.scene
 
-              if (modelPathE.includes('chocolate_bar')) {
-                model.position.set(rowCounter - 2, 0.75, i)
-                model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-              }
-              else {
-                model.position.set(rowCounter - 2, 0.5, i)
-                model.scale.set(0.5, 0.5, 0.5) // sonst normal
-              }
-              scene.add(model)
-              console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
-            undefined,
-            (error) => {
-              console.error('Fehler beim Laden des Modells:', error);
+            if (modelPathE.includes('chocolate_bar')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
             }
-          )
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model)
+            console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+          },
+          undefined,
+        (error) => {
+          console.error('Fehler beim Laden des Modells:', error);
+        }
+        )
           break
-        case 'D':
+          case 'D':
           const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem1.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem1)
@@ -357,19 +375,19 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/D/popcorn/popcorn.glb';
 
           modelLoader.load(modelPathD, (objekt) => {
-              console.log('Model geladen:', modelPathD);
-              const model = objekt.scene
+            console.log('Model geladen:', modelPathD);
+            const model = objekt.scene
 
-              if (modelPathD.includes('popcorn')) {
-                model.position.set(rowCounter - 2, 0.75, i)
-                model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-              }
-              else {
-                model.position.set(rowCounter - 2, 0.5, i)
-                model.scale.set(0.5, 0.5, 0.5) // sonst normal
-              }
-              scene.add(model);
-              console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            if (modelPathD.includes('popcorn')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
             },
             undefined,
             (error) => {
@@ -377,7 +395,7 @@ function loadMap(map: String[]) {
             }
           );
           break
-        case 'C':
+          case 'C':
           const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem2.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem2)
@@ -386,19 +404,19 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/C/chips/chips.glb';
 
           modelLoader.load(modelPathC, (objekt) => {
-              console.log('Model geladen:', modelPathC);
-              const model = objekt.scene
+            console.log('Model geladen:', modelPathC);
+            const model = objekt.scene
 
-              if (modelPathC.includes('candycane')) {
-                model.position.set(rowCounter - 2, 1, i)
-                model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
-              }
-              else {
-                model.position.set(rowCounter - 3, 1, i)
-                model.scale.set(0.5, 0.5, 0.3) // sonst normal
-              }
-              scene.add(model);
-              console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            if (modelPathC.includes('candycane')) {
+              model.position.set(rowCounter - 2, 1, i)
+              model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.3) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
             },
             undefined,
             (error) => {
@@ -406,7 +424,7 @@ function loadMap(map: String[]) {
             }
           );
           break
-        case 'B':
+          case 'B':
           const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem3.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem3)
@@ -415,19 +433,19 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/B/banana/banana.glb';
 
           modelLoader.load(modelPathB, (objekt) => {
-              console.log('Model geladen:', modelPathB);
-              const model = objekt.scene
+            console.log('Model geladen:', modelPathB);
+            const model = objekt.scene
 
-              if (modelPathB.includes('apple')) {
-                model.position.set(rowCounter - 3, 0.75, i)
-                model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
-              }
-              else {
-                model.position.set(rowCounter - 3, 0.5, i)
-                model.scale.set(0.2, 0.2, 0.2) // sonst normal
-              }
-              scene.add(model);
-              console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            if (modelPathB.includes('apple')) {
+              model.position.set(rowCounter - 3, 0.75, i)
+              model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 0.5, i)
+              model.scale.set(0.2, 0.2, 0.2) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
             },
             undefined,
             (error) => {
@@ -435,7 +453,7 @@ function loadMap(map: String[]) {
             }
           );
           break
-        case 'A':
+          case 'A':
           const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem4.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem4)
@@ -444,19 +462,19 @@ function loadMap(map: String[]) {
             : '/src/assets/game/items/A/lemon/lemon.glb';
 
           modelLoader.load(modelPathA, (objekt) => {
-              console.log('Model geladen:', modelPathA);
-              const model = objekt.scene
+            console.log('Model geladen:', modelPathA);
+            const model = objekt.scene
 
-              if (modelPathA.includes('ginger')) {
-                model.position.set(rowCounter - 3, 1, i-1)
-                model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
-              }
-              else {
-                model.position.set(rowCounter - 3, 1, i)
-                model.scale.set(0.5, 0.5, 0.5) // sonst normal
-              }
-              scene.add(model);
-              console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            if (modelPathA.includes('ginger')) {
+              model.position.set(rowCounter - 3, 1, i-1)
+              model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
             },
             undefined,
             (error) => {
@@ -464,7 +482,7 @@ function loadMap(map: String[]) {
             }
           );
           break
-        default:
+          default:
           const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem5.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem5)
@@ -494,6 +512,18 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
+
+  if (gameStore.gameState.gamedata.chickens === null) {
+    chickenPositions.value = []
+    console.log("Keine Positionsdaten weil Chicken Array leer")
+  } else {
+    chickenPositions.value = gameStore.gameState.gamedata.chickens;
+    console.log("Chickens-Positionsdaten: " + chickenPositions.value)
+  }
+
+
+
+  //const chickenList = gameStore.gameState.gamedata.chickens
 
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
@@ -565,6 +595,7 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
+  renderChicken(chickenPositions.value)
   animate()
 })
 </script>
