@@ -78,8 +78,6 @@ import { PlayerType } from '@/stores/game/dtd/PlayerType';
 import router from '@/router';
 import { ModalType } from '@/stores/game/dtd/EModalType';
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
-import backgroundImage from '@/assets/TestBackground1.jpg'
-
 
 const modal = useModalStore()
 const game = useGameStore()
