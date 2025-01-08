@@ -45,6 +45,7 @@ public class Game {
             characterWithNames.put("name", username); // Username hinzufügen
             characterWithNames.put("posX", character.getPosX());
             characterWithNames.put("posY", character.getPosY());
+            characterWithNames.put("posZ", character.getPosZ());
             characterWithNames.put("speed", character.getSpeed());
             characterWithNames.put("angleInDegrees", character.getAngleInDegrees());
     

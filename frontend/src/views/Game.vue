@@ -95,7 +95,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         movingRight = true
         break
       case 'Space':
-        isChargingJump = true;         
+        isChargingJump = true;
         break
     }
   })
@@ -179,10 +179,11 @@ function triggerJumpAfterChargeTime(delta: number) {
       jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
       isJumping = true; // Sprung aktivieren
       console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
-      
+
   }
 
 }
+
 function cameraPositionBewegen(delta: number) {
   const cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
@@ -198,18 +199,19 @@ function cameraPositionBewegen(delta: number) {
   if (isJumping) {
     jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
     nextPosition.y += jumpVelocity * delta
+    validatePosition(nextPosition)
     camera.position.y = nextPosition.y;
 
     // Bodenberührung
     if (nextPosition.y <= 1) {
       nextPosition.y = 1
+      validatePosition(nextPosition)
       camera.position.y = nextPosition.y;
       jumpVelocity = 0
       isJumping = false
       jumpChargeTime =0
     }
-  }
-  else{
+  } else{
     if (movingForward || movingBackward || movingLeft || movingRight) {
       if (movingForward) {
         if (movingRight) {
@@ -263,8 +265,6 @@ function cameraPositionBewegen(delta: number) {
         )
       }
 
-
-
       nextPosition.y = 1
       validatePosition(nextPosition)
 
@@ -275,8 +275,6 @@ function cameraPositionBewegen(delta: number) {
    if(!isJumping){
     triggerJumpAfterChargeTime(delta);
    }
-
-
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
@@ -287,6 +285,7 @@ function validatePosition(nextPosition: THREE.Vector3) {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
+      posZ: nextPosition.y,
       angle: camera.rotation.z,
     })
     lastSend = currentTime
@@ -328,7 +327,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         players.set(playerPosition.playerName, model.id)
         scene.add(model)
 
-        model.position.set(playerPosition.x, 1, playerPosition.y)
+        model.position.set(playerPosition.x, playerPosition.z, playerPosition.y)
         model.rotation.y = playerPosition.angle + adjustAngle
       })
     } else {
@@ -341,7 +340,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
           const breite = new THREE.Vector3()
           messungsBox.getSize(breite)
           messungsBox.expandByObject(model)
-          model.position.set(playerPosition.x - breite.x / 2, 1, playerPosition.y)
+          model.position.set(playerPosition.x - breite.x / 2, playerPosition.z, playerPosition.y)
           model.rotation.y = playerPosition.angle + adjustAngle
         }
       }
@@ -377,7 +376,7 @@ function loadMap(map: String[]) {
 }
 
 async function handleCharacters(data: ICharacterDTD[]) {
-  let playerPositions: IPlayerPositionDTD[] = []
+  const playerPositions: IPlayerPositionDTD[] = []
   data.forEach((character) => {
     if (sessionStorage.getItem('myName') !== character.name) {
       playerPositions.push({
