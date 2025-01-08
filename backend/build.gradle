@@ -80,6 +80,12 @@ task build_frontend {
 			from "${projectDir}/../frontend/dist"
 			into "${projectDir}/src/main/resources/public/"
 		}
+
+		// base-Ordner für maps src/main/resources kopieren
+		copy {
+			from "${projectDir}/../base"
+			into "${projectDir}/build/libs/base"
+		}
 	}
 }
 bootJar.dependsOn build_frontend
