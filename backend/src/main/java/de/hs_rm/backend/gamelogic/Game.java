@@ -1,3 +1,4 @@
+
 package de.hs_rm.backend.gamelogic;
 
 import java.util.*;
@@ -374,6 +375,11 @@ public class Game {
             LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
+
+        if(targetTile.hasItem()){
+            LOGGER.info("Item gefunden");
+            targetTile.addCharacter(curCharacter);
+        }
     
         // Charakter bewegen
         curTile.removeCharacter(curCharacter);
@@ -383,6 +389,7 @@ public class Game {
         targetTile.addCharacter(curCharacter);
     
         LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
+        LOGGER.debug("TargetTile has item: {}, Items: {}", targetTile.hasItem(), targetTile.getItemList());
         return true;
     }
     
