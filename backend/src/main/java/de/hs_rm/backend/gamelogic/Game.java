@@ -1,3 +1,4 @@
+
 package de.hs_rm.backend.gamelogic;
 
 import java.util.*;
@@ -356,40 +357,60 @@ public class Game {
         return true;
     }
 
-    public boolean move(String username, int posX, int posY) {
-
-        LOGGER.info("{}{}{}",username,posX,posY);
-        // DONE: Tile obj von x und y überprüfen
-        int targetIndex = posY * playmap.getWidth() + posX;
-        Tile targetTile = playmap.getTilesList().get(targetIndex);
-        //wand
-        if (targetTile.getType() == TileType.WALL) {
-            return false;
-        }
-
+    public boolean move(String username, double posY, double posX, double angle) {
         Character curCharacter = characters.get(username);
 
-        //int curIndex = curCharacter.getPosY() * playmap.getWidth() + curCharacter.getPosX();
-        //Tile curTile = playmap.getTilesList().get(curIndex);
-
-        //*TESTING */
-        curCharacter.move(posX, posY, posY);
-        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
-        //*TESTING */
-
-        if (targetTile.getType() == TileType.WALL) {
+        int roundedPosX = (int) Math.floor(posX);
+        int roundedPosY = (int) Math.floor(posY);
+    
+        // Berechnung des aktuellen Index
+        int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth() + (int) Math.floor(curCharacter.getPosX());
+        if (curIndex < 0 || curIndex >= playmap.getTilesList().size()) {
+            LOGGER.error("Ungültiger aktueller Index: curIndex={}, Größe der Tile-Liste={}", curIndex, playmap.getTilesList().size());
             return false;
         }
-        // DONE: position von character aktualisieren für frontend
-        //curCharacter.move(posX, posY);
-        // TODO: hier fehlt noch Kollision in addCharacter
+        Tile curTile = playmap.getTilesList().get(curIndex);
+    
+        // Berechnung des Zielindex
+        int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
+        if (targetIndex < 0 || targetIndex >= playmap.getTilesList().size()) {
+            LOGGER.error("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex, playmap.getTilesList().size());
+            return false;
+        }
+        Tile targetTile = playmap.getTilesList().get(targetIndex);
+    
+        // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
+        if (curIndex == targetIndex) {
+            LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
 
-        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
-        //curTile.removeCharacter(curCharacter);
+            //posy und posx vertauscht 
+            curCharacter.move(posY, posX, angle); // Aktualisiere nur die Position des Charakters
+            return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
+        }
+    
+        // Ziel-Tile prüfen
+        if (targetTile.getType() == TileType.WALL) {
+            LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
+            return false;
+        }
+
+        if(targetTile.hasItem()){
+            LOGGER.info("Item gefunden");
+            targetTile.addCharacter(curCharacter);
+        }
+    
+        // Charakter bewegen
+        curTile.removeCharacter(curCharacter);
+
+        //posy und posx vertauscht
+        curCharacter.move(posY, posX, angle);
         targetTile.addCharacter(curCharacter);
-
+    
+        LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
+        LOGGER.debug("TargetTile has item: {}, Items: {}", targetTile.hasItem(), targetTile.getItemList());
         return true;
     }
+    
 
 
     public Player findPlayerByUsername(String username) {
