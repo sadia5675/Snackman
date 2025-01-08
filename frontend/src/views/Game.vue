@@ -13,6 +13,7 @@ import { useRoute } from 'vue-router'
 import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
+import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 
 const gameStore = useGameStore()
 
@@ -35,6 +36,10 @@ let movementSpeed = slowMovementSpeed
 const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
+
+// Typ falsch?
+let chickenPositions = ref<IChickenPositionDTD[]>([]);
+
 
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
@@ -216,10 +221,7 @@ function cameraPositionBewegen(delta: number) {
         movementSpeed * delta,
       )
     }
-    nextPosition.y = 1
-    validatePosition(nextPosition)
-
-    camera.position.y = 1
+    camera.position.y = 2
   }
 }
 
@@ -293,6 +295,20 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
       }
     }
   });
+}
+
+function renderChicken(chickenPositions: IChickenPositionDTD[]){
+  const modelLoader = new GLTFLoader()
+
+  chickenPositions.forEach((chickenPosition) => {
+    modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
+      const model = objekt.scene
+      model.position.set(chickenPosition.x, 1, chickenPosition.y)
+      model.scale.set(0.03, 0.03, 0.03)
+      model.rotateY(chickenPosition.angle)
+      scene.add(model)
+    })
+  })
 }
 
 function loadMap(map: String[]) {
@@ -495,6 +511,18 @@ onMounted(async () => {
     console.error('Error fetching game status:', error)
   }
 
+  if (gameStore.gameState.gamedata.chickens === null) {
+    chickenPositions.value = []
+    console.log("Keine Positionsdaten weil Chicken Array leer")
+  } else {
+    chickenPositions.value = gameStore.gameState.gamedata.chickens;
+    console.log("Chickens-Positionsdaten: " + chickenPositions.value)
+  }
+
+
+
+  //const chickenList = gameStore.gameState.gamedata.chickens
+
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
       case 'playerPosition':
@@ -565,6 +593,7 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
+  renderChicken(chickenPositions.value)
   animate()
 })
 </script>
