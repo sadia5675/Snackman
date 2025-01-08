@@ -341,9 +341,9 @@ function loadMap(map: String[]) {
           const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem)
+
           const modelPathE = Math.random() > 0.5
-            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb'
-            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.glb';
+            ? new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url).href : new URL("@/assets/game/items/E/strawberry_shortcake/chocolate_bar.glb", import.meta.url).href;
 
           modelLoader.load(modelPathE, (objekt) => {
             console.log('Model geladen:', modelPathE);
@@ -370,9 +370,10 @@ function loadMap(map: String[]) {
           const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem1.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem1)
+          
           const modelPathD = Math.random() > 0.5
-            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.glb'
-            : '/src/assets/game/items/D/popcorn/popcorn.glb';
+            ? new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url).href
+            : new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url).href;
 
           modelLoader.load(modelPathD, (objekt) => {
             console.log('Model geladen:', modelPathD);
@@ -457,9 +458,10 @@ function loadMap(map: String[]) {
           const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem4.position.set(rowCounter, 0, i)
           scene.add(groundCubeUnderItem4)
+
           const modelPathA = Math.random() > 0.5
-            ? '/src/assets/game/items/A/ginger/ginger.glb'
-            : '/src/assets/game/items/A/lemon/lemon.glb';
+            ? new URL("@/assets/game/items/A/ginger/ginger.glb", import.meta.url).href
+            : new URL("@/assets/game/items/A/lemon/lemon.glb", import.meta.url).href
 
           modelLoader.load(modelPathA, (objekt) => {
             console.log('Model geladen:', modelPathA);
