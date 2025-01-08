@@ -1,26 +1,3 @@
-package de.hs_rm.backend.gamelogic.characters.players;
-
-public class ObjectsItems extends  Item {
-    private String effectDescription;
-
-        // erstmal sei ObjectsItem für Snackman
-        public ObjectsItems(String name, int x, int y, String effectDescription) {
-            super(name, x, y, PlayerRole.SNACKMAN);
-            this.effectDescription = effectDescription;
-        }
-        
-        public String getEffectDescription() {
-            return effectDescription;
-        }
-
-        public void setEffectDescription(String effectDescription) {
-            this.effectDescription = effectDescription;
-        }
-
-     //TODO: muss noch gemacht werden
-        @Override
-        public void applyEffect(Player player) {
-        //System.out.println("Effect applied from object: " + getName() + " - " + effectDescription);
-            // Zusätzliche Logik für spezifische Effekte könnte hier implementiert werden.
-        }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:adffde8b115c9611e7cce81926812eebda5dfec781854fe1a33af9580be33711
+size 1027
