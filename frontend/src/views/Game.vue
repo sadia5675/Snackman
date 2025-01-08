@@ -51,7 +51,7 @@ function addItem(itemName: string) {
 function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene()
 
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000)
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.001, 1000)
   camera.position.set(1, 1, 2)
 
   const renderer = new THREE.WebGLRenderer()
@@ -241,7 +241,7 @@ function validatePosition(nextPosition: THREE.Vector3) {
       angle: camera.rotation.z,
     })
     lastSend = currentTime
-  } 
+  }
 }
 
 
@@ -377,7 +377,7 @@ function loadMap(map: String[]) {
           const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
           groundCubeUnderItem1.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem1)
-          
+
           const modelPathD = Math.random() > 0.5
             ? new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url).href
             : new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url).href;
