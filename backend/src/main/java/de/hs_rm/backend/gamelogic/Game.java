@@ -165,7 +165,7 @@ public class Game {
 
         for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
-            boolean createFoodItem = random.nextInt(10) < 7; // 70% Chance für FoodItem, 30% für ObjectsItem
+            boolean createFoodItem = random.nextInt(10) < 8; // 80% Chance für FoodItem, 20% für ObjectsItem
             int index = -1;
             do {
                 index = random.nextInt(playmap.getTilesList().size());
