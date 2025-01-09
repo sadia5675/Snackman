@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
@@ -46,7 +47,11 @@ public class Chicken {
             
         }
 
+        
+        pyInterpreter.exec("run_auto()");
+
     }
+
 
     public void move(int x, int y) {
         this.posX = x;
