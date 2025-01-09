@@ -14,6 +14,7 @@ import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
@@ -24,6 +25,7 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -61,8 +63,6 @@ public class GameAPIController {
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
 
-    // private Game game;
-
     // TODO: Sicherheit für Spiel, keys in responsebody
     // TODO: Was passiert wenn Fehler nicht hier sondern in Spiellogik (Game-Klasse)
     // kommt
@@ -84,16 +84,6 @@ public class GameAPIController {
 
         return createOkResponse(newGame);
     }
-
-    // Method to join an existing game
-    // @PostMapping("/join/{gameId}")
-    // public ResponseEntity<?> joinGame(@PathVariable String gameId) {
-    // if (game == null || !game.getId().equals(gameId)) {
-    // return createErrorResponse("Game ID is invalid!");
-    // }
-    // // Logik zum Beitreten des Spiels
-    // return ResponseEntity.ok(game);
-    // }
 
     // Method to start the game
     @PostMapping("/start/{gameId}")
@@ -246,6 +236,23 @@ public class GameAPIController {
         messagingService.sendNewCharacterPosition(lobbyid, response);
 
     }
+
+    @MessageMapping("/topic/ingame/{lobbyid}/chickenPosition")
+    @SendTo("/topic/ingame/{lobbyod}")
+    public Map<String, Object> chickenPosition(@DestinationVariable String lobbyid){
+
+        Game existingGame = gameService.getGameById(lobbyid);
+        List<Chicken> chickens = existingGame.getChickens();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("type", "chickenPositions");
+        response.put("chickens", chickens);
+        response.put("status", "ok");
+        response.put("time", LocalDateTime.now().toString());
+
+        return response;
+    }
+
 
     // Method to end the game
     @PostMapping("/end/{gameId}")
