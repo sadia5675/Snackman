@@ -1,3 +1,34 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:06fba20044825c0b1194b3d8f783fec0578880265710ead5199f8e21237dbb95
-size 712
+import {fileURLToPath, URL} from 'node:url'
+
+import {defineConfig} from 'vite'
+import vue from '@vitejs/plugin-vue'
+import vueDevTools from 'vite-plugin-vue-devtools'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [
+    vue(),
+    vueDevTools(),
+  ],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    },
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173, // Der Port für den Vite-Server
+    open: true,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080', // Dein Backend
+        changeOrigin: true,
+      },
+      '/ws' : {
+        target: 'http://localhost:8080',
+        ws: true
+      }
+    },
+  },
+})

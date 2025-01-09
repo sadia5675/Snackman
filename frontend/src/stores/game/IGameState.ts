@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3b4fe939823bd4b2deb107ee7a07af4d7bf65280fd9164b86de1757eb2cedf01
-size 382
+import type {IGameDTD} from "@/stores/game/dtd/IGameDTD";
+import { PlayerType } from "./dtd/PlayerType";
+
+export interface IGameState {
+  ok: boolean,
+  gamedata: IGameDTD,
+}
+
+export const emptyGame: IGameState = {
+  ok: false,
+  gamedata: {
+    id: "",
+    players: [],
+    chickens: [],
+    gamemaster: null,
+    started: false,
+    playmap: undefined,
+    password: null 
+  },
+}

@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:65710927cc568c357f0d890f16795c3c841b1698682b5083864354c2cf1df6fd
-size 724
+Model Information:
+* title:	Paint 3D - Plastic Lemon
+* source:	https://sketchfab.com/3d-models/paint-3d-plastic-lemon-2a9e10ffd5b0405eaabfe496d61de0bd
+* author:	Maker3000 (https://sketchfab.com/fksfhwq2t590p)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Paint 3D - Plastic Lemon" (https://sketchfab.com/3d-models/paint-3d-plastic-lemon-2a9e10ffd5b0405eaabfe496d61de0bd) by Maker3000 (https://sketchfab.com/fksfhwq2t590p) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

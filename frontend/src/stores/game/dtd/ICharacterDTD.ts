@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8aa9b006246439fe6220b6ad2d7ad20aeb1916799dcd62fd9bd810721f8eaa7b
-size 275
+export interface ICharacterDTD {
+  id: string;
+  name: string;
+  gameId: string;
+  playerSpeed: number;
+  posX: number;
+  posY: number;
+  posZ: number;
+  angleInDegrees: number;
+  currentCalorie?: number;
+  touchcount?: number;
+  item?: any | null;
+  items?: any[] | null;
+}

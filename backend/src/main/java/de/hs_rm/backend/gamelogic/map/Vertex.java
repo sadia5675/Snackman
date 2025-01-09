@@ -1,3 +1,39 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:66ae8e9e781890effc8a4f6deee701e1183600c76831d0698ae57f1b0b315257
-size 743
+package de.hs_rm.backend.gamelogic.map;
+
+import java.util.Objects;
+
+public class Vertex {
+    private final int x;
+    private final int y;
+
+    public Vertex(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vertex vertex = (Vertex) o;
+        return x == vertex.x && y == vertex.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
+}

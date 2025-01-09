@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:edc18f4e1b0002c68f33d325708cdb067f41368ae263d8c40eacfdd69a13009b
-size 372
+import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
+import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
+
+export interface IGameDTD {
+  id: string
+  players: IPlayerDTD[]
+  chickens: IChickenDTD[]
+  gamemaster: IPlayerDTD | null
+  started: boolean
+  password: string | null
+  playmap?: {
+    map: string[]
+    width: number
+    height: number
+  }
+}

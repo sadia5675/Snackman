@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:285a65bd6512470d32909a0c1cfa99ca236e7ad6542ec6ac2c3490f46bb34f33
-size 578
+package de.hs_rm.backend.gamelogic.characters.players;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SnackmanObjectItem extends ObjectsItems {
+
+    private static final Logger logger = LoggerFactory.getLogger(SnackmanObjectItem.class);
+
+    public SnackmanObjectItem(String name, int x, int y, String effectDescription) {
+        super(name, x, y, PlayerRole.SNACKMAN, effectDescription);
+    }
+
+    @Override
+    public void applyEffect(Player player) {
+        logger.info("Snackman-specific effect applied: {}", getEffectDescription());
+    }
+    
+}

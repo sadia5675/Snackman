@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ab614c139ad187ebb0a4e9e7db70b17c9709956bf32678dc69a622d8fdbbb827
-size 704
+Model Information:
+* title:	Strawberry Shortcake
+* source:	https://sketchfab.com/3d-models/strawberry-shortcake-cb79bd71e1614357931349a751f3d08c
+* author:	Parn2175 (https://sketchfab.com/Parn2175)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Strawberry Shortcake" (https://sketchfab.com/3d-models/strawberry-shortcake-cb79bd71e1614357931349a751f3d08c) by Parn2175 (https://sketchfab.com/Parn2175) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)

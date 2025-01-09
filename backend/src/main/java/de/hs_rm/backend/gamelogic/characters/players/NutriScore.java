@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b00f181b9d38aa9c7c1db661dfc8eb2a8e906bd51a14711a5454dce4da75b03b
-size 509
+package de.hs_rm.backend.gamelogic.characters.players;
+
+public enum NutriScore {
+    A("Blue", 10),
+    B("Green",20),
+    C("Yellow", 30),
+    D("Orange", 40),
+    E("Red", 50);
+
+    private final String color;
+    private final int calorieBonus;
+
+    NutriScore(String color, int calorieBonus) {
+        this.color = color;
+        this.calorieBonus = calorieBonus;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public int getCalorieBonus() {
+        return calorieBonus;
+    }
+
+
+}

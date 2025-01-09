@@ -1,3 +1,24 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:36652dea2c31e7c2fcd421d9149253d2afa92737ec6e2f1b264edc1e8d60b2a2
-size 486
+package de.hs_rm.backend.gamelogic.characters.players;
+
+public class Chicken {
+    int posX;
+    int posY;
+    
+    public Chicken(int posX, int posY) {
+        this.posX = posX;
+        this.posY = posY;
+    }
+    public int getPosX() {
+        return posX;
+    }
+    public void setPosX(int posX) {
+        this.posX = posX;
+    }
+    public int getPosY() {
+        return posY;
+    }
+    public void setPosY(int posY) {
+        this.posY = posY;
+    }
+    
+}

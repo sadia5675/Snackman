@@ -1,3 +1,54 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9ec501f659e87393acf652ff16a849a4e2007444764daa3e951cc9c83cd89446
-size 903
+package de.hs_rm.backend.gamelogic.characters.players;
+public class PlayerPosition {
+    double posX;
+    double posY;
+    double posZ;
+    double angle;
+    public double getAngle() {
+        return angle;
+    }
+
+    public void setAngle(double angle) {
+        this.angle = angle;
+    }
+
+    String playerName;
+
+    PlayerPosition(){
+
+    }
+
+    public double getPosX() {
+        return posX;
+    }
+
+    public void setPosX(float posX) {
+        this.posX = posX;
+    }
+
+    public double getPosY() {
+        return posY;
+    }
+
+    public void setPosY(float posY) {
+        this.posY = posY;
+    }
+
+    public double getPosZ() {
+        return posZ;
+    }
+
+    public void setPosZ(float posZ) {
+        this.posZ = posZ;
+    }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+    }
+
+    
+}

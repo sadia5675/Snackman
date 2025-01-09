@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4899433102c11a6b254d5e004c35db79241d1fd78f8588ca66c69681746982e0
-size 55
+{
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}

@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d2fd1fb9494d983526c8650a57e45f92666dc60cf2742b6d167f0f368c04291e
-size 565
+package de.hs_rm.backend.gamelogic.characters.players;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+public class GhostObjectItem extends ObjectsItems {
+
+    private static final Logger logger = LoggerFactory.getLogger(GhostObjectItem.class);
+
+    public GhostObjectItem(String name, int x, int y, String effectDescription) {
+        super(name, x, y, PlayerRole.GHOST, effectDescription);
+    }
+
+    @Override
+    public void applyEffect(Player player) {
+        logger.info("Ghost-specific effect applied: {}",  getEffectDescription());
+    }
+    
+}
