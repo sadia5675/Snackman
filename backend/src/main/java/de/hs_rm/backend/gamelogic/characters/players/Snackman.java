@@ -11,19 +11,17 @@ public class Snackman extends Character {
     //Initialisierung
     private int maxLife;
     private int life; 
-    private int nutriscore; 
-    private int currentCalorie;
+    private int currentPoints;
 
 
 
     private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
 
-    public Snackman(double speed, int posX, int posY, int life,int maxLife, int nutriscore){
+    public Snackman(double speed, int posX, int posY, int life,int maxLife){
         super(speed,posX,posY);
         this.life=life; 
-        this.nutriscore=nutriscore; 
         this.maxLife=maxLife;
-        this.currentCalorie =0;
+        currentPoints = 0;
     }
 
 
@@ -47,27 +45,14 @@ public class Snackman extends Character {
     }
 
 
-
-    public int getNutriscore() {
-        return nutriscore;
+    public int getCurrentPoints() {
+        return currentPoints;
     }
 
 
 
-    public void setNutriscore(int nutriscore) {
-        this.nutriscore = nutriscore;
-    }
-
-
-
-    public int getCurrentCalorie() {
-        return currentCalorie;
-    }
-
-
-
-    public void setCurrentCalorie(int currentCalorie) {
-        this.currentCalorie = currentCalorie;
+    public void setCurrentPoints(int currentPoints) {
+        this.currentPoints = currentPoints;
     }
 
      //abstrakte Methode zum fortbewegen--> Logik fehlt noch
@@ -79,8 +64,8 @@ public class Snackman extends Character {
 
     // Methode: Aufnehmen von FoodItems
      public void eatSnack(FoodItems foodItem) {
-        currentCalorie += foodItem.getNutriScore().getCalorieBonus();
-        logger.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentCalorie);
+        currentPoints += foodItem.getNutriScore().getCalorieBonus();
+        logger.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentPoints);
     }
 
     @Override
@@ -93,11 +78,6 @@ public class Snackman extends Character {
         } else {
             logger.warn("No ObjectItem to use.");
         }
-    }
-    
-    public double increaseNutriScore(double amount){
-        this.nutriscore += amount; 
-        return this.nutriscore; 
     }
 
     //Methode zum Verhhalten nachdem man erwicht worden ist  

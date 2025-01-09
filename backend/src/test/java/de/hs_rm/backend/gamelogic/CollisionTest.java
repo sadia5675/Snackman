@@ -27,7 +27,7 @@ public class CollisionTest {
     void setUp() {
         surfaceTile = new Tile(TileType.SURFACE);
         wallTile = new Tile(TileType.WALL);
-        snackman = new Snackman(1.0, 0, 0, 3, 3,25);
+        snackman = new Snackman(1.0, 0, 0, 3, 3);
         ghost = new Ghost(1.0, 0, 0);
         foodItem = new FoodItems("Banana", 0, 0, NutriScore.A);
         objectItem = mock(ObjectsItems.class);
