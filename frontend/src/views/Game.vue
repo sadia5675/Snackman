@@ -29,8 +29,6 @@ const players = new Map<string, number>(); // Spieler mit Namen als Key auf Char
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 
 
-
-
 //Movement
 let movingForward: boolean,
   movingBackward: boolean,
@@ -44,11 +42,10 @@ const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
 
-let chickenPositions = ref<IChickenPositionDTD[]>([]);
-
-//für HuD
-const life = ref(2) //startlife
-const maxLife = ref(3)
+function lockPointer() {
+  pointerLockControls.lock();
+  pointerLockControls.isLocked = true;
+}
 
 //für HUD
 // Aktueller Spieler
@@ -76,11 +73,6 @@ const maxLife = computed(() => {
 });
 
 const collectedItems = ref<string[]>([]) //Gesammelte Items
-
-function lockPointer() {
-  pointerLockControls.lock();
-  pointerLockControls.isLocked = true;
-}
 
 
 // Maximale Punkte
@@ -233,17 +225,26 @@ function loadMusic() {
   return soundList
 }
 
+const { scene, camera, renderer, pointerLockControls, clock, listener } =
+  createSceneCameraRendererControlsClockListener()
+
 let controllLocked = watch(pointerLockControls, async (oldValue, newValue) => {
   console.log("CHANGE");
   newValue.isLocked;
 });
 
-
-const { scene, camera, renderer, pointerLockControls, clock } =
-  createSceneCameraRendererControlsClock()
 registerListeners(window, renderer)
+const [bgMusic, walkingSound, hitSound] = loadMusic()
+watch(musicVolume, (newVolume) => bgMusic.setVolume(newVolume / 100))
+watch(effectVolume, (newVolume) => {
+  walkingSound.setVolume(newVolume / 100);
+  hitSound.setVolume(newVolume / 100)
+})
+
 
 const threeContainer = ref<null | HTMLElement>(null)
+
+
 
 //Ball
 const sphereGeometry = new THREE.SphereGeometry(1, 30, 30)
@@ -716,7 +717,7 @@ onMounted(async () => {
   </div>
 
 
-  <!-- <Modal>
+  <Modal>
     <template #titel>
       <h3 class="header-modal-adventure">Lautstärke</h3>
     </template>
@@ -734,7 +735,7 @@ onMounted(async () => {
         </button>
       </div>
     </template>
-  </Modal> -->
+  </Modal>
 
 </template>
 
