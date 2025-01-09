@@ -2,7 +2,7 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { onMounted, ref} from 'vue'
+import { onMounted, ref, computed, watch} from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
@@ -14,6 +14,7 @@ import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
+import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
 const gameStore = useGameStore()
 
@@ -35,10 +36,45 @@ const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
 
-//#für HuD
-const life = ref(2) //startlife
-const maxLife = ref(3)
+//für HUD
+// Aktueller Spieler
+const currentPlayer = computed(() => {
+  const myName = sessionStorage.getItem("myName"); // Name des aktuellen Spielers
+  return gameStore.gameState.gamedata?.players.find(player => player.name === myName);
+});
+
+// Aktuelles Leben des Charakters
+const life = computed(() => {
+  const playerName = sessionStorage.getItem('myName'); 
+  if (!playerName) return 0;
+
+  const character = gameStore.gameState.gamedata.characters?.[playerName];
+  return character ? character.life : 0;
+});
+
+// Maximales Leben des Charakters
+const maxLife = computed(() => {
+  const playerName = sessionStorage.getItem('myName'); 
+  if (!playerName) return 0;
+
+  const character = gameStore.gameState.gamedata.characters?.[playerName];
+  return character ? character.maxLife : 0;
+});
+
 const collectedItems = ref<string[]>([]) //Gesammelte Items
+
+// Maximale Punkte
+const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman);
+
+// Aktuelle Punkte
+const points = computed(() => {
+  const playerName = sessionStorage.getItem('myName');
+  if (!playerName) return 0;
+
+  const character = gameStore.gameState.gamedata.characters?.[playerName];
+  return character ? character.currentPoints : 0;
+});
+
 
 // Typ falsch?
 let chickenPositions = ref<IChickenPositionDTD[]>([]);
@@ -606,6 +642,7 @@ onMounted(async () => {
   renderChicken(chickenPositions.value)
   animate()
 })
+
 </script>
 
 <template>
@@ -616,14 +653,13 @@ onMounted(async () => {
       class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45"
     >
       <!-- Items anzeigen, wenn vorhanden -->
-
       <div v-if="collectedItems.length > 0">
         {{ collectedItems.join(', ') }}
       </div>
       <div v-else></div>
     </div>
     <div id="hud" class="hud absoute text-white font-bold">
-      <div class="flex gap-2">
+      <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="flex gap-2">
         <div v-for="index in maxLife" :key="index">
           <img
             v-if="index <= life"
@@ -641,6 +677,10 @@ onMounted(async () => {
           />
         </div>
       </div>
+      <!-- Punkteanzeige -->
+      <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
+          <p>Points: {{ points }} / {{ maxPoints }}</p>
+        </div>
     </div>
   </div>
 </template>

@@ -13,7 +13,7 @@ public class SnackmanTest {
     private Snackman snackman;
     @BeforeEach
     public void setUp(){
-        snackman = new Snackman(5.0,10,20,3, 3,25);
+        snackman = new Snackman(5.0,10,20,3, 3);
     }
 
      @Test
@@ -29,7 +29,7 @@ public class SnackmanTest {
         assertEquals(30, snackman.getPosX(), "X-Position sollte 30 sein.");
         assertEquals(40, snackman.getPosY(), "Y-Position sollte 40 sein.");
         assertEquals(5, snackman.getLife(), "Leben sollte 5 sein.");
-        assertEquals(25.0, snackman.getNutriscore(), "NutriScore sollte 25.0 sein.");
+        assertEquals(3, snackman.getMaxLife(), "Maximale Leben sollten 3 sein.");
     }
 
    /*
@@ -40,12 +40,23 @@ public class SnackmanTest {
     } */
 
     @Test
-    public void testIncreaseNutriScore() {
-        snackman.increasePoints(10.0);
-        assertEquals(35.0, snackman.getNutriscore());
+    public void testCurrentPoints() {
+        snackman.setCurrentPoints(10);
+        assertEquals(10, snackman.getCurrentPoints(), "Punkte sollten 10 sein.");
 
-        snackman.increasePoints(5.0);
-        assertEquals(40.0, snackman.getNutriscore());
+        snackman.setCurrentPoints(25);
+        assertEquals(25, snackman.getCurrentPoints(), "Punkte sollten 25 sein.");
+    }
+    
+    @Test
+    public void testEatSnack() {
+        FoodItems foodItem =   new FoodItems("Banana", 1, 1, NutriScore.A);
+        snackman.eatSnack(foodItem);
+        assertEquals(10, snackman.getCurrentPoints(), "Punkte sollten 10 sein.");
+
+        foodItem =   new FoodItems("Chips", 2, 1, NutriScore.E);
+        snackman.eatSnack(foodItem);
+        assertEquals(60, snackman.getCurrentPoints(), "Punkte sollten 60 sein.");
     }
 
     @Test

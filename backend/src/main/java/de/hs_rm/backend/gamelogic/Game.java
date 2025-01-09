@@ -45,7 +45,6 @@ public class Game {
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
     private List <FoodItems> placedSnacks = new ArrayList<>();
-    private int pointsSnackman;
     private int maxPointsSnackman;
 
 
@@ -91,7 +90,7 @@ public class Game {
             new SnackmanObjectItem("Extra Life", -1, -1, "Grants an extra life"));
 
     public Game(Player gamemaster, int snackmanLife, int snackmanMaxLife, double snackmanSpeed, double ghostSpeed,
-            int itemsPerSurfaceRatio, int pointsSnackman) {
+            int itemsPerSurfaceRatio) {
         this.id = generateId(5);
         this.players = new ArrayList<>();
         this.chickens = new ArrayList<>();
@@ -116,7 +115,6 @@ public class Game {
         this.snackmanSpeed = snackmanSpeed;
         this.ghostSpeed = ghostSpeed;
         this.itemsPerSurfaceRatio = itemsPerSurfaceRatio;
-        this.pointsSnackman = pointsSnackman;
         maxPointsSnackman = 0; // wird unten berechnet
     }
 
@@ -163,8 +161,7 @@ public class Game {
 
         Random random = new Random();
 
-                this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro
-                                                                                          // temsPerSurfaceRatio
+        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro itemsPerSurfaceRatio
 
         for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
@@ -248,7 +245,7 @@ public class Game {
                 case SNACKMAN -> {
 
                     characters.put(player.getName(),
-                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(), snackmanLife, snackmanMaxLife, maxPointsSnackman));
+                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(), snackmanLife, snackmanMaxLife));
                     randomTile.addCharacter(characters.get(player.getName()));
                 }
                 default -> {
@@ -543,14 +540,6 @@ public class Game {
 
     public void setPlacedSnacks(List<FoodItems> placedSnacks) {
         this.placedSnacks = placedSnacks;
-    }
-
-    public int getPointsSnackman() {
-        return pointsSnackman;
-    }
-
-    public void setPointsSnackman(int pointsSnackman) {
-        this.pointsSnackman = pointsSnackman;
     }
 
     public int getMaxPointsSnackman() {

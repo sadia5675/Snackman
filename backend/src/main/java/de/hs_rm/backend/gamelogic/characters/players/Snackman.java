@@ -11,21 +11,17 @@ public class Snackman extends Character {
     //Initialisierung
     private int maxLife;
     private int life; 
-    private int maxPoints; 
-    private int points;
-    private int currentCalorie;
+    private int currentPoints;
 
 
 
     private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
 
-    public Snackman(double speed, int posX, int posY, int life,int maxLife, int maxPoints){
+    public Snackman(double speed, int posX, int posY, int life,int maxLife){
         super(speed,posX,posY);
         this.life=life; 
-        this.maxPoints = maxPoints; 
         this.maxLife=maxLife;
-        this.currentCalorie =0;
-        this.points = 0;
+        currentPoints = 0;
     }
 
 
@@ -49,27 +45,14 @@ public class Snackman extends Character {
     }
 
 
-
-    public int getMaxPoints() {
-        return maxPoints;
+    public int getCurrentPoints() {
+        return currentPoints;
     }
 
 
 
-    public void setMaxPoints(int maxPoints) {
-        this.maxPoints = maxPoints;
-    }
-
-
-
-    public int getCurrentCalorie() {
-        return currentCalorie;
-    }
-
-
-
-    public void setCurrentCalorie(int currentCalorie) {
-        this.currentCalorie = currentCalorie;
+    public void setCurrentPoints(int currentPoints) {
+        this.currentPoints = currentPoints;
     }
 
      //abstrakte Methode zum fortbewegen--> Logik fehlt noch
@@ -81,8 +64,8 @@ public class Snackman extends Character {
 
     // Methode: Aufnehmen von FoodItems
      public void eatSnack(FoodItems foodItem) {
-        currentCalorie += foodItem.getNutriScore().getCalorieBonus();
-        logger.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentCalorie);
+        currentPoints += foodItem.getNutriScore().getCalorieBonus();
+        logger.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentPoints);
     }
 
     @Override
@@ -95,11 +78,6 @@ public class Snackman extends Character {
         } else {
             logger.warn("No ObjectItem to use.");
         }
-    }
-    
-    public double increasePoints(double amount){
-        this.points += amount; 
-        return points; 
     }
 
     //Methode zum Verhhalten nachdem man erwicht worden ist  
