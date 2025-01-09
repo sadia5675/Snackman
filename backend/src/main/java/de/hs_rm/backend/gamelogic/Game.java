@@ -193,13 +193,15 @@ public class Game {
         for (int i = 0; i < this.chickenNum; i++) {
             Tile randomTile;
             int index = -1;
+            String testPathForScript = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py";
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth());
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript);
             chickens.add(chicken);
+            chicken.executeBehavior();
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
         }
