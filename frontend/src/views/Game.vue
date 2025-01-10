@@ -54,42 +54,53 @@ const currentPlayer = computed(() => {
   return gameStore.gameState.gamedata?.players.find(player => player.name === myName);
 });
 
-// Aktuelles Leben des Charakters
-const life = computed(() => {
-  const playerName = sessionStorage.getItem('myName');
-  if (!playerName) return 0;
+// aktueller Charakter
+const currentCharacter = computed(() => {
+  const myName: string = sessionStorage.getItem("myName") || "";
+  if (!myName) return null;
 
-  const character = gameStore.gameState.gamedata.characters?.[playerName];
-  return character ? character.life : 0;
+  const character = gameStore.gameState.gamedata?.characters[myName] || null;
+  console.log("Current Character:", character);
+  return character;
 });
+
+
+// Aktuelles Leben des Charakters
+const life = computed(() => currentCharacter.value?.life ?? 0);
+
+watch(
+  () => currentCharacter.value?.life,
+  (newLife, oldLife) => {
+    if (newLife !== oldLife) {
+      console.log(`Life changed from ${oldLife} to ${newLife}`);
+    }
+  }
+);
 
 // Maximales Leben des Charakters
-const maxLife = computed(() => {
-  const playerName = sessionStorage.getItem('myName');
-  if (!playerName) return 0;
-
-  const character = gameStore.gameState.gamedata.characters?.[playerName];
-  return character ? character.maxLife : 0;
-});
+const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
 
 const collectedItems = ref<string[]>([]) //Gesammelte Items
-
 
 // Maximale Punkte
 const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman);
 
 // Aktuelle Punkte
-const points = computed(() => {
-  const playerName = sessionStorage.getItem('myName');
-  if (!playerName) return 0;
+const points = computed(() => currentCharacter.value?.currentPoints ?? 0);
 
-  const character = gameStore.gameState.gamedata.characters?.[playerName];
-  return character ? character.currentPoints : 0;
-});
-
+watch(
+  () => currentCharacter.value?.currentPoints,
+  (newPoints, oldPoints) => {
+    if (newPoints !== oldPoints) {
+      console.log(`Points changed from ${oldPoints} to ${newPoints}`);
+      // Zusätzliche Logik, z. B. Punkte-Animationen
+    }
+  }
+);
 
 // Typ falsch?
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
+
 
 
 function addItem(itemName: string) {

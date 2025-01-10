@@ -14,6 +14,6 @@ export interface IGameDTD {
     width: number
     height: number
   }
-  maxPointsSnackman?: number;
-  characters: ICharacterDTD[]
+  maxPointsSnackman?: number,
+  characters: Record<string, ICharacterDTD>,
 }
