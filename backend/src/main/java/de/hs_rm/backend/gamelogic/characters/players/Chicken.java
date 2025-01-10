@@ -33,7 +33,7 @@ public class Chicken {
     public void executeBehavior() {
         LOGGER.info("executeBehavior() aufgerufen");
         try {
-            // ToDo Aron: script_path ist nur zu Testzwecken hier.
+            // ToDo Aron: script_path ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
             File scriptFile = new File(script_path);
 
             if (scriptFile.exists()) {

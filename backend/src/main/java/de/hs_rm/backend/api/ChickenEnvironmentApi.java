@@ -17,7 +17,7 @@ public class ChickenEnvironmentApi {
     GameService gameService;
     
 
-    // ToDo Aron: Woher bekomme ich die lobbyId des Games?
+    // ToDo Aron: Muss hier wahrscheinlich die LobbyId mitgeben um aktuelles Spiel herauszubekommen. Woher bekomme ich die lobbyId des Games?
     public List<Tile> getEnvironment(int posX, int posY, String lobbyId) {
         Game existingGame = gameService.getGameById(lobbyId);
         if(existingGame == null){
