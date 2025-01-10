@@ -401,6 +401,12 @@ public class Game {
         }
         Tile targetTile = playmap.getTilesList().get(targetIndex);
     
+        // Ziel-Tile prüfen
+        if (targetTile.getType() == TileType.WALL) {
+            LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
+            return false;
+        }
+
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
         if (curIndex == targetIndex) {
             LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
@@ -408,12 +414,6 @@ public class Game {
             //posy und posx vertauscht 
             curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
-        }
-    
-        // Ziel-Tile prüfen
-        if (targetTile.getType() == TileType.WALL) {
-            LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
-            return false;
         }
 
         if(targetTile.hasItem()){

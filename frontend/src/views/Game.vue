@@ -306,7 +306,6 @@ function cameraPositionBewegen(delta: number) {
     }
   }
   // Setze die Y-Position unabhängig vom Rest
-  validatePosition(nextPosition);
   camera.position.y = nextPosition.y;
 
   if (movingForward || movingBackward || movingLeft || movingRight) {
@@ -381,7 +380,7 @@ function cameraPositionBewegen(delta: number) {
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
 
-  if (currentTime - lastSend > 50) {
+  if (currentTime - lastSend > 10) {
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
