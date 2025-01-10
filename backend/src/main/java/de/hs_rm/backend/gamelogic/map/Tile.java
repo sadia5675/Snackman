@@ -47,7 +47,9 @@ public class Tile {
         for (Item item : itemList) {
             logger.debug("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
         }
-        
+
+        List<Item> itemsToRemove = new ArrayList<>();
+
         this.characterList.add(character);
         if(!itemList.isEmpty()){
             // DONE: Item hier nehmen
@@ -60,14 +62,15 @@ public class Tile {
                     } else if(item instanceof ObjectsItems){
                         snackman.collectObjectItem((ObjectsItems) item);
                     }
-                    
+                    itemsToRemove.add(item);
                 } else if (character instanceof Ghost && item.getType()==PlayerRole.GHOST && item instanceof ObjectsItems){
                     Ghost ghost = (Ghost) character;
                     ghost.collectObjectItem((ObjectsItems) item);
+                    itemsToRemove.add(item);
                 }
-                itemList.remove(item);
-                logger.debug("Item removed. Remaining items: {}", itemList.size());
             }
+            itemList.removeAll(itemsToRemove); // enfernt alle zu entfernenen Items ausserhalb der schleife
+            logger.debug("Item removed. Remaining items: {}", itemList.size());
         }
 
         // TODO: Kollision zwischen Ghost und Snackman

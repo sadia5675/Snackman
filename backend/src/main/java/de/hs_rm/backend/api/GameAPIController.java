@@ -107,7 +107,7 @@ public class GameAPIController {
         //     e.printStackTrace();
         // }
         // #63 NEW: gameservice now creates game
-        Game newGame = gameService.createGame(gamemasterFromFrontend);
+        Game newGame = gameService.createGame(gamemaster);
 
         return createOkResponse(newGame);
     }

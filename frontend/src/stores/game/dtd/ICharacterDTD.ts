@@ -7,8 +7,10 @@ export interface ICharacterDTD {
   posY: number;
   posZ: number;
   angleInDegrees: number;
-  currentCalorie?: number;
+  currentPoints: number;
   touchcount?: number;
   item?: any | null;
   items?: any[] | null;
+  life: number;
+  maxLife: number;
 }

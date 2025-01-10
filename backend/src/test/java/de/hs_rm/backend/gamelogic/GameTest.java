@@ -1,11 +1,13 @@
 package de.hs_rm.backend.gamelogic;
 
 import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Item;
+import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
@@ -40,7 +42,7 @@ class GameTest{
         when(mockGamemaster.getPlayerrole()).thenReturn(PlayerRole.GHOST);
 
         // Initialisierung des Spiels
-        game = new Game(mockGamemaster, 3, 5, 1,1, 10, 25);
+        game = new Game(mockGamemaster, 3, 5, 1,1, 10);
     }
 
     @Test
@@ -203,7 +205,7 @@ class GameTest{
         Set<String> ids = new HashSet<>();
 
         for (int i = 0; i < numGames; i++) {
-            Game game = new Game(new Player("TestPlayer" + i),3, 5, 1,1, 10, 25);
+            Game game = new Game(new Player("TestPlayer" + i),3, 5, 1,1, 10);
             String gameId = game.getId();
 
             // Überprüfen, ob die Länge der ID der erwarteten Länge entsprich
@@ -227,7 +229,7 @@ class GameTest{
             executor.submit(() -> { // Startet einen neuen Thread
                 try {
                     for (int j = 0; j < numIdsPerThread; j++) {
-                        Game game = new Game(new Player("ThreadPlayer"), 3, 5, 1,1, 10, 25);
+                        Game game = new Game(new Player("ThreadPlayer"), 3, 5, 1,1, 10);
                         ids.add(game.getId());
                     }
                 } finally {
@@ -247,7 +249,7 @@ class GameTest{
     @Test // Spielende wird überprüft
     void testEnd() {
         Player gamemaster = new Player("TestMaster");
-        Game game = new Game(gamemaster, 3, 5, 1,1, 10, 25);
+        Game game = new Game(gamemaster, 3, 5, 1,1, 10);
 
         boolean isEnded = game.end();
 
@@ -258,7 +260,7 @@ class GameTest{
     @Test // Spieler kann erfolgreich entfernt werden
     void testKickPlayerSuccessful() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster,  3, 5, 1,1, 10, 25);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         Player player1 = new Player("Player1");
         Player player2 = new Player("Player2");
@@ -275,7 +277,7 @@ class GameTest{
     @Test // Gamemaster kann nicht entfernt werden
     void testKickFailsIfKickedIsGamemaster() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster,  3, 5, 1,1, 10, 25);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         boolean wasKicked = game.kick("Master", "Master");
 
@@ -285,7 +287,7 @@ class GameTest{
     @Test // Nur Gamemaster darf kicken
     void testKickFailsIfNotKickedByGamemaster() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster,  3, 5, 1,1, 10, 25);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         Player player1 = new Player("Player1");
         Player player2 = new Player("Player2");
@@ -303,7 +305,7 @@ class GameTest{
     @Test /// Nicht vorhandene Spieler können nicht entfernt werden
     void testKickFailsIfPlayerNotFound() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster,  3, 5, 1,1, 10, 25);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         Player player1 = new Player("Player1");
         game.addPlayer(player1);
@@ -313,6 +315,20 @@ class GameTest{
 
         assertFalse(wasKicked);
         assertEquals(2, game.getPlayers().size());
+    }
+    
+    @Test // Überprüft, die berechung von MaxPointsSnackman
+    void testCalculateMaxPointsSnackman() {
+        List<FoodItems> placedSnacks = List.of(
+            new FoodItems("Apple", 0, 0,  NutriScore.A),
+            new FoodItems("Apple", 1, 1,  NutriScore.A),
+            new FoodItems("Apple", 2, 2,  NutriScore.A)
+        );
+
+        game.setPlacedSnacks(placedSnacks);
+        game.calculateMaxPointsSnackman();
+
+        assertEquals(30, game.getMaxPointsSnackman());
     }
 
     /* 
