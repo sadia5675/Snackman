@@ -46,7 +46,7 @@ public class GameAPIControllerTest {
         int coordinateY = 1;
         Player player = new Player(username);
         
-       Game mockGame = new Game(player, 3, 5, 1,1, 10, 25); // Erstellen Sie ein Mock-Spiel
+       Game mockGame = new Game(player, 3, 5, 1.0, 1.0, 3); // Erstellen Sie ein Mock-Spiel
 
         // Mockt die Rückgabe des Spiels
         when(gameService.getGameById(gameId)).thenReturn(mockGame);

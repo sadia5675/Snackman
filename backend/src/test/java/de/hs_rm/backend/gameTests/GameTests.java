@@ -21,7 +21,7 @@ class GameTests {
     void init() {
         gamemaster = new Player("Gamemaster");
         gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
-        game = new Game(gamemaster, 3, 5, 1,1, 10, 25);
+        game = new Game(gamemaster, 3, 5, 1.0, 1.0, 3);
     }
 
     @Test

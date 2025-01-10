@@ -15,6 +15,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
+import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
 const gameStore = useGameStore()
 
@@ -23,7 +24,7 @@ const lobbyId = route.params.id.toString()
 
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
-let lastMoveValid = false;
+//let lastMoveValid = false;
 const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 
@@ -41,17 +42,66 @@ const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
 
-let chickenPositions = ref<IChickenPositionDTD[]>([]);
-
-//für HuD
-const life = ref(2) //startlife
-const maxLife = ref(3)
-const collectedItems = ref<string[]>([]) //Gesammelte Items
-
 function lockPointer() {
   pointerLockControls.lock();
   pointerLockControls.isLocked = true;
 }
+
+//für HUD
+// Aktueller Spieler
+const currentPlayer = computed(() => {
+  const myName = sessionStorage.getItem("myName"); // Name des aktuellen Spielers
+  return gameStore.gameState.gamedata?.players.find(player => player.name === myName);
+});
+
+// aktueller Charakter
+const currentCharacter = computed(() => {
+  const myName: string = sessionStorage.getItem("myName") || "";
+  if (!myName) return null;
+
+  const character = gameStore.gameState.gamedata?.characters[myName] || null;
+  console.log("Current Character:", character);
+  return character;
+});
+
+
+// Aktuelles Leben des Charakters
+const life = computed(() => currentCharacter.value?.life ?? 0);
+
+watch(
+  () => currentCharacter.value?.life,
+  (newLife, oldLife) => {
+    if (newLife !== oldLife) {
+      console.log(`Life changed from ${oldLife} to ${newLife}`);
+    }
+  }
+);
+
+// Maximales Leben des Charakters
+const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
+
+const collectedItems = ref<string[]>([]) //Gesammelte Items
+
+// Maximale Punkte
+const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman);
+
+// Aktuelle Punkte
+const points = computed(() => currentCharacter.value?.currentPoints ?? 0);
+
+watch(
+  () => currentCharacter.value?.currentPoints,
+  (newPoints, oldPoints) => {
+    if (newPoints !== oldPoints) {
+      console.log(`Points changed from ${oldPoints} to ${newPoints}`);
+      // Zusätzliche Logik, z. B. Punkte-Animationen
+    }
+  }
+);
+
+// Typ falsch?
+const chickenPositions = ref<IChickenPositionDTD[]>([]);
+
+
 
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
@@ -202,7 +252,10 @@ watch(effectVolume, (newVolume) => {
   hitSound.setVolume(newVolume / 100)
 })
 
+
 const threeContainer = ref<null | HTMLElement>(null)
+
+
 
 //Ball
 const sphereGeometry = new THREE.SphereGeometry(1, 30, 30)
@@ -331,32 +384,49 @@ function moveCamera() {
   camera.position.copy(nextPosition)
 }
 
+function removeModel(object: THREE.Object3D) {
+  object.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((material) => material.dispose());
+        } else {
+          child.material.dispose();
+        }
+      }
+    }
+  });
+  scene.remove(object);
+}
+
 function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   console.log("INSIDE RENDER: ", playerPositions);
 
   const modelLoader = new GLTFLoader();
   const adjustAngle = Math.PI;
-  const fehlerndeSpieler = Array.from(players.keys()).filter((playerName) =>
-    !playerPositions.map((position)=>position.playerName).includes(playerName))
+  const missingPlayers = Array.from(players.keys()).filter(
+    (playerName) =>
+      !playerPositions.map((position) => position.playerName).includes(playerName)
+  );
 
-  fehlerndeSpieler.forEach((player)=>{
-    const index: number | undefined = players.get(player)
-    if(index){
-      const object = scene.getObjectById(index)
-      players.delete(player)
-      if(object){
-        scene.remove(object)
+  missingPlayers.forEach((player) => {
+    const objectId = players.get(player);
+    if (objectId) {
+      const object = scene.getObjectById(objectId);
+      players.delete(player);
+      if (object) {
+        removeModel(object);
       }
     }
-  })
+  });
 
-    playerPositions.forEach(async (playerPosition) => {
+  playerPositions.forEach(async (playerPosition) => {
     if (!players.has(playerPosition.playerName) && !loadingPlayers.get(playerPosition.playerName)) {
       const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
 
       loadingPlayers.set(playerPosition.playerName, true);
 
-      //Modell initial rendern
       modelLoader.load(snackmanModelURL, (gltf) => {
         const model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
@@ -369,16 +439,11 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         loadingPlayers.delete(playerPosition.playerName);
       });
     } else {
-      //Modell updaten
-      const index: number | undefined = players.get(playerPosition.playerName)
-      if(index) {
-        const model = scene.getObjectById(index);
+      const objectId = players.get(playerPosition.playerName);
+      if (objectId) {
+        const model = scene.getObjectById(objectId);
         if (model) {
-          const messungsBox = new THREE.Box3()
-          const breite = new THREE.Vector3()
-          messungsBox.getSize(breite)
-          messungsBox.expandByObject(model)
-          model.position.set(playerPosition.x - (breite.x/2), 1, playerPosition.y);
+          model.position.set(playerPosition.x, 1, playerPosition.y);
           model.rotation.y = playerPosition.angle + adjustAngle;
         }
       }
@@ -400,182 +465,128 @@ function renderChicken(chickenPositions: IChickenPositionDTD[]){
   })
 }
 
-function loadMap(map: String[]) {
-  const groundGeometry = new THREE.BoxGeometry(1, 1, 1)
-  const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
-  const groundTexture = new THREE.TextureLoader().load(ground)
-  const wallTexture = new THREE.TextureLoader().load(wall)
-  const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture })
-  const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture })
+const textureCache = new Map<string, THREE.Texture>();
+
+function getCachedTexture(url: string): THREE.Texture {
+  if (textureCache.has(url)) return textureCache.get(url)!;
+
+  const texture = new THREE.TextureLoader().load(url);
+  textureCache.set(url, texture);
+  return texture;
+}
+
+function loadMap(map: string[]) {
+  const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
+  const wallGeometry = new THREE.BoxGeometry(1, 2, 1);
+  const groundTexture = getCachedTexture(ground);
+  const wallTexture = getCachedTexture(wall);
+  const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
+  const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
 
   const mapOffset = 0.5;
 
-  const modelLoader = new GLTFLoader()
+  // Instanced meshes for ground and walls
+  const groundMesh = new THREE.InstancedMesh(groundGeometry, groundMaterial, map.length * map[0].length);
+  const wallMesh = new THREE.InstancedMesh(wallGeometry, wallMaterial, map.length * map[0].length);
 
-  let rowCounter = 0
-  map.forEach((e) => {
-    for (let i = 0; i < e.length; i++) {
-      switch (e[i]) {
-        case '*':
-          const wallCube = new THREE.Mesh(wallGeometry, wallMaterial)
-          wallCube.position.set(rowCounter + mapOffset, 1.5, i + mapOffset)
-          scene.add(wallCube)
-          break
-        case ' ':
-          const groundCube = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCube.position.set(rowCounter + mapOffset, 0, i + mapOffset)
-          scene.add(groundCube)
-          break
-        case 'E':
-          const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem.position.set(rowCounter + mapOffset, 0, i + mapOffset)
-          scene.add(groundCubeUnderItem)
+  let groundIndex = 0;
+  let wallIndex = 0;
 
-          const modelPathE = Math.random() > 0.5
-            ? new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url).href : new URL("@/assets/game/items/E/strawberry_shortcake/chocolate_bar.glb", import.meta.url).href;
+  // Model cache for items
+  const modelCache = new Map<string, Promise<THREE.Group>>();
 
-          modelLoader.load(modelPathE, (objekt) => {
-            console.log('Model geladen:', modelPathE);
-            const model = objekt.scene
-
-            if (modelPathE.includes('chocolate_bar')) {
-              model.position.set(rowCounter - 2 + mapOffset, 0.75, i + mapOffset)
-              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-            } else {
-              model.position.set(rowCounter - 2, 0.5, i)
-              model.scale.set(0.5, 0.5, 0.5) // sonst normal
-            }
-            scene.add(model)
-            console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-          },
-            undefined,
-            (error) => {
-              console.error('Fehler beim Laden des Modells:', error);
-            }
-          )
-          break
-        case 'D':
-          const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem1.position.set(rowCounter + mapOffset, 0, i + mapOffset)
-          scene.add(groundCubeUnderItem1)
-
-          const modelPathD = Math.random() > 0.5
-            ? new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url).href
-            : new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url).href;
-
-          modelLoader.load(modelPathD, (objekt) => {
-            console.log('Model geladen:', modelPathD);
-            const model = objekt.scene
-
-            if (modelPathD.includes('popcorn')) {
-              model.position.set(rowCounter - 2 + mapOffset, 0.75, i + mapOffset)
-              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-            } else {
-              model.position.set(rowCounter - 2, 0.5, i)
-              model.scale.set(0.5, 0.5, 0.5) // sonst normal
-            }
-            scene.add(model);
-            console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-          },
-            undefined,
-            (error) => {
-              console.error('Fehler beim Laden des Modells:', error);
-            }
-          );
-          break
-        case 'C':
-          const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem2.position.set(rowCounter + mapOffset , 0, i + mapOffset)
-          scene.add(groundCubeUnderItem2)
-          const modelPathC = Math.random() > 0.5
-            ? '/src/assets/game/items/C/candy_cane/candycane.glb'
-            : '/src/assets/game/items/C/chips/chips.glb';
-
-          modelLoader.load(modelPathC, (objekt) => {
-            console.log('Model geladen:', modelPathC);
-            const model = objekt.scene
-
-            if (modelPathC.includes('candycane')) {
-              model.position.set(rowCounter - 2 + mapOffset, 1, i + mapOffset)
-              model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
-            } else {
-              model.position.set(rowCounter - 3, 1, i)
-              model.scale.set(0.5, 0.5, 0.3) // sonst normal
-            }
-            scene.add(model);
-            console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-          },
-            undefined,
-            (error) => {
-              console.error('Fehler beim Laden des Modells:', error);
-            }
-          );
-          break
-        case 'B':
-          const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem3.position.set(rowCounter + mapOffset, 0, i + mapOffset)
-          scene.add(groundCubeUnderItem3)
-          const modelPathB = Math.random() > 0.5
-            ? '/src/assets/game/items/B/apple/apple.glb'
-            : '/src/assets/game/items/B/banana/banana.glb';
-
-          modelLoader.load(modelPathB, (objekt) => {
-            console.log('Model geladen:', modelPathB);
-            const model = objekt.scene
-
-            if (modelPathB.includes('apple')) {
-              model.position.set(rowCounter - 3 + mapOffset, 0.75, i +mapOffset)
-              model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
-            } else {
-              model.position.set(rowCounter - 3, 0.5, i)
-              model.scale.set(0.2, 0.2, 0.2) // sonst normal
-            }
-            scene.add(model);
-            console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-          },
-            undefined,
-            (error) => {
-              console.error('Fehler beim Laden des Modells:', error);
-            }
-          );
-          break
-        case 'A':
-          const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem4.position.set(rowCounter + mapOffset, 0, i + mapOffset)
-          scene.add(groundCubeUnderItem4)
-
-          const modelPathA = Math.random() > 0.5
-            ? new URL("@/assets/game/items/A/ginger/ginger.glb", import.meta.url).href
-            : new URL("@/assets/game/items/A/lemon/lemon.glb", import.meta.url).href
-
-          modelLoader.load(modelPathA, (objekt) => {
-            console.log('Model geladen:', modelPathA);
-            const model = objekt.scene
-
-            if (modelPathA.includes('ginger')) {
-              model.position.set(rowCounter - 3, 1, i - 1)
-              model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
-            } else {
-              model.position.set(rowCounter - 3, 1, i)
-              model.scale.set(0.5, 0.5, 0.5) // sonst normal
-            }
-            scene.add(model);
-            console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-          },
-            undefined,
-            (error) => {
-              console.error('Fehler beim Laden des Modells:', error);
-            }
-          );
-          break
-        default:
-          const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem5.position.set(rowCounter + mapOffset, 0, i + mapOffset)
-          scene.add(groundCubeUnderItem5)
-      }
+  function loadCachedModel(url: string): Promise<THREE.Group> {
+    if (!modelCache.has(url)) {
+      modelCache.set(url, new Promise((resolve, reject) => {
+        new GLTFLoader().load(
+          url,
+          (gltf) => resolve(gltf.scene),
+          undefined,
+          (error) => reject(error)
+        );
+      }));
     }
-    rowCounter++
-  })
+    return modelCache.get(url)!;
+  }
+
+  map.forEach((row, rowIndex) => {
+    [...row].forEach((tile, colIndex) => {
+      const x = rowIndex + mapOffset;
+      const z = colIndex + mapOffset;
+
+      switch (tile) {
+        case '*': // Wall
+          const wallMatrix = new THREE.Matrix4().makeTranslation(x, 1.5, z);
+          wallMesh.setMatrixAt(wallIndex++, wallMatrix);
+          break;
+
+        case ' ': // Ground
+          const groundMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
+          groundMesh.setMatrixAt(groundIndex++, groundMatrix);
+          break;
+
+        case 'E': // Item E
+        case 'D': // Item D
+        case 'C': // Item C
+        case 'B': // Item B
+        case 'A': // Item A
+          const groundItemMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
+          groundMesh.setMatrixAt(groundIndex++, groundItemMatrix);
+
+          const itemPaths: { [key: string]: string[] } = {
+            E: [
+              "@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb",
+              "@/assets/game/items/E/chocolate_bar/chocolate_bar.glb",
+            ],
+            D: [
+              "@/assets/game/items/D/cotton_candy/cottoncandy.glb",
+              "@/assets/game/items/D/popcorn/popcorn.glb",
+            ],
+            C: [
+              "@/assets/game/items/C/candy_cane/candycane.glb",
+              "@/assets/game/items/C/chips/chips.glb",
+            ],
+            B: [
+              "@/assets/game/items/B/apple/apple.glb",
+              "@/assets/game/items/B/banana/banana.glb",
+            ],
+            A: [
+              "@/assets/game/items/A/ginger/ginger.glb",
+              "@/assets/game/items/A/lemon/lemon.glb",
+            ],
+          };
+
+          const randomModelPath = new URL(
+            itemPaths[tile][Math.random() > 0.5 ? 0 : 1],
+            import.meta.url
+          ).href;
+
+          loadCachedModel(randomModelPath).then((model) => {
+            const item = model.clone(); // Clone to avoid modifying the cached model
+            if (randomModelPath.includes('chocolate_bar')) {
+              item.position.set(x - 2, 0.75, z);
+              item.scale.set(0.2, 0.2, 0.2);
+            } else {
+              item.position.set(x - 2, 0.5, z);
+              item.scale.set(0.5, 0.5, 0.5);
+            }
+            scene.add(item);
+          });
+          break;
+
+        default:
+          // Treat as ground by default
+          const defaultGroundMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
+          groundMesh.setMatrixAt(groundIndex++, defaultGroundMatrix);
+      }
+    });
+  });
+
+  // Add instanced meshes to the scene
+  groundMesh.instanceMatrix.needsUpdate = true;
+  wallMesh.instanceMatrix.needsUpdate = true;
+  scene.add(groundMesh);
+  scene.add(wallMesh);
 }
 
 async function handleCharacters(data: ICharacterDTD[]) {
@@ -666,44 +677,36 @@ onMounted(async () => {
   } else {
     console.error('No map found')
   }
-
-  const mockPositions: IPlayerPositionDTD[] = [
-    {
-      playerName: 'test',
-      x: 1,
-      y: 1,
-      angle: Math.PI,
-    },
-    {
-      playerName: 'test',
-      x: 2,
-      y: 2,
-      angle: 2 * Math.PI,
-    },
-  ]
   renderChicken(chickenPositions.value)
   animate()
 })
+
 </script>
 
 <template>
   <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
   <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
-    <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
+    <div
+      id="items"
+      class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45"
+    >
       <!-- Items anzeigen, wenn vorhanden -->
-
       <div v-if="collectedItems.length > 0">
         {{ collectedItems.join(', ') }}
       </div>
       <div v-else></div>
     </div>
     <div id="hud" class="hud absoute text-white font-bold">
-      <div class="flex gap-2">
+      <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="flex gap-2">
         <div v-for="index in maxLife" :key="index">
           <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40" />
           <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40" />
         </div>
       </div>
+      <!-- Punkteanzeige -->
+      <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
+          <p>Points: {{ points }} / {{ maxPoints }}</p>
+        </div>
     </div>
   </div>
 
@@ -725,7 +728,7 @@ onMounted(async () => {
   </div>
 
 
-  <!-- <Modal>
+  <Modal>
     <template #titel>
       <h3 class="header-modal-adventure">Lautstärke</h3>
     </template>
@@ -743,9 +746,8 @@ onMounted(async () => {
         </button>
       </div>
     </template>
-  </Modal> -->
+  </Modal>
 
 </template>
-
 
 <style scoped></style>

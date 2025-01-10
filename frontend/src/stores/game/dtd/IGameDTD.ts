@@ -1,5 +1,6 @@
 import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
 import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
+import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 
 export interface IGameDTD {
   id: string
@@ -13,4 +14,6 @@ export interface IGameDTD {
     width: number
     height: number
   }
+  maxPointsSnackman?: number,
+  characters: Record<string, ICharacterDTD>,
 }
