@@ -7,6 +7,7 @@ import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hs_rm.backend.api.ChickenEnvironmentApi;
 import jakarta.annotation.PreDestroy;
 
 public class Chicken {
@@ -16,11 +17,15 @@ public class Chicken {
     private String script_path;
     private PythonInterpreter pyInterpreter;
 
-    public Chicken(int posX, int posY, String script_path) {
+    // ToDo Aron: Ist das Environment hier richtig und soll in Game instanziert werden?
+    private ChickenEnvironmentApi environmentApi;
+
+    public Chicken(int posX, int posY, String script_path, ChickenEnvironmentApi environmentApi) {
         this.posX = posX;
         this.posY = posY;
         this.script_path = script_path;
         this.pyInterpreter = new PythonInterpreter();
+        this.environmentApi = environmentApi;
         
 
     }
@@ -34,8 +39,7 @@ public class Chicken {
             if (scriptFile.exists()) {
                 LOGGER.info("Starte Python Skript...");
                 pyInterpreter.set("chicken", this);
-                // ToDo Aron: environment ist noch nicht implementiert
-                // pyInterpreter.set("environment", null);
+                pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, "lobbyId"));
                 pyInterpreter.execfile(scriptFile.getAbsolutePath());
                 LOGGER.info("Python Skript erfolgreich gestartet");
             } else {

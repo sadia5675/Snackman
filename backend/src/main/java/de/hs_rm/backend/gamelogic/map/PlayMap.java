@@ -123,6 +123,16 @@ public void setTilesList(List<Tile> tilesList) {
     this.tilesList = tilesList;
 }
 
+public Tile getTileFromList(int x, int y) {
+    if (x >= 0 && x < map.length && y >= 0 && y < map[0].length) {
+        Tile tile = tilesList.get(x * map[0].length + y);
+        return tile;
+    } else {
+        LOGGER.warn("Invalid position to get tile from list: ({}, {})", x, y);
+        return null; 
+    }
+}
+
 public int getWidth() {
     if (map != null && map.length > 0) {
         return map[0].length;
