@@ -66,6 +66,9 @@ public class MapController {
         //Map speichern 
         try{
             // die Map speichert sich in dem gegebenen Ordner verzeichnis
+
+            //if folder not exists create new folder
+
             File mapFile= new File(mapsDirectory);
             // wenn dieser nicht existieren sollte wird dieser ertsllt
             if(!mapFile.exists()){

@@ -1,6 +1,26 @@
 package de.hs_rm.backend.api;
 
-import java.io.File;
+import de.hs_rm.backend.exception.SetRoleException;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.hs_rm.backend.exception.GameJoinException;
+import de.hs_rm.backend.exception.GameLeaveException;
+import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMapService;
+import de.hs_rm.backend.messaging.GameMessagingService;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -20,24 +41,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.hs_rm.backend.exception.GameJoinException;
-import de.hs_rm.backend.exception.GameLeaveException;
-import de.hs_rm.backend.exception.SetRoleException;
-import de.hs_rm.backend.gamelogic.Game;
-import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Player;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
-import de.hs_rm.backend.gamelogic.map.PlayMap;
-import de.hs_rm.backend.gamelogic.map.PlayMapService;
-import de.hs_rm.backend.messaging.GameMessagingService;
+import org.python.util.PythonInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST controller for managing game-related operations.
@@ -84,22 +90,22 @@ public class GameAPIController {
         gamemaster.setPassword(gamemasterFromFrontend.getPassword());
 
         // Nur zu Testzwecken hier
-        PythonInterpreter interpreter = new PythonInterpreter();
-        try {
-            String scriptPath = "ChickenBotMovement.py";
+        // PythonInterpreter interpreter = new PythonInterpreter();
+        // try {
+        //     String scriptPath = "ChickenBotMovement.py";
             
-            File scriptFile = new File(scriptsDirectory, scriptPath);
+        //     File scriptFile = new File(scriptsDirectory, scriptPath);
 
-            if (scriptFile.exists()) {
-                LOGGER.info("Starte Python Skript...");
-                interpreter.execfile(scriptsDirectory + "/" + scriptPath);
-                LOGGER.info("Python Skript erfolgreich gestartet");
-            } else {
-                LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //     if (scriptFile.exists()) {
+        //         LOGGER.info("Starte Python Skript...");
+        //         interpreter.execfile(scriptsDirectory + "/" + scriptPath);
+        //         LOGGER.info("Python Skript erfolgreich gestartet");
+        //     } else {
+        //         LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
+        //     }
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
         // #63 NEW: gameservice now creates game
         Game newGame = gameService.createGame(gamemasterFromFrontend);
 
@@ -256,13 +262,13 @@ public class GameAPIController {
         Game existingGame = gameService.getGameById(lobbyid);
 
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-        boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
-
+        //boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
+        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
         logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(),position.getAngle(), validMove);
 
         //true nur zum testen, eig prüfen ob move valid ist oder nicht
 
-        if (true) {
+        if (validMove) {
 
             //sende das die Validation in Ordnung war
             validationResponse.put("type", "playerMoveValidation");
@@ -465,12 +471,8 @@ public class GameAPIController {
             return createErrorResponse("No game found.");
         }
         try {
-            boolean success = gameService.move(username, coordinateX, coordinateY, coordinateZ);
-            if (success) {
-                return createOkResponse(existingGame);
-            } else {
-                return ResponseEntity.badRequest().body("Failed to move player --> Tile is Wall, Invalid Coordinates or OutOfBounds");
-            }
+            gameService.move(username, coordinateX, coordinateY);
+            return createOkResponse(existingGame);
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());
         } catch (Exception e) {
@@ -508,25 +510,19 @@ public class GameAPIController {
 
     @GetMapping("/{gameId}/isPrivate")
     public ResponseEntity<Map<String, Object>> isPrivate(@PathVariable String gameId) {
-    Game existingGame = gameService.getGameById(gameId);
+        Game existingGame = gameService.getGameById(gameId);
 
-    if (existingGame == null) {
-        logger.error("Game with ID {} not found", gameId);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "status", "error",
-                        "message", "Lobby nicht gefunden",
-                        "isPrivate", false
-                ));
+        if (existingGame == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "Lobby nicht gefunden",
+                            "isPrivate", false));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", "ok",
+                "isPrivate", existingGame.getPrivateLobby(),
+                "password", existingGame.getPassword()));
     }
-
-    Boolean isPrivate = existingGame.getPrivateLobby();
-    String password = existingGame.getPassword();
-
-    return ResponseEntity.ok(Map.of(
-            "status", "ok",
-            "isPrivate", isPrivate != null ? isPrivate : false,
-            "password", password != null ? password : ""
-    ));
-}
 }

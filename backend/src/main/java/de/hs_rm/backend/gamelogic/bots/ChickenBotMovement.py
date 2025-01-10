@@ -7,7 +7,7 @@ from de.hs_rm.backend.gamelogic.characters.players import Chicken
 from de.hs_rm.backend.gamelogic.characters.players import FoodItems
 from de.hs_rm.backend.gamelogic.map import Vertex
 import os
-
+import sys
 
 
 
@@ -29,8 +29,8 @@ class ChickenBotMovement:
 
 
 # ---------------Test: Instanz erstellen und Parameter mitgeben-----------------
-maps_directory = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/base/maps/"
-
+print("Current Working Directory", os.getcwd())
+maps_directory = "./base/maps/"
 
 
 # Debugging: Überprüfe die Existenz und den Inhalt der Map-Datei

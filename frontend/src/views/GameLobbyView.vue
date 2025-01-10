@@ -1,6 +1,6 @@
 <template>
   <div class="h-screen bg-zinc-900">
-    <div class="max-w-lg mx-auto mt-0">
+    <div class="max-w-lg mx-auto mt-0 px-4">
       <h1 class="text-2xl font-semibold text-center text-zinc-200 mb-10">Game Lobby</h1>
       <div class="mb-4">
         <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
@@ -23,16 +23,25 @@
       </div>
     </div>
 
-    <ul class="bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900">
-      <li v-for="(player, i) in players" :key="player.name"
+      <div v-if="isGamemaster" class="mb-4 max-w-lg">
+        <p class="text-lg font-semibold text-zinc-200">Lobby Passwort:</p>
+        <div class="flex items-center space-x-2">
+          <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" :value="gamePassword"
+            disabled="true" />
+        </div>
+      </div>
+
+      <ul class="space-x-2 mt-3 bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900 max-w-lg mb-4">
+        <li v-for="(player, i) in players" :key="player.name"
         class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
         <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
       </li>
       <li v-for="placeholder in placeholderCount"
-        class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
-        Empty
-      </li>
-    </ul>
+      class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
+      Empty
+    </li>
+  </ul>
+
 
     <div class="flex items-center space-x-2 mt-3">
       <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
@@ -98,6 +107,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">

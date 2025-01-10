@@ -66,7 +66,7 @@ public class GameServiceTest {
     @Test // Spieler wird gefunden, aber Bewegung schlägt fehl
     void testMoveMoveFails() {
         when(mockGame.findPlayerByUsername("testPlayer")).thenReturn(mock(Player.class));
-        when(mockGame.move("testPlayer", 2, 2, 1))
+        when(mockGame.move("testPlayer", 2, 2, 1,1))
                 .thenThrow(new IllegalArgumentException("Failed to move Player 'testPlayer'. Tile is a wall"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -76,7 +76,7 @@ public class GameServiceTest {
         boolean result = gameService.move("testPlayer", 2, 2, 1);
 
         assertFalse(result);
-        verify(mockGame).move("testPlayer", 2, 2, 1); // Überprüfen, ob move aufgerufen wurde
+        verify(mockGame).move("testPlayer", 2, 2, 1,1); // Überprüfen, ob move aufgerufen wurde
         assertEquals("Failed to move Player 'testPlayer'. Tile is a wall", exception.getMessage());
     }
 
@@ -85,13 +85,13 @@ public class GameServiceTest {
         Player mockPlayer = mock(Player.class);
         Game mockGame = mock(Game.class); 
         when(mockGame.findPlayerByUsername("testPlayer")).thenReturn(mockPlayer); 
-        when(mockGame.move("testPlayer", 3, 3, 1)).thenReturn(true);
+        when(mockGame.move("testPlayer", 3, 3, 1,1)).thenReturn(true);
 
         gameList.put("game1", mockGame); 
 
         boolean result = gameService.move("testPlayer", 3, 3, 1);
 
         assertTrue(result);
-        verify(mockGame).move("testPlayer", 3, 3, 1);
+        verify(mockGame).move("testPlayer", 3, 3, 1,1);
     }
 }

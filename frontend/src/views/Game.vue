@@ -1,18 +1,20 @@
 <script setup lang="ts">
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
-import {WebGLRenderer} from 'three'
-import {onMounted, ref} from 'vue'
-import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
+import { WebGLRenderer } from 'three'
+import { computed, onMounted, ref, watch } from 'vue'
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
-import {useGameStore} from '@/stores/game/gamestore'
-import type {IMessageDTD} from '@/stores/game/dtd/IMessageDTD'
-import {sendMessage, subscribeTo} from '@/config/stompWebsocket'
-import {useRoute} from 'vue-router'
-import type {IPlayerPositionDTD} from '@/stores/game/dtd/IPlayerPositionDTD'
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
-import type {ICharacterDTD} from '@/stores/game/dtd/ICharacterDTD'
+import { useGameStore } from '@/stores/game/gamestore'
+import type { IMessageDTD } from '@/stores/game/dtd/IMessageDTD'
+import { sendMessage, subscribeTo } from '@/config/stompWebsocket'
+import { useRoute } from 'vue-router'
+import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
+import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
+import Modal from '@/components/Modal.vue'
 
 const gameStore = useGameStore()
 
@@ -21,8 +23,12 @@ const lobbyId = route.params.id.toString()
 
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
-const players = new Map<string, number>() // Spieler mit Namen als Key auf Character Model
+let lastMoveValid = false;
+const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
+const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 
+
+//Movement
 let movingForward: boolean,
   movingBackward: boolean,
   movingLeft: boolean,
@@ -31,7 +37,13 @@ const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
 
-//#für HuD
+const showSettings = ref(false)
+const musicVolume = ref(50)
+const effectVolume = ref(50)
+
+let chickenPositions = ref<IChickenPositionDTD[]>([]);
+
+//für HuD
 const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
@@ -46,15 +58,23 @@ const gravity = -9.8 // Schwerkraft
 const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
 const maxJumpSpeed = 15 //Geschwindigkeit für großen Sprung
 
+function lockPointer() {
+  pointerLockControls.lock();
+  pointerLockControls.isLocked = true;
+}
+
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
 }
 
-function createSceneCameraRendererControlsClock() {
+function createSceneCameraRendererControlsClockListener() {
   const scene = new THREE.Scene()
 
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000)
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.001, 1000)
   camera.position.set(1, 1, 2)
+
+  const listener = new THREE.AudioListener();
+  camera.add(listener);
 
   const renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -65,7 +85,7 @@ function createSceneCameraRendererControlsClock() {
   pointerLockControls.pointerSpeed = 1
 
   const clock = new THREE.Clock()
-  return { scene, camera, renderer, pointerLockControls, clock }
+  return { scene, camera, renderer, pointerLockControls, clock, listener }
 }
 
 function registerListeners(window: Window, renderer: WebGLRenderer) {
@@ -81,6 +101,15 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
+  })
+
+  document.addEventListener('pointerlockchange', (e) => {
+    if (!document.pointerLockElement) {
+      showSettings.value = true;
+    } else {
+      showSettings.value = false;
+    }
+    console.log(showSettings)
   })
 
   window.addEventListener('keydown', (e) => {
@@ -131,9 +160,63 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
   })
 }
 
-const { scene, camera, renderer, pointerLockControls, clock } =
-  createSceneCameraRendererControlsClock()
+//Diese Funktion lädt die Hintergrundmusik
+function loadMusic() {
+  const audioLoader = new THREE.AudioLoader();
+
+  // Liste der Sound-Dateien
+  const soundFilenames = ['bg-music.mp3', 'walking.mp3', 'hit.mp3'];
+  const soundList: THREE.Audio[] = []
+
+  const bgSound = new THREE.Audio(listener);
+  const bgSoundURL = new URL(`@/assets/game/realistic/sounds/bg-music.mp3`, import.meta.url).href;
+
+  audioLoader.load(bgSoundURL, function (buffer) {
+    bgSound.setBuffer(buffer);
+    bgSound.setLoop(true);
+    bgSound.setVolume(musicVolume.value / 100);
+    bgSound.play()
+  });
+  soundList.push(bgSound);
+
+  const walkingSound = new THREE.Audio(listener);
+  const walkingSoundURL = new URL(`@/assets/game/realistic/sounds/walking.mp3`, import.meta.url).href;
+
+  audioLoader.load(walkingSoundURL, function (buffer) {
+    walkingSound.setBuffer(buffer);
+    walkingSound.setLoop(true);
+    walkingSound.setVolume(effectVolume.value / 100);
+  });
+  soundList.push(walkingSound);
+
+  const hitSound = new THREE.Audio(listener);
+  const hitSoundURL = new URL(`@/assets/game/realistic/sounds/hit.mp3`, import.meta.url).href;
+
+  audioLoader.load(hitSoundURL, function (buffer) {
+    hitSound.setBuffer(buffer);
+    hitSound.setLoop(true);
+    hitSound.setVolume(effectVolume.value / 100);
+  });
+  soundList.push(hitSound);
+
+  return soundList
+}
+
+const { scene, camera, renderer, pointerLockControls, clock, listener } =
+  createSceneCameraRendererControlsClockListener()
+
+let controllLocked = watch(pointerLockControls, async (oldValue, newValue) => {
+  console.log("CHANGE");
+  newValue.isLocked;
+});
+
 registerListeners(window, renderer)
+const [bgMusic, walkingSound, hitSound] = loadMusic()
+watch(musicVolume, (newVolume) => bgMusic.setVolume(newVolume / 100))
+watch(effectVolume, (newVolume) => {
+  walkingSound.setVolume(newVolume / 100);
+  hitSound.setVolume(newVolume / 100)
+})
 
 const threeContainer = ref<null | HTMLElement>(null)
 
@@ -227,6 +310,9 @@ function cameraPositionBewegen(delta: number) {
   camera.position.y = nextPosition.y;
 
   if (movingForward || movingBackward || movingLeft || movingRight) {
+    if (!walkingSound.isPlaying) {
+      walkingSound.play()
+    }
     if (movingForward) {
       if (movingRight) {
         nextPosition.addScaledVector(
@@ -280,11 +366,16 @@ function cameraPositionBewegen(delta: number) {
     }
     validatePosition(nextPosition)
   }
-  
-   // Überprüfe und führe den Sprung aus, wenn nötig
-   if(!isJumping){
+  else {
+    if (walkingSound.isPlaying) {
+      walkingSound.pause()
+    }
+  }
+
+  // Überprüfe und führe den Sprung aus, wenn nötig
+  if(!isJumping){    
     triggerJumpAfterChargeTime(delta);
-   }
+  }
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
@@ -299,8 +390,6 @@ function validatePosition(nextPosition: THREE.Vector3) {
       angle: camera.rotation.z,
     })
     lastSend = currentTime
-  } else {
-    moveCamera()
   }
 }
 
@@ -328,9 +417,12 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     }
   })
 
-  playerPositions.forEach((playerPosition) => {
-    if (!players.has(playerPosition.playerName)) {
+    playerPositions.forEach(async (playerPosition) => {
+    if (!players.has(playerPosition.playerName) && !loadingPlayers.get(playerPosition.playerName)) {
       const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
+
+      loadingPlayers.set(playerPosition.playerName, true);
+
       //Modell initial rendern
       modelLoader.load(snackmanModelURL, (gltf) => {
         const model = gltf.scene;
@@ -338,9 +430,11 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         players.set(playerPosition.playerName, model.id);
         scene.add(model);
 
-        model.position.set(playerPosition.x, playerPosition.z, playerPosition.y)
-        model.rotation.y = playerPosition.angle + adjustAngle
-      })
+        model.position.set(playerPosition.x, 1, playerPosition.y);
+        model.rotation.y = playerPosition.angle + adjustAngle;
+
+        loadingPlayers.delete(playerPosition.playerName);
+      });
     } else {
       //Modell updaten
       const index: number | undefined = players.get(playerPosition.playerName)
@@ -359,6 +453,20 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   })
 }
 
+function renderChicken(chickenPositions: IChickenPositionDTD[]){
+  const modelLoader = new GLTFLoader()
+
+  chickenPositions.forEach((chickenPosition) => {
+    modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
+      const model = objekt.scene
+      model.position.set(chickenPosition.x, 1, chickenPosition.y)
+      model.scale.set(0.03, 0.03, 0.03)
+      model.rotateY(chickenPosition.angle)
+      scene.add(model)
+    })
+  })
+}
+
 function loadMap(map: String[]) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1)
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
@@ -366,6 +474,8 @@ function loadMap(map: String[]) {
   const wallTexture = new THREE.TextureLoader().load(wall)
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture })
   const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture })
+
+  const mapOffset = 0.5;
 
   const modelLoader = new GLTFLoader()
 
@@ -375,75 +485,74 @@ function loadMap(map: String[]) {
       switch (e[i]) {
         case '*':
           const wallCube = new THREE.Mesh(wallGeometry, wallMaterial)
-          wallCube.position.set(rowCounter, 1.5, i)
+          wallCube.position.set(rowCounter + mapOffset, 1.5, i + mapOffset)
           scene.add(wallCube)
           break
         case ' ':
           const groundCube = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCube.position.set(rowCounter, 0, i)
+          groundCube.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCube)
           break
         case 'E':
           const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem.position.set(rowCounter, 0, i)
+          groundCubeUnderItem.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem)
+
           const modelPathE = Math.random() > 0.5
-            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb'
-            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.glb';
+            ? new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url).href : new URL("@/assets/game/items/E/strawberry_shortcake/chocolate_bar.glb", import.meta.url).href;
 
           modelLoader.load(modelPathE, (objekt) => {
             console.log('Model geladen:', modelPathE);
             const model = objekt.scene
 
             if (modelPathE.includes('chocolate_bar')) {
-              model.position.set(rowCounter - 2, 0.75, i)
+              model.position.set(rowCounter - 2 + mapOffset, 0.75, i + mapOffset)
               model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-            }
-            else {
+            } else {
               model.position.set(rowCounter - 2, 0.5, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model)
             console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
           },
-          undefined,
-        (error) => {
-          console.error('Fehler beim Laden des Modells:', error);
-        }
-        )
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          )
           break
-          case 'D':
+        case 'D':
           const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem1.position.set(rowCounter, 0, i)
+          groundCubeUnderItem1.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem1)
+
           const modelPathD = Math.random() > 0.5
-            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.glb'
-            : '/src/assets/game/items/D/popcorn/popcorn.glb';
+            ? new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url).href
+            : new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url).href;
 
           modelLoader.load(modelPathD, (objekt) => {
             console.log('Model geladen:', modelPathD);
             const model = objekt.scene
 
             if (modelPathD.includes('popcorn')) {
-              model.position.set(rowCounter - 2, 0.75, i)
+              model.position.set(rowCounter - 2 + mapOffset, 0.75, i + mapOffset)
               model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
-            }
-            else {
+            } else {
               model.position.set(rowCounter - 2, 0.5, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          case 'C':
+        case 'C':
           const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem2.position.set(rowCounter, 0, i)
+          groundCubeUnderItem2.position.set(rowCounter + mapOffset , 0, i + mapOffset)
           scene.add(groundCubeUnderItem2)
           const modelPathC = Math.random() > 0.5
             ? '/src/assets/game/items/C/candy_cane/candycane.glb'
@@ -454,25 +563,24 @@ function loadMap(map: String[]) {
             const model = objekt.scene
 
             if (modelPathC.includes('candycane')) {
-              model.position.set(rowCounter - 2, 1, i)
+              model.position.set(rowCounter - 2 + mapOffset, 1, i + mapOffset)
               model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
-            }
-            else {
+            } else {
               model.position.set(rowCounter - 3, 1, i)
               model.scale.set(0.5, 0.5, 0.3) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          case 'B':
+        case 'B':
           const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem3.position.set(rowCounter, 0, i)
+          groundCubeUnderItem3.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem3)
           const modelPathB = Math.random() > 0.5
             ? '/src/assets/game/items/B/apple/apple.glb'
@@ -483,54 +591,53 @@ function loadMap(map: String[]) {
             const model = objekt.scene
 
             if (modelPathB.includes('apple')) {
-              model.position.set(rowCounter - 3, 0.75, i)
+              model.position.set(rowCounter - 3 + mapOffset, 0.75, i +mapOffset)
               model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
-            }
-            else {
+            } else {
               model.position.set(rowCounter - 3, 0.5, i)
               model.scale.set(0.2, 0.2, 0.2) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          case 'A':
+        case 'A':
           const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem4.position.set(rowCounter, 0, i)
+          groundCubeUnderItem4.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem4)
+
           const modelPathA = Math.random() > 0.5
-            ? '/src/assets/game/items/A/ginger/ginger.glb'
-            : '/src/assets/game/items/A/lemon/lemon.glb';
+            ? new URL("@/assets/game/items/A/ginger/ginger.glb", import.meta.url).href
+            : new URL("@/assets/game/items/A/lemon/lemon.glb", import.meta.url).href
 
           modelLoader.load(modelPathA, (objekt) => {
             console.log('Model geladen:', modelPathA);
             const model = objekt.scene
 
             if (modelPathA.includes('ginger')) {
-              model.position.set(rowCounter - 3, 1, i-1)
+              model.position.set(rowCounter - 3, 1, i - 1)
               model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
-            }
-            else {
+            } else {
               model.position.set(rowCounter - 3, 1, i)
               model.scale.set(0.5, 0.5, 0.5) // sonst normal
             }
             scene.add(model);
             console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
-            },
+          },
             undefined,
             (error) => {
               console.error('Fehler beim Laden des Modells:', error);
             }
           );
           break
-          default:
+        default:
           const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
-          groundCubeUnderItem5.position.set(rowCounter, 0, i)
+          groundCubeUnderItem5.position.set(rowCounter + mapOffset, 0, i + mapOffset)
           scene.add(groundCubeUnderItem5)
       }
     }
@@ -539,8 +646,8 @@ function loadMap(map: String[]) {
 }
 
 async function handleCharacters(data: ICharacterDTD[]) {
-  const playerPositions: IPlayerPositionDTD[] = []
-  data.forEach((character) => {
+  let playerPositions: IPlayerPositionDTD[] = [];
+  data.forEach(character => {
     if (sessionStorage.getItem('myName') !== character.name) {
       playerPositions.push({
         playerName: character.name,
@@ -553,12 +660,25 @@ async function handleCharacters(data: ICharacterDTD[]) {
   })
   renderCharactersTest(playerPositions)
 }
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
+
+  if (gameStore.gameState.gamedata.chickens === null) {
+    chickenPositions.value = []
+    console.log("Keine Positionsdaten weil Chicken Array leer")
+  } else {
+    chickenPositions.value = gameStore.gameState.gamedata.chickens;
+    console.log("Chickens-Positionsdaten: " + chickenPositions.value)
+  }
+
+
+
+  //const chickenList = gameStore.gameState.gamedata.chickens
 
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
@@ -570,14 +690,13 @@ onMounted(async () => {
   })
 
   subscribeTo(`/ingame/${lobbyId}`, async (messageValidation: IMessageDTD) => {
+    console.log(messageValidation.type)
     switch (messageValidation.type) {
       case 'playerMoveValidation':
         const playerPosition: any = messageValidation.feedback
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
-          console.log('FROM PLAYER MOVE VALIDATION: ', messageValidation.feedback)
-          console.log('recevied validation')
-          moveCamera()
+            moveCamera();
         }
 
         break
@@ -632,6 +751,7 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
+  renderChicken(chickenPositions.value)
   animate()
 })
 </script>
@@ -639,10 +759,7 @@ onMounted(async () => {
 <template>
   <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
   <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
-    <div
-      id="items"
-      class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45"
-    >
+    <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
       <!-- Items anzeigen, wenn vorhanden -->
 
       <div v-if="collectedItems.length > 0">
@@ -653,24 +770,52 @@ onMounted(async () => {
     <div id="hud" class="hud absoute text-white font-bold">
       <div class="flex gap-2">
         <div v-for="index in maxLife" :key="index">
-          <img
-            v-if="index <= life"
-            src="../assets/game/realistic/herz.png"
-            alt="Full Heart"
-            width="40"
-            height="40"
-          />
-          <img
-            v-else
-            src="../assets/game/realistic/emptyHerz.png"
-            alt="Empty Heart"
-            width="40"
-            height="40"
-          />
+          <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40" />
+          <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40" />
         </div>
       </div>
     </div>
   </div>
+
+
+
+  <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-bold mb-4">Lautstärke</h3>
+      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{ musicVolume }}%
+      <br>
+      Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
+      {{ effectVolume }}%
+      <br>
+      <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
+      <button @click="lockPointer" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        Close
+      </button>
+    </div>
+  </div>
+
+
+  <!-- <Modal>
+    <template #titel>
+      <h3 class="header-modal-adventure">Lautstärke</h3>
+    </template>
+    <template #content>
+      <div flex flex-col gap-3>
+        Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume">
+        {{ musicVolume }}%
+        <br>
+        Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
+        {{ effectVolume }}%
+        <br>
+        <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
+        <button @click="lockPointer" class="button-small-adventure">
+          Close
+        </button>
+      </div>
+    </template>
+  </Modal> -->
+
 </template>
+
 
 <style scoped></style>
