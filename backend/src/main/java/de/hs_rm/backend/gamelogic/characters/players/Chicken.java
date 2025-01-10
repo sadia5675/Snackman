@@ -6,8 +6,10 @@ import java.util.Arrays;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.hs_rm.backend.api.ChickenEnvironmentApi;
+import de.hs_rm.backend.gamelogic.Game;
 import jakarta.annotation.PreDestroy;
 
 public class Chicken {
@@ -16,16 +18,17 @@ public class Chicken {
     private int posY;
     private String script_path;
     private PythonInterpreter pyInterpreter;
+    private Game game;
 
-    // ToDo Aron: Ist das Environment hier richtig und soll in Game instanziert werden?
+    @Autowired
     private ChickenEnvironmentApi environmentApi;
 
-    public Chicken(int posX, int posY, String script_path, ChickenEnvironmentApi environmentApi) {
+    public Chicken(int posX, int posY, String script_path, Game game) {
         this.posX = posX;
         this.posY = posY;
         this.script_path = script_path;
         this.pyInterpreter = new PythonInterpreter();
-        this.environmentApi = environmentApi;
+        this.game = game;
         
 
     }
@@ -39,7 +42,7 @@ public class Chicken {
             if (scriptFile.exists()) {
                 LOGGER.info("Starte Python Skript...");
                 pyInterpreter.set("chicken", this);
-                pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, "lobbyId"));
+                pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
                 pyInterpreter.execfile(scriptFile.getAbsolutePath());
                 LOGGER.info("Python Skript erfolgreich gestartet");
             } else {
