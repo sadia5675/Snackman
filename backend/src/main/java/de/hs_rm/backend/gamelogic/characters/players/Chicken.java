@@ -20,7 +20,8 @@ public class Chicken {
     private PythonInterpreter pyInterpreter;
     private Game game;
 
-    @Autowired
+    // @Autowired
+    // private ChickenEnvironmentApi environmentApi;
     private ChickenEnvironmentApi environmentApi;
 
     public Chicken(int posX, int posY, String script_path, Game game) {
@@ -29,6 +30,17 @@ public class Chicken {
         this.script_path = script_path;
         this.pyInterpreter = new PythonInterpreter();
         this.game = game;
+        // ToDo Aron: Soll ich hier wirklich eine ChickenEnvironmentApi instanzieren.
+        // Wenn wir sie als Service Klasse/Schicht sehen, greifen wir ja von unteren Schichten auf die darüberliegenden.
+        // Vielleicht ist es doch besser die funktion getEnvironment()n einfach in Game zu packen und keine eigene Klasse dafür zu nutzen?
+        // Game könnte dann auch die Umgebung für die Chicken bereitstellen.
+
+        // ToDo Aron: Soll lieber Game in Kontruktor mitgegeben werden, oder einfach unten über die getEnvironment(x, y, game)?
+        // new ChickenEnvironmentApi();
+        new ChickenEnvironmentApi(game);
+
+
+
         
 
     }
@@ -42,7 +54,9 @@ public class Chicken {
             if (scriptFile.exists()) {
                 LOGGER.info("Starte Python Skript...");
                 pyInterpreter.set("chicken", this);
-                pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
+                // pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
+                pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY));
+
                 pyInterpreter.execfile(scriptFile.getAbsolutePath());
                 LOGGER.info("Python Skript erfolgreich gestartet");
             } else {

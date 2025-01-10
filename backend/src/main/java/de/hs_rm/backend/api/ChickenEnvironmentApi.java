@@ -6,16 +6,18 @@ import org.springframework.stereotype.Service;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.map.Tile;
 
-@Service
+// @Service
 public class ChickenEnvironmentApi {
 
-    // Falsch, da ChickenEnvironmentApi nicht auf GameService zugreifen darf
-    // @Autowired 
-    // GameService gameService;
+    public ChickenEnvironmentApi(Game game) {
+        this.existingGame = game;
+    }
+
+    private Game existingGame;
     
 
     // ToDo Aron: Muss hier wahrscheinlich die LobbyId mitgeben um aktuelles Spiel herauszubekommen. Woher bekomme ich die lobbyId des Games?
-    public List<Tile> getEnvironment(int posX, int posY, Game existingGame) {
+    public List<Tile> getEnvironment(int posX, int posY) {
         // Game existingGame = gameService.getGameById(lobbyId);
         if(existingGame == null){
             throw new IllegalArgumentException("Game does not exist");
