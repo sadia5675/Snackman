@@ -11,6 +11,7 @@ import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
 import type {Result} from "@/stores/game/responses/Result";
 
+
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
   const restUrl: string = '/api/game'
@@ -132,7 +133,7 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-  async function startGameViaStomp(selectedMapName: string, lobbyId: string): Promise<Result> {
+  async function startGameViaStomp(selectedMapName: string, chickenCount: number, lobbyId: string): Promise<Result> {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>
@@ -152,7 +153,7 @@ export const useGameStore = defineStore('gameStore', () => {
           data: null,
         })
       } else {
-        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}`, actingPlayer)
+        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}/${chickenCount}`, actingPlayer)
         resolve({
           ok: true,
           message: 'Game started',
@@ -257,20 +258,6 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-
-  async function setChickenCount(number: number) {
-    try {
-      const response = await fetch(`${restUrl}/setChicken/${gameState.gamedata.id}/${number}`, {
-        method: 'POST',
-      })
-      const gameResponse = await handleResponse(response)
-      setGameStateFromResponse(gameResponse)
-    } catch (error) {
-      handleGameStateError()
-      console.error('Error setting chicken count:', error)
-    }
-  }
-
   async function fetchGameStatus() {
     try {
       const response = await fetch(`${restUrl}/status/${gameState.gamedata.id}`)
@@ -345,7 +332,6 @@ export const useGameStore = defineStore('gameStore', () => {
       message: IMessageDTD,
       resolve: (value: boolean) => void,
     ) {
-      console.log(message.feedback)
       if (message.status === 'ok') {
         modal.setErrorMessage('')
         switch (message.type) {
@@ -364,11 +350,19 @@ export const useGameStore = defineStore('gameStore', () => {
             console.error('Unknown message type:', message.type)
         }
         resolve(true)
+      }else if(message.status.startsWith("Error")){
+        const errorMessage = message.status.replace("Error: ", "");
+        const lobbyId = router.currentRoute.value.params.id;
+        alert(errorMessage); 
+        router.push({ name: 'lobbyWithId', params: { id: lobbyId } });
+
       } else {
         modal.setErrorMessage(message.feedback as string)
         stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
         resolve(false)
       }
+
+      console.log(message.feedback)
     }
 
     async function isGamePrivate(gameId: string): Promise<boolean> {
@@ -396,7 +390,6 @@ export const useGameStore = defineStore('gameStore', () => {
     leaveGame,
     kickUser,
     joinLobby,
-    setChickenCount,
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,

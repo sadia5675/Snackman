@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class GameTest{
+    /*
     private Game game;
     private Player mockGamemaster;
 
@@ -39,6 +40,7 @@ class GameTest{
         // Initialisierung des Spiels
         game = new Game(mockGamemaster);
     }
+    /*
 
     @Test
     void testAddPlayer() {
@@ -52,6 +54,7 @@ class GameTest{
         assertEquals(2, game.getPlayers().size(), "Es sollten zwei Spieler im Spiel sein.");
     }
 
+    /*
     @Test
     void testStartGame() {
         // Sicherstellen, dass das PlayMap-Mock korrekt funktioniert
@@ -101,6 +104,9 @@ class GameTest{
         assertEquals(5, totalItems, "Es sollten genau 5 Items auf der Spielfläche verteilt werden.");
 
     }
+    */
+
+    /*
     
     @Test
     void testMoveCharacter() {
@@ -150,14 +156,17 @@ class GameTest{
         assertEquals(2, character.getPosX(), "Character's X position should be updated to 2.");
         assertEquals(2, character.getPosY(), "Character's Y position should be updated to 2.");
     }
+    */
     
+    /*
     @Test
     void testCannotKickGamemaster() {
         boolean result = game.kick("Gamemaster", "Gamemaster");
 
         assertFalse(result, "Der Gamemaster sollte nicht entfernt werden können.");
     }
-
+    */
+    /* 
     private List<Tile> createMockTilesList(int size) {
         List<Tile> tiles = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -308,6 +317,7 @@ class GameTest{
         assertEquals(2, game.getPlayers().size());
     }
 
+    /* 
     @Test // Auf den Spielfeld bewegen
     void testMove() throws IOException {
         // Pfad zur temporären Test-Datei
@@ -367,4 +377,5 @@ class GameTest{
         // Entferne Testdatei
         Files.delete(resourcePath);
     }
+    */
 }

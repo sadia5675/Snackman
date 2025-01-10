@@ -12,6 +12,7 @@ import de.hs_rm.backend.gamelogic.map.PlayMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import de.hs_rm.backend.exception.GameJoinException;
@@ -20,6 +21,27 @@ import de.hs_rm.backend.gamelogic.characters.players.Player;
 
 @Service
 public class GameService {
+
+    @Value("${snackman.life}")
+    private int snackmanLife;
+
+    @Value("${snackman.maxLife}")
+    private int snackmanMaxLife;
+
+    @Value("${snackman.speed}")
+    private double snackmanSpeed;
+
+    @Value("${ghost.speed}")
+    private double ghostSpeed;
+
+    @Value("${game.itemsPerSurfaceRatio}")
+    private int itemsPerSurfaceRatio;
+
+    @Value("${snackman.nutriscore}")
+    private int nutriscore;
+
+    @Value("${chicken.path}")
+    private String pathToChickenBot;
 
     private Map<String,Game> gameList = new HashMap<String,Game>();
     Logger logger = LoggerFactory.getLogger(GameService.class);
@@ -33,22 +55,22 @@ public class GameService {
     }
 
     public Game createGame(Player gamemaster){
-        Game newGame = new Game(gamemaster);
+        Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio, nutriscore, pathToChickenBot);
         gameList.put(newGame.getId(), newGame);
 
         return newGame;
     }
 
-    public Game startGame(String gameId, PlayMap playMap) {
+    public boolean startGame(String gameId, PlayMap playMap, int chickenNum) {
         Game game = gameList.get(gameId);
 
-        if(game == null){
-            return null;
+        boolean success = game.start(playMap, chickenNum);
+        if (!success) {
+            logger.info("Success: {}",success);
+            return false; // z. B. wegen zu vieler Hühner
         }
 
-        game.start(playMap);
-
-        return game;
+        return true;
     }
 
     public Game endGame(String gameId){
@@ -121,18 +143,6 @@ public class GameService {
         }
 
         playerToSetRole.setPlayerrole(playerRoleToSet);
-
-        return game;
-    }
-
-    public Game setChicken(String gameId, int number){
-        Game game = gameList.get(gameId);
-
-        if(game == null){
-            return null;
-        }
-
-        game.setChicken(number);
 
         return game;
     }

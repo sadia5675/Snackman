@@ -14,7 +14,7 @@ public class PlayMap {
 
 private char[][] map;
 private List <Tile> tilesList = new ArrayList<>();
-private int countSurface = 0;
+private int countSurface;
 
 
 private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
@@ -78,6 +78,7 @@ public void updateMapState(int x, int y, char symbol) {
 
 public void createTiles(){
     tilesList.clear(); // zurücksetzen
+    countSurface = 0;
     if (map == null || map.length == 0) {
         return; // keine Karte heisst keine TIles
     }

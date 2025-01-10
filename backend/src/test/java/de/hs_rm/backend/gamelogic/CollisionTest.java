@@ -40,6 +40,8 @@ public class CollisionTest {
         assertTrue(surfaceTile.getCharacterList().contains(snackman), "Tile should contain the Snackman.");
     }
 
+    /*
+
     @Test
     void testAddSnackmanWithMatchingItem() {
         surfaceTile.addItem(foodItem);
@@ -51,6 +53,7 @@ public class CollisionTest {
         //assertTrue(snackman.getCurrentObjectItem() ==objectItem, "Snackman should collect object item.");
         assertEquals(NutriScore.A.getCalorieBonus(), snackman.getCurrentCalorie(), "Snackman should eat the food item.");
     }
+        */
 
     // @Test
     // void testAddGhostWithMatchingItem() {

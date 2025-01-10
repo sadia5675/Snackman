@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.*;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 
@@ -23,6 +24,7 @@ public class Tile {
         this.type = type;
         itemList = new ArrayList<>();
         characterList = new ArrayList<>();
+        chickenList = new ArrayList<>();
     }
 
     public boolean hasItem() {

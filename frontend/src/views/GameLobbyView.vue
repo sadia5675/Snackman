@@ -35,11 +35,13 @@
     </ul>
 
     <div class="flex items-center space-x-2 mt-3">
-      <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-      <input type="number" v-model="chickenCount" class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600" />
-      <button v-if="isGamemaster" class="w-80 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        @click="randomizeRoles()">
-        Randomize Roles
+      <p class="text-lg font-semibold text-zinc-200">Chickens:</p>
+      <button class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600" @click="decreaseChicken">
+        -
+      </button>
+      <div class="w-20 text-center text-zinc-200 font-semibold">{{ chickenCount }}</div>
+      <button class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600" @click="increaseChicken">
+        +
       </button>
     </div>
 
@@ -147,13 +149,18 @@ const placeholderCount = computed(() => maxPlayers - players.value.length);
 const gamePassword = computed(() => gameStore.gameState.gamedata?.password || null);
 
 
-// Anzahl der festgelegten Chickens im Game
-const chickenCount = computed({
-  get: () => gameStore.gameState.gamedata?.chickens.length || 0,
-  set: async (value: number) => {
-    await gameStore.setChickenCount(value)
-  },
-})
+//chicken
+const chickenCount = ref(0);
+
+function increaseChicken() {
+  chickenCount.value++;
+}
+
+function decreaseChicken() {
+  if (chickenCount.value > 0) {
+    chickenCount.value--;
+  }
+}
 
 // Überprüfung, ob aktueller Spieler Gamemaster ist
 const isGamemaster = computed(() => {
@@ -194,15 +201,12 @@ async function startGame() {
     if (!mapStore.mapsDTD.selectedMap?.map) {
       throw new Error("No map selected!");
     }
-    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name, lobbyId); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
-    // Log zum Testen
-    console.log(gameStore.gameState);
-    console.log("playMap: ", gameStore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map
+    console.log("ChickenCount: ", chickenCount.value)
+    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name, chickenCount.value, lobbyId); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
   } catch (error) {
     console.log(error);
   }
 }
-
 // Um Lobby Code kopieren zu können
 function copyToClipboard() {
   alert('Copied to Clipboard!');
