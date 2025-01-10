@@ -1,18 +1,18 @@
 <script setup lang="ts">
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
-import { WebGLRenderer } from 'three'
-import { onMounted, ref } from 'vue'
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
+import {WebGLRenderer} from 'three'
+import {onMounted, ref} from 'vue'
+import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
 import ground from '@/assets/game/realistic/ground.png'
 import wall from '@/assets/game/realistic/wall.png'
-import { useGameStore } from '@/stores/game/gamestore'
-import type { IMessageDTD } from '@/stores/game/dtd/IMessageDTD'
-import { sendMessage, subscribeTo } from '@/config/stompWebsocket'
-import { useRoute } from 'vue-router'
-import type { IPlayerPositionDTD } from '@/stores/game/dtd/IPlayerPositionDTD'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
+import {useGameStore} from '@/stores/game/gamestore'
+import type {IMessageDTD} from '@/stores/game/dtd/IMessageDTD'
+import {sendMessage, subscribeTo} from '@/config/stompWebsocket'
+import {useRoute} from 'vue-router'
+import type {IPlayerPositionDTD} from '@/stores/game/dtd/IPlayerPositionDTD'
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
+import type {ICharacterDTD} from '@/stores/game/dtd/ICharacterDTD'
 
 const gameStore = useGameStore()
 
@@ -36,6 +36,16 @@ const life = ref(2) //startlife
 const maxLife = ref(3)
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
+// für springen
+let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
+const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
+let isChargingJump = false // Ob der Spieler einen Sprung auflädt
+let isJumping = false // Verhindert doppeltes Springen
+let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
+const gravity = -9.8 // Schwerkraft
+const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
+const maxJumpSpeed = 15 //Geschwindigkeit für großen Sprung
+
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
 }
@@ -44,7 +54,7 @@ function createSceneCameraRendererControlsClock() {
   const scene = new THREE.Scene()
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.1, 1000)
-  camera.position.set(0, 1, 2)
+  camera.position.set(1, 1, 2)
 
   const renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -61,6 +71,16 @@ function createSceneCameraRendererControlsClock() {
 function registerListeners(window: Window, renderer: WebGLRenderer) {
   renderer.domElement.addEventListener('click', (e) => {
     renderer.domElement.requestPointerLock()
+  })
+
+  window.addEventListener('resize',(e) => {
+    //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(window.innerWidth, window.innerHeight)
+
+    //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
   })
 
   window.addEventListener('keydown', (e) => {
@@ -84,6 +104,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
       case 'KeyD':
         movingRight = true
         break
+      case 'Space':
+        isChargingJump = true;
+        break
     }
   })
   window.addEventListener('keyup', (e) => {
@@ -100,6 +123,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         break
       case 'KeyD':
         movingRight = false
+        break
+        case 'Space':
+          isChargingJump = false;
         break
     }
   })
@@ -142,6 +168,32 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
+// Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
+function triggerJumpAfterChargeTime(delta: number) {
+  if (isChargingJump) {
+    // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
+    jumpChargeTime += delta; // Ladezeit hochzählen
+
+    if (jumpChargeTime >= maxJumpChargeTime) {
+      jumpChargeTime = 0; // Ladezeit zurücksetzen
+      // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
+      isChargingJump = false; // Leertaste kann losgelassen werden
+      jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
+      isJumping = true; // Der Spieler springt jetzt
+      console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+    }
+
+  }
+  else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
+      jumpChargeTime = 0;
+      jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
+      isJumping = true; // Sprung aktivieren
+      console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+
+  }
+
+}
+
 function cameraPositionBewegen(delta: number) {
   const cameraViewDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraViewDirection)
@@ -153,6 +205,26 @@ function cameraPositionBewegen(delta: number) {
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
 
   nextPosition = camera.position.clone()
+  // Sprungberechnung
+  if (isJumping) {
+    jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
+    nextPosition.y += jumpVelocity * delta
+    validatePosition(nextPosition)
+    camera.position.y = nextPosition.y;
+
+    // Bodenberührung
+    if (nextPosition.y <= 1) {
+      nextPosition.y = 1
+      validatePosition(nextPosition)
+      camera.position.y = nextPosition.y;
+      jumpVelocity = 0
+      isJumping = false
+      jumpChargeTime =0
+    }
+  }
+  // Setze die Y-Position unabhängig vom Rest
+  validatePosition(nextPosition);
+  camera.position.y = nextPosition.y;
 
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (movingForward) {
@@ -206,11 +278,13 @@ function cameraPositionBewegen(delta: number) {
         movementSpeed * delta,
       )
     }
-    nextPosition.y = 1
     validatePosition(nextPosition)
-
-    camera.position.y = 1
   }
+  
+   // Überprüfe und führe den Sprung aus, wenn nötig
+   if(!isJumping){
+    triggerJumpAfterChargeTime(delta);
+   }
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
@@ -221,6 +295,7 @@ function validatePosition(nextPosition: THREE.Vector3) {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
+      posZ: nextPosition.y,
       angle: camera.rotation.z,
     })
     lastSend = currentTime
@@ -255,14 +330,15 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
   playerPositions.forEach((playerPosition) => {
     if (!players.has(playerPosition.playerName)) {
+      const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       //Modell initial rendern
-      modelLoader.load('/src/assets/game/realistic/snackman/snackman.gltf', (gltf) => {
-        const model = gltf.scene
-        model.scale.set(0.5, 0.5, 0.5)
-        players.set(playerPosition.playerName, model.id)
-        scene.add(model)
+      modelLoader.load(snackmanModelURL, (gltf) => {
+        const model = gltf.scene;
+        model.scale.set(0.5, 0.5, 0.5);
+        players.set(playerPosition.playerName, model.id);
+        scene.add(model);
 
-        model.position.set(playerPosition.x, 1, playerPosition.y)
+        model.position.set(playerPosition.x, playerPosition.z, playerPosition.y)
         model.rotation.y = playerPosition.angle + adjustAngle
       })
     } else {
@@ -275,13 +351,14 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
           const breite = new THREE.Vector3()
           messungsBox.getSize(breite)
           messungsBox.expandByObject(model)
-          model.position.set(playerPosition.x - breite.x / 2, 1, playerPosition.y)
+          model.position.set(playerPosition.x - breite.x / 2, playerPosition.z, playerPosition.y)
           model.rotation.y = playerPosition.angle + adjustAngle
         }
       }
     }
   })
 }
+
 function loadMap(map: String[]) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1)
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1)
@@ -289,6 +366,8 @@ function loadMap(map: String[]) {
   const wallTexture = new THREE.TextureLoader().load(wall)
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture })
   const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture })
+
+  const modelLoader = new GLTFLoader()
 
   let rowCounter = 0
   map.forEach((e) => {
@@ -304,6 +383,155 @@ function loadMap(map: String[]) {
           groundCube.position.set(rowCounter, 0, i)
           scene.add(groundCube)
           break
+        case 'E':
+          const groundCubeUnderItem = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem)
+          const modelPathE = Math.random() > 0.5
+            ? '/src/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb'
+            : '/src/assets/game/items/E/chocolate_bar/chocolate_bar.glb';
+
+          modelLoader.load(modelPathE, (objekt) => {
+            console.log('Model geladen:', modelPathE);
+            const model = objekt.scene
+
+            if (modelPathE.includes('chocolate_bar')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model)
+            console.log(`Modell (E) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+          },
+          undefined,
+        (error) => {
+          console.error('Fehler beim Laden des Modells:', error);
+        }
+        )
+          break
+          case 'D':
+          const groundCubeUnderItem1 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem1.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem1)
+          const modelPathD = Math.random() > 0.5
+            ? '/src/assets/game/items/D/cotton_candy/cottoncandy.glb'
+            : '/src/assets/game/items/D/popcorn/popcorn.glb';
+
+          modelLoader.load(modelPathD, (objekt) => {
+            console.log('Model geladen:', modelPathD);
+            const model = objekt.scene
+
+            if (modelPathD.includes('popcorn')) {
+              model.position.set(rowCounter - 2, 0.75, i)
+              model.scale.set(0.2, 0.2, 0.2) // Schokolade kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 2, 0.5, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (D) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          case 'C':
+          const groundCubeUnderItem2 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem2.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem2)
+          const modelPathC = Math.random() > 0.5
+            ? '/src/assets/game/items/C/candy_cane/candycane.glb'
+            : '/src/assets/game/items/C/chips/chips.glb';
+
+          modelLoader.load(modelPathC, (objekt) => {
+            console.log('Model geladen:', modelPathC);
+            const model = objekt.scene
+
+            if (modelPathC.includes('candycane')) {
+              model.position.set(rowCounter - 2, 1, i)
+              model.scale.set(0.1, 0.1, 0.1) // candycane kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.3) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (C) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          case 'B':
+          const groundCubeUnderItem3 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem3.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem3)
+          const modelPathB = Math.random() > 0.5
+            ? '/src/assets/game/items/B/apple/apple.glb'
+            : '/src/assets/game/items/B/banana/banana.glb';
+
+          modelLoader.load(modelPathB, (objekt) => {
+            console.log('Model geladen:', modelPathB);
+            const model = objekt.scene
+
+            if (modelPathB.includes('apple')) {
+              model.position.set(rowCounter - 3, 0.75, i)
+              model.scale.set(0.005, 0.005, 0.005) // apple kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 0.5, i)
+              model.scale.set(0.2, 0.2, 0.2) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (B) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          case 'A':
+          const groundCubeUnderItem4 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem4.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem4)
+          const modelPathA = Math.random() > 0.5
+            ? '/src/assets/game/items/A/ginger/ginger.glb'
+            : '/src/assets/game/items/A/lemon/lemon.glb';
+
+          modelLoader.load(modelPathA, (objekt) => {
+            console.log('Model geladen:', modelPathA);
+            const model = objekt.scene
+
+            if (modelPathA.includes('ginger')) {
+              model.position.set(rowCounter - 3, 1, i-1)
+              model.scale.set(0.2, 0.2, 0.2) // Ginger kleiner machen
+            }
+            else {
+              model.position.set(rowCounter - 3, 1, i)
+              model.scale.set(0.5, 0.5, 0.5) // sonst normal
+            }
+            scene.add(model);
+            console.log(`Modell (A) Position: x=${model.position.x}, y=${model.position.y}, z=${model.position.z}`);
+            },
+            undefined,
+            (error) => {
+              console.error('Fehler beim Laden des Modells:', error);
+            }
+          );
+          break
+          default:
+          const groundCubeUnderItem5 = new THREE.Mesh(groundGeometry, groundMaterial)
+          groundCubeUnderItem5.position.set(rowCounter, 0, i)
+          scene.add(groundCubeUnderItem5)
       }
     }
     rowCounter++
@@ -311,7 +539,7 @@ function loadMap(map: String[]) {
 }
 
 async function handleCharacters(data: ICharacterDTD[]) {
-  let playerPositions: IPlayerPositionDTD[] = []
+  const playerPositions: IPlayerPositionDTD[] = []
   data.forEach((character) => {
     if (sessionStorage.getItem('myName') !== character.name) {
       playerPositions.push({

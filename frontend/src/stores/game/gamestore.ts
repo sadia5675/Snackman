@@ -53,6 +53,8 @@ export const useGameStore = defineStore('gameStore', () => {
   async function createGame(gamemaster: IPlayerDTD) {
     try {
       gamemaster.playerrole = Playerrole.SNACKMAN
+      console.log("Erstelle Spiel mit: ",gamemaster);
+
       const response: Response = await fetch(`${restUrl}/create`, {
         method: 'POST',
         headers: {
@@ -63,6 +65,10 @@ export const useGameStore = defineStore('gameStore', () => {
 
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
+
+      if(gamemaster.password){
+        gameState.gamedata.password = gamemaster.password;
+      }
 
       stompClient.onConnect = () => {
         if (gameState.gamedata?.players) {
@@ -77,6 +83,10 @@ export const useGameStore = defineStore('gameStore', () => {
       }
       sessionStorage.setItem("myName", gamemaster.name);
       sessionStorage.setItem("playerInfo", JSON.stringify(gamemaster));
+
+      if(gamemaster.password){
+        sessionStorage.setItem("password", gamemaster.password);
+      }
 
     } catch (error) {
       handleGameStateError()
@@ -160,6 +170,20 @@ export const useGameStore = defineStore('gameStore', () => {
     } catch (error) {
       handleGameStateError()
       console.error('Error ending game:', error)
+    }
+  }
+
+  async function movePlayer(username: string, targetX: number, targetZ: number): Promise<boolean> {
+    try {
+      const response = await fetch(`${restUrl}/move/${gameState.gamedata.id}/${username}/${targetX}/${targetZ}`, {
+        method: 'POST',
+      })
+      const gameResponse = await handleResponse(response)
+      setGameStateFromResponse(gameResponse)
+      return true;
+    } catch (error) {
+      console.error('Error moving player:', error)
+      return false;
     }
   }
 
@@ -345,11 +369,28 @@ export const useGameStore = defineStore('gameStore', () => {
       }
     }
 
+    async function isGamePrivate(gameId: string): Promise<boolean> {
+      try {
+        const response = await fetch(`${restUrl}/${gameId}/isPrivate`);
+        const result = await response.json();
+
+        if (result.status === "ok") {
+          return result.isPrivate;
+        } else {
+          throw new Error(result.message);
+        }
+      } catch (error) {
+        console.error("Fehler beim Überprüfen, ob das Spiel privat ist:", error);
+        return false;
+      }
+    }
+
   return {
     gameState,
     createGame,
     startGameViaStomp,
     endGame,
+    movePlayer,
     leaveGame,
     kickUser,
     joinLobby,
@@ -357,7 +398,8 @@ export const useGameStore = defineStore('gameStore', () => {
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
-    closeTab
+    closeTab,
+    isGamePrivate
   }
 })
 

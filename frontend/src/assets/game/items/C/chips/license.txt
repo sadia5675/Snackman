@@ -1,0 +1,11 @@
+Model Information:
+* title:	Chips | Arovdev
+* source:	https://sketchfab.com/3d-models/chips-arovdev-98486374994e432db3746a0fd6235b6b
+* author:	Arovdev (https://sketchfab.com/arovdev)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Chips | Arovdev" (https://sketchfab.com/3d-models/chips-arovdev-98486374994e432db3746a0fd6235b6b) by Arovdev (https://sketchfab.com/arovdev) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

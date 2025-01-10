@@ -8,4 +8,5 @@ export interface IMessageDTD {
     feedback: IPlayerPositionDTD | IPlayerDTD[] | IGameDTD | string | IPlayerPositionDTD[];
     status: 'ok' | 'error';
     time: string;
+    password?:string
   }
