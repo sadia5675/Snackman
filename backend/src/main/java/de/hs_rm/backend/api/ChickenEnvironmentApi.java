@@ -27,7 +27,7 @@ public class ChickenEnvironmentApi {
         for (int i = posX -1; i <= posX + 1; i++) {
             for (int j = posY -1; j <= posY + 1; j++) {
 
-                    Tile tile = existingGame.getPlaymap().getTileFromList(posX, posY);
+                    Tile tile = existingGame.getPlaymap().getTileFromList(i, j);
                     if (tile != null) {
                         restrictedTileList.add(tile);
                     }
