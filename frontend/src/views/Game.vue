@@ -432,7 +432,7 @@ function cameraPositionBewegen(delta: number) {
   }
 
   // Überprüfe und führe den Sprung aus, wenn nötig
-  if(!isJumping){    
+  if(!isJumping){
     triggerJumpAfterChargeTime(delta);
   }
 }
@@ -530,6 +530,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
 function renderChicken(chickenPositions: IChickenPositionDTD[]){
   const modelLoader = new GLTFLoader()
+  const chickenModelURL = new URL('@/assets/game/realistic/chicken/chicken.gltf', import.meta.url).href;
 
   chickenPositions.forEach((chickenPosition) => {
     modelLoader.load('@/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
@@ -610,26 +611,26 @@ function loadMap(map: string[]) {
           const groundItemMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
           groundMesh.setMatrixAt(groundIndex++, groundItemMatrix);
 
-          const itemPaths: { [key: string]: string[] } = {
+          const itemPaths: { [key: string]: URL[] } = {
             E: [
-              "@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb",
-              "@/assets/game/items/E/chocolate_bar/chocolate_bar.glb",
+              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url),
+              new URL("@/assets/game/items/E/chocolate_bar/chocolate_bar.glb", import.meta.url)
             ],
             D: [
-              "@/assets/game/items/D/cotton_candy/cottoncandy.glb",
-              "@/assets/game/items/D/popcorn/popcorn.glb",
+              new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url),
+              new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url)
             ],
             C: [
-              "@/assets/game/items/C/candy_cane/candycane.glb",
-              "@/assets/game/items/C/chips/chips.glb",
+              new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url),
+              new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url),
             ],
             B: [
-              "@/assets/game/items/B/apple/apple.glb",
-              "@/assets/game/items/B/banana/banana.glb",
+              new URL("@/assets/game/items/B/apple/apple.glb", import.meta.url),
+              new URL("@/assets/game/items/B/banana/banana.glb", import.meta.url),
             ],
             A: [
-              "@/assets/game/items/A/ginger/ginger.glb",
-              "@/assets/game/items/A/lemon/lemon.glb",
+              new URL("@/assets/game/items/A/ginger/ginger.glb", import.meta.url),
+              new URL("@/assets/game/items/A/lemon/lemon.glb", import.meta.url)
             ],
           };
 
