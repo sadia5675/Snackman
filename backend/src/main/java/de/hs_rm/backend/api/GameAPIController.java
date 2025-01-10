@@ -471,7 +471,7 @@ public class GameAPIController {
             return createErrorResponse("No game found.");
         }
         try {
-            gameService.move(username, coordinateX, coordinateY);
+            gameService.move(username, coordinateX, coordinateY, coordinateZ,1);
             return createOkResponse(existingGame);
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());
