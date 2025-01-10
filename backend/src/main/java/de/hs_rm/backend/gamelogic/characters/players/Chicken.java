@@ -55,7 +55,7 @@ public class Chicken {
                 LOGGER.info("Starte Python Skript...");
                 pyInterpreter.set("chicken", this);
                 // pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
-                pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY));
+                pyInterpreter.set("environment", environmentApi);
 
                 pyInterpreter.execfile(scriptFile.getAbsolutePath());
                 LOGGER.info("Python Skript erfolgreich gestartet");
@@ -72,6 +72,8 @@ public class Chicken {
         pyInterpreter.exec("run_auto()");
 
     }
+
+
 
 
     public void move(int x, int y) {
