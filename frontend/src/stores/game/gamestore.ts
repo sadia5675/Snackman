@@ -2,14 +2,15 @@ import { defineStore } from "pinia";
 import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket';
 import { type Reactive, reactive } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
+import type { IChickenDTD } from "./dtd/IChickenDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
 import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
 import { emptyGame, type IGameState } from "@/stores/game/IGameState";
-import type { IMessageDTD} from "./dtd/IMessageDTD";
+import type { IMessageDTD } from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
-import type {Result} from "@/stores/game/responses/Result";
+import type { Result } from "@/stores/game/responses/Result";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -53,7 +54,7 @@ export const useGameStore = defineStore('gameStore', () => {
   async function createGame(gamemaster: IPlayerDTD) {
     try {
       gamemaster.playerrole = Playerrole.SNACKMAN
-      console.log("Erstelle Spiel mit: ",gamemaster);
+      console.log("Erstelle Spiel mit: ", gamemaster);
 
       const response: Response = await fetch(`${restUrl}/create`, {
         method: 'POST',
@@ -66,15 +67,17 @@ export const useGameStore = defineStore('gameStore', () => {
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
 
-      if(gamemaster.password){
+      if (gamemaster.password) {
         gameState.gamedata.password = gamemaster.password;
       }
 
       stompClient.onConnect = () => {
         if (gameState.gamedata?.players) {
           subscribeTo(`/game/${gameState.gamedata.id}`, (message: IMessageDTD) => {
-            handleStompMessage(message, () => {})
+            handleStompMessage(message, () => { })
           })
+          //Auf Hühnchenposition abonnieren
+          subscribeToChickenPositions(gameState.gamedata.id);
         }
       }
 
@@ -84,7 +87,7 @@ export const useGameStore = defineStore('gameStore', () => {
       sessionStorage.setItem("myName", gamemaster.name);
       sessionStorage.setItem("playerInfo", JSON.stringify(gamemaster));
 
-      if(gamemaster.password){
+      if (gamemaster.password) {
         sessionStorage.setItem("password", gamemaster.password);
       }
 
@@ -104,6 +107,9 @@ export const useGameStore = defineStore('gameStore', () => {
             handleStompMessage(message, resolve);
           })
 
+          //Auf Hühnchenposition abonnieren
+          subscribeToChickenPositions(lobbyId)
+
           sendMessage(`${topicUrl}/${lobbyId}/join`, newPlayer)
           sessionStorage.setItem('myName', newPlayer.name)
         }
@@ -122,11 +128,11 @@ export const useGameStore = defineStore('gameStore', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({selectedMap: selectedMapName}),
+        body: JSON.stringify({ selectedMap: selectedMapName }),
       })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
-  } catch (error) {
+    } catch (error) {
       handleGameStateError()
       console.error('Error starting game:', error)
     }
@@ -136,11 +142,11 @@ export const useGameStore = defineStore('gameStore', () => {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>
-      resolve({
-        ok: false,
-        message: 'No acting player found',
-        data: null,
-      }),
+        resolve({
+          ok: false,
+          message: 'No acting player found',
+          data: null,
+        }),
       )
     }
 
@@ -186,6 +192,18 @@ export const useGameStore = defineStore('gameStore', () => {
       return false;
     }
   }
+
+  //Aufruf bei neuem Game und joinen -> (bekommt bis jetzt nur eine Map von Hinkeln mit X und Y Pos aus dem Backend)
+  function subscribeToChickenPositions(lobbyId: string): void {
+    if (!stompClient.connected) {
+      console.error("WebSocket ist nicht verbunden!");
+      return;
+    }
+    subscribeTo(`/ingame/${lobbyId}/chickenPosition`, (message: IMessageDTD) => {
+      handleStompMessage(message, () => { })
+    });
+  }
+
 
   function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
     return new Promise((resolve) => {
@@ -341,51 +359,54 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
-    function handleStompMessage(
-      message: IMessageDTD,
-      resolve: (value: boolean) => void,
-    ) {
-      console.log(message.feedback)
-      if (message.status === 'ok') {
-        modal.setErrorMessage('')
-        switch (message.type) {
-          case 'playerJoin':
-            gameState.gamedata.players = message.feedback as IPlayerDTD[]
-            break
-          case 'playerRole':
-            gameState.gamedata.players = message.feedback as IPlayerDTD[]
-            break
-          case 'gameStart':
-            gameState.gamedata = message.feedback as IGameDTD
-            break
-          case 'playerMoveValidation':
-            console.log("test")
-          default:
-            console.error('Unknown message type:', message.type)
-        }
-        resolve(true)
+  function handleStompMessage(
+    message: IMessageDTD,
+    resolve: (value: boolean) => void,
+  ) {
+    console.log(message.feedback)
+    if (message.status === 'ok') {
+      modal.setErrorMessage('')
+      switch (message.type) {
+        case 'playerJoin':
+          gameState.gamedata.players = message.feedback as IPlayerDTD[]
+          break
+        case 'playerRole':
+          gameState.gamedata.players = message.feedback as IPlayerDTD[]
+          break
+        case 'gameStart':
+          gameState.gamedata = message.feedback as IGameDTD
+          break
+        case 'chickenPositions':
+          gameState.gamedata.chickens = message.feedback as IChickenDTD[]
+          break
+        case 'playerMoveValidation':
+          console.log("test")
+        default:
+          console.error('Unknown message type:', message.type)
+      }
+      resolve(true)
+    } else {
+      modal.setErrorMessage(message.feedback as string)
+      stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
+      resolve(false)
+    }
+  }
+
+  async function isGamePrivate(gameId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${restUrl}/${gameId}/isPrivate`);
+      const result = await response.json();
+
+      if (result.status === "ok") {
+        return result.isPrivate;
       } else {
-        modal.setErrorMessage(message.feedback as string)
-        stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
-        resolve(false)
+        throw new Error(result.message);
       }
+    } catch (error) {
+      console.error("Fehler beim Überprüfen, ob das Spiel privat ist:", error);
+      return false;
     }
-
-    async function isGamePrivate(gameId: string): Promise<boolean> {
-      try {
-        const response = await fetch(`${restUrl}/${gameId}/isPrivate`);
-        const result = await response.json();
-
-        if (result.status === "ok") {
-          return result.isPrivate;
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (error) {
-        console.error("Fehler beim Überprüfen, ob das Spiel privat ist:", error);
-        return false;
-      }
-    }
+  }
 
   return {
     gameState,
@@ -401,7 +422,8 @@ export const useGameStore = defineStore('gameStore', () => {
     setPlayerRole,
     setPlayerRoleViaStomp,
     closeTab,
-    isGamePrivate
+    isGamePrivate,
+    subscribeToChickenPositions
   }
 })
 
