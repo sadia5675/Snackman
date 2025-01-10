@@ -394,7 +394,6 @@ public class Game {
 
         if(targetTile.hasItem()){
             LOGGER.info("Item gefunden");
-            targetTile.addCharacter(curCharacter);
         }
     
         // Charakter bewegen

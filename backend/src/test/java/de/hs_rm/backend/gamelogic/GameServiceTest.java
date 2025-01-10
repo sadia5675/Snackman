@@ -39,7 +39,7 @@ public class GameServiceTest {
     @Test // Test für null Username
     void testMoveUsernameIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            gameService.move(null, 1, 1, 1);
+            gameService.move(null, 1, 1, 1, 1);
         });
 
         assertEquals("Player 'null' not found in any game.", exception.getMessage());
@@ -48,7 +48,7 @@ public class GameServiceTest {
     @Test // Test für leeren Username
     void testMoveUsernameIsEmpty() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            gameService.move("", 1, 1, 1);
+            gameService.move("", 1, 1, 1, 1);
         });
 
         assertEquals("Player '' not found in any game.", exception.getMessage());
@@ -57,7 +57,7 @@ public class GameServiceTest {
     @Test // Test für Spieler, der in keinem Spiel ist
     void testMovePlayerNotFound() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            gameService.move("unknownPlayer", 1, 1, 1);
+            gameService.move("unknownPlayer", 1, 1, 1, 1);
         });
 
         assertEquals("Player 'unknownPlayer' not found in any game.", exception.getMessage());
@@ -70,10 +70,10 @@ public class GameServiceTest {
                 .thenThrow(new IllegalArgumentException("Failed to move Player 'testPlayer'. Tile is a wall"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            gameService.move("testPlayer", 2, 2, 1);
+            gameService.move("testPlayer", 2, 2, 1, 1);
         });
 
-        boolean result = gameService.move("testPlayer", 2, 2, 1);
+        boolean result = gameService.move("testPlayer", 2, 2, 1, 1);
 
         assertFalse(result);
         verify(mockGame).move("testPlayer", 2, 2, 1,1); // Überprüfen, ob move aufgerufen wurde
@@ -89,7 +89,7 @@ public class GameServiceTest {
 
         gameList.put("game1", mockGame); 
 
-        boolean result = gameService.move("testPlayer", 3, 3, 1);
+        boolean result = gameService.move("testPlayer", 3, 3, 1, 1);
 
         assertTrue(result);
         verify(mockGame).move("testPlayer", 3, 3, 1,1);

@@ -532,7 +532,7 @@ function renderChicken(chickenPositions: IChickenPositionDTD[]){
   const modelLoader = new GLTFLoader()
 
   chickenPositions.forEach((chickenPosition) => {
-    modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
+    modelLoader.load('@/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
       const model = objekt.scene
       model.position.set(chickenPosition.x, 1, chickenPosition.y)
       model.scale.set(0.03, 0.03, 0.03)
