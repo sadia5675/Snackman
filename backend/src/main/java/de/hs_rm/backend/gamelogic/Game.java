@@ -331,6 +331,7 @@ public class Game {
 
         }
         // Bewegung von Hühn ausführen
+        /*
         for (Chicken chicken : chickens) {
             try {
                 chicken.executeBehavior(playmap);
@@ -338,6 +339,7 @@ public class Game {
                 LOGGER.error("Error while executing behavior for chicken: {}", chicken, e);
             }
         }
+        */
 
         return started;
     }

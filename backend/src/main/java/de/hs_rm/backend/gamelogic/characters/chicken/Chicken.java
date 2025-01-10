@@ -15,7 +15,7 @@ public class Chicken {
 
 
       public void executeBehavior(PlayMap playMap) {
-        try (PythonInterpreter pyInterp = new PythonInterpreter()) {
+        /*try (PythonInterpreter pyInterp = new PythonInterpreter()) {
             // Skript laden
             pyInterp.execfile(behaviorScript);
 
@@ -29,7 +29,7 @@ public class Chicken {
             
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     
