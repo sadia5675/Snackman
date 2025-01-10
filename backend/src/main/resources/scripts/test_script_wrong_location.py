@@ -8,19 +8,10 @@ print("Evironment: ", environment)
 print("Vorherige Chicken Position: ", chicken.getPosX(), chicken.getPosY())
 
 def move_logic():
-    chickenEnvironment = environment.getEnvironment(chicken.getPosX(), chicken.getPosY())
-
-
-
-
-
-
 
     new_pos_x = chicken.getPosX() + 1
     new_pos_y = chicken.getPosY() + 1
 
-
-    
     print("Neue Chicken Position: ", chicken.getPosX(), chicken.getPosY())
     chicken.move(new_pos_x, new_pos_y)
 

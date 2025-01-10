@@ -37,7 +37,7 @@ public class Chicken {
 
         // ToDo Aron: Soll lieber Game in Kontruktor mitgegeben werden, oder einfach unten über die getEnvironment(x, y, game)?
         // new ChickenEnvironmentApi();
-        new ChickenEnvironmentApi(game);
+        this.environmentApi = new ChickenEnvironmentApi(game);
 
 
 
@@ -68,7 +68,7 @@ public class Chicken {
             
         }
 
-        
+        LOGGER.error("run_auto() aufgerufen");
         pyInterpreter.exec("run_auto()");
 
     }
