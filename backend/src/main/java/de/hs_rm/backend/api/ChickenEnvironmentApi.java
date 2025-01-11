@@ -2,6 +2,9 @@ package de.hs_rm.backend.api;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.map.Tile;
@@ -11,6 +14,9 @@ public class ChickenEnvironmentApi {
 
     private int width;
     private int height;
+
+    Logger logger = LoggerFactory.getLogger(ChickenEnvironmentApi.class);
+
 
     public ChickenEnvironmentApi(Game game) {
         this.existingGame = game;
@@ -22,17 +28,39 @@ public class ChickenEnvironmentApi {
     
 
     public List<Tile> getEnvironment(int posX, int posY) {
-        int chickenIndexOntile = posY * width + posX;
+        int chickenIndexOntile = posY + posX * width;
+        logger.info("ChickenPosition: {}, {}", posX, posY);
+        logger.info("ChickenIndexOnTile: {}", chickenIndexOntile);
         if(existingGame == null){
             throw new IllegalArgumentException("Game does not exist");
         }
 
         List<Tile> restrictedTileList = new ArrayList<>();
         // ToDo Aron:
-        for (int i = chickenIndexOntile - 4; i <= chickenIndexOntile + 4; i++) {
-            if (i >= 0 && i < existingGame.getPlaymap().getTilesList().size()) {
-                restrictedTileList.add(existingGame.getPlaymap().getTilesList().get(i));
+        // for (int i = chickenIndexOntile - 4; i <= chickenIndexOntile + 4; i++) {
+        //     if (i >= 0 && i < existingGame.getPlaymap().getTilesList().size()) {
+        //         restrictedTileList.add(existingGame.getPlaymap().getTilesList().get(i));
+        //     }
+        // }
+        for (int y = posY - 1; y <= posY + 1; y++) {
+            for (int x = posX - 1; x <= posX + 1; x++) {
+                if (x >= 0 && x < width && y >= 0 && y < height) {
+                    int index = y * width + x;
+                    logger.info("Füge Tile bei Index {} hinzu", index);
+                    // ????
+                    if (index >= 0 && index < existingGame.getPlaymap().getTilesList().size()) {
+                        restrictedTileList.add(existingGame.getPlaymap().getTilesList().get(index));
+                        logger.info("Environment for posX: " + posX + ", posY: " + posY + ", Tiles: " + restrictedTileList.size());
+
+                    }
+                    
+                  
+                }
             }
+        }
+        // ????
+        while (restrictedTileList.size() < 9) {
+            restrictedTileList.add(null); // Auffüllen der Liste
         }
         
         

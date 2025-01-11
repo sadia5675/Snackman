@@ -94,21 +94,25 @@ public class Tile {
         if(chickenList == null){
             logger.debug("ChickenList is null. Creating new list.");
             chickenList = new ArrayList<>();
-        }
-        logger.debug("Adding chicken to tile.");
-        this.chickenList.add(chicken);
-        if(!itemList.isEmpty()){
+            chickenList.add(chicken);
+            return true;
+        } else {
+            logger.debug("ChickenList beim Hinzufügen: {}", chickenList);
+            this.chickenList.add(chicken);
+            if(!itemList.isEmpty()){
             // TODO: Item hier nehmen
+            }
+            return true;
         }
-        return true;
     }
 
     public void removeChicken(Chicken chicken){
         if (chickenList != null && chickenList.contains(chicken)) {
             chickenList.remove(chicken);
-            logger.debug("Chicken removed from tile.");
+            logger.debug("ChickenList beim Entfernen: {}", chickenList);
         } else {
             logger.error("Chicken not found in tile.");
+            
         }
     }
 
