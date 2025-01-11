@@ -151,7 +151,7 @@ public class GameService {
         return game;
     }
 
-    public boolean move(String username, int targetX, int targetY) {
+    public boolean move(String username, int targetX, int targetY, int targetZ, double angle) {
         // Um den Spieler zu finden
         for (Game game : gameList.values()) {
             Player player = game.findPlayerByUsername(username);
@@ -163,7 +163,7 @@ public class GameService {
                             "Target position (" + targetX + ", " + targetY + ") is out of bounds.");
                 }
                 //Bewegung
-                boolean success = game.move(username, targetX, targetY, (double)0);
+                boolean success = game.move(username, targetX, targetY, targetZ,angle);
                 if (!success) {
                     throw new IllegalArgumentException(
                             "Failed to move Player '" + username + "'. Tile is a wall");

@@ -15,7 +15,7 @@ public abstract class Character{
     private double speed;
     // PlayerPosition playerposition;
     // Player player;
-    private double posX, posY;
+    private double posX, posY, posZ;
     private int currentcalorie;
     private ObjectsItems currentObjectItem;
     private static final Logger logger = LoggerFactory.getLogger(Character.class);
@@ -58,9 +58,10 @@ public abstract class Character{
     //     this.gameId = gamiId;
     // }
 
-    public void move(double x, double y, double angle){
+    public void move(double x, double y, double z, double angle){
         this.posX = x;
         this.posY = y;
+        this.posZ = z;
         this.angleInDegrees = angle;
     }
 
@@ -81,6 +82,12 @@ public abstract class Character{
     }
     public void setPosY(int posY) {
         this.posY = posY;
+    }
+    public double getPosZ() {
+        return posZ;
+    }
+    public void setPosZ(int posZ) {
+        this.posZ = posZ;
     }
     public ObjectsItems getCurrentObjectItem() {
         return currentObjectItem;

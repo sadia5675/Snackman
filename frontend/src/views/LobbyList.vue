@@ -61,6 +61,12 @@ async function getAllGames(){
       <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
     </div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
+
+        <input v-if="modal.isGamePrivate" v-model="newPlayer.password" type="text" id="password"
+          class="block w-full rounded-md mt-2 border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+          placeholder="Passwort eingeben" />
+      
+
        <div class="flex space-x-4">
         <button class="button-small-adventure" @click="modal.joinGame(newPlayer)">Weiter</button>
         <button class="button-small-adventure" @click="modal.closeModal()">Schließen</button>
@@ -90,7 +96,7 @@ async function getAllGames(){
                 :game="game">
                 <LobbyTabellenZeile
                     :game="game"
-                    @open-modal="modal.openModal"
+                    @open-modal="modal.checkPrivateGame(game.id)"
                 />
             </tr>
           </tbody>

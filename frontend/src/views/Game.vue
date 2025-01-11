@@ -42,6 +42,23 @@ const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
 
+
+
+//für HuD
+//const life = ref(2) //startlife
+//const maxLife = ref(3)
+//const collectedItems = ref<string[]>([]) //Gesammelte Items
+
+// für springen
+let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
+const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
+let isChargingJump = false // Ob der Spieler einen Sprung auflädt
+let isJumping = false // Verhindert doppeltes Springen
+let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
+const gravity = -9.8 // Schwerkraft
+const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
+const maxJumpSpeed = 15 //Geschwindigkeit für großen Sprung
+
 function lockPointer() {
   pointerLockControls.lock();
   pointerLockControls.isLocked = true;
@@ -173,6 +190,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
       case 'KeyD':
         movingRight = true
         break
+      case 'Space':
+        isChargingJump = true;
+        break
     }
   })
   window.addEventListener('keyup', (e) => {
@@ -189,6 +209,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         break
       case 'KeyD':
         movingRight = false
+        break
+        case 'Space':
+          isChargingJump = false;
         break
     }
   })
@@ -280,12 +303,38 @@ pointLight.position.set(10, 20, 10) //extra Lightning for the ball
 scene.add(pointLight)
 
 function animate() {
-  setTimeout( function() {
+  setTimeout(function () {
     requestAnimationFrame(animate)
-  }, 1000 / 60 );
+  }, 1000 / 60)
   renderer.render(scene, camera)
   const delta = clock.getDelta()
   cameraPositionBewegen(delta)
+}
+
+// Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
+function triggerJumpAfterChargeTime(delta: number) {
+  if (isChargingJump) {
+    // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
+    jumpChargeTime += delta; // Ladezeit hochzählen
+
+    if (jumpChargeTime >= maxJumpChargeTime) {
+      jumpChargeTime = 0; // Ladezeit zurücksetzen
+      // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
+      isChargingJump = false; // Leertaste kann losgelassen werden
+      jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
+      isJumping = true; // Der Spieler springt jetzt
+      console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+    }
+
+  }
+  else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
+      jumpChargeTime = 0;
+      jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
+      isJumping = true; // Sprung aktivieren
+      console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+
+  }
+
 }
 
 function cameraPositionBewegen(delta: number) {
@@ -299,6 +348,25 @@ function cameraPositionBewegen(delta: number) {
   const yPlaneVector = new THREE.Vector3(0, 1, 0)
 
   nextPosition = camera.position.clone()
+  // Sprungberechnung
+  if (isJumping) {
+    jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
+    nextPosition.y += jumpVelocity * delta
+    validatePosition(nextPosition)
+    camera.position.y = nextPosition.y;
+
+    // Bodenberührung
+    if (nextPosition.y <= 1) {
+      nextPosition.y = 1
+      validatePosition(nextPosition)
+      camera.position.y = nextPosition.y;
+      jumpVelocity = 0
+      isJumping = false
+      jumpChargeTime =0
+    }
+  }
+  // Setze die Y-Position unabhängig vom Rest
+  camera.position.y = nextPosition.y;
 
   if (movingForward || movingBackward || movingLeft || movingRight) {
     if (!walkingSound.isPlaying) {
@@ -355,30 +423,34 @@ function cameraPositionBewegen(delta: number) {
         movementSpeed * delta,
       )
     }
-    nextPosition.y = 1
     validatePosition(nextPosition)
-    camera.position.y = 1
-  } else {
+  }
+  else {
     if (walkingSound.isPlaying) {
       walkingSound.pause()
     }
+  }
+
+  // Überprüfe und führe den Sprung aus, wenn nötig
+  if(!isJumping){
+    triggerJumpAfterChargeTime(delta);
   }
 }
 
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
 
-  if (currentTime - lastSend > 50) {
+  if (currentTime - lastSend > 10) {
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
+      posZ: nextPosition.y,
       angle: camera.rotation.z,
     })
     lastSend = currentTime
   }
 }
-
 
 function moveCamera() {
   camera.position.copy(nextPosition)
@@ -401,7 +473,7 @@ function removeModel(object: THREE.Object3D) {
 }
 
 function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
-  console.log("INSIDE RENDER: ", playerPositions);
+  console.log('INSIDE RENDER: ', playerPositions)
 
   const modelLoader = new GLTFLoader();
   const adjustAngle = Math.PI;
@@ -439,23 +511,29 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         loadingPlayers.delete(playerPosition.playerName);
       });
     } else {
-      const objectId = players.get(playerPosition.playerName);
-      if (objectId) {
-        const model = scene.getObjectById(objectId);
+      //Modell updaten
+      const index: number | undefined = players.get(playerPosition.playerName)
+      if (index) {
+        const model = scene.getObjectById(index)
         if (model) {
-          model.position.set(playerPosition.x, 1, playerPosition.y);
-          model.rotation.y = playerPosition.angle + adjustAngle;
+          const messungsBox = new THREE.Box3()
+          const breite = new THREE.Vector3()
+          messungsBox.getSize(breite)
+          messungsBox.expandByObject(model)
+          model.position.set(playerPosition.x - breite.x / 2, playerPosition.z, playerPosition.y)
+          model.rotation.y = playerPosition.angle + adjustAngle
         }
       }
     }
-  });
+  })
 }
 
 function renderChicken(chickenPositions: IChickenPositionDTD[]){
   const modelLoader = new GLTFLoader()
+  const chickenModelURL = new URL('@/assets/game/realistic/chicken/chicken.gltf', import.meta.url).href;
 
   chickenPositions.forEach((chickenPosition) => {
-    modelLoader.load('/src/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
+    modelLoader.load('@/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
       const model = objekt.scene
       model.position.set(chickenPosition.x, 1, chickenPosition.y)
       model.scale.set(0.03, 0.03, 0.03)
@@ -533,26 +611,26 @@ function loadMap(map: string[]) {
           const groundItemMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
           groundMesh.setMatrixAt(groundIndex++, groundItemMatrix);
 
-          const itemPaths: { [key: string]: string[] } = {
+          const itemPaths: { [key: string]: URL[] } = {
             E: [
-              "@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb",
-              "@/assets/game/items/E/chocolate_bar/chocolate_bar.glb",
+              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url),
+              new URL("@/assets/game/items/E/chocolate_bar/chocolate_bar.glb", import.meta.url)
             ],
             D: [
-              "@/assets/game/items/D/cotton_candy/cottoncandy.glb",
-              "@/assets/game/items/D/popcorn/popcorn.glb",
+              new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url),
+              new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url)
             ],
             C: [
-              "@/assets/game/items/C/candy_cane/candycane.glb",
-              "@/assets/game/items/C/chips/chips.glb",
+              new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url),
+              new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url),
             ],
             B: [
-              "@/assets/game/items/B/apple/apple.glb",
-              "@/assets/game/items/B/banana/banana.glb",
+              new URL("@/assets/game/items/B/apple/apple.glb", import.meta.url),
+              new URL("@/assets/game/items/B/banana/banana.glb", import.meta.url),
             ],
             A: [
-              "@/assets/game/items/A/ginger/ginger.glb",
-              "@/assets/game/items/A/lemon/lemon.glb",
+              new URL("@/assets/game/items/A/ginger/ginger.glb", import.meta.url),
+              new URL("@/assets/game/items/A/lemon/lemon.glb", import.meta.url)
             ],
           };
 
@@ -597,11 +675,12 @@ async function handleCharacters(data: ICharacterDTD[]) {
         playerName: character.name,
         x: character.posX,
         y: character.posY,
+        z: character.posZ,
         angle: character.angleInDegrees,
       })
     }
-  });
-  renderCharactersTest(playerPositions);
+  })
+  renderCharactersTest(playerPositions)
 }
 
 onMounted(async () => {
@@ -626,11 +705,11 @@ onMounted(async () => {
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
       case 'playerPosition':
-        console.log("FROM PLAYER POSITON: ", message.feedback)
-        await handleCharacters(message.feedback);
-        break;
+        console.log('FROM PLAYER POSITON: ', message.feedback)
+        await handleCharacters(message.feedback)
+        break
     }
-  });
+  })
 
   subscribeTo(`/ingame/${lobbyId}`, async (messageValidation: IMessageDTD) => {
     console.log(messageValidation.type)
@@ -642,7 +721,7 @@ onMounted(async () => {
             moveCamera();
         }
 
-        break;
+        break
     }
   })
 
@@ -677,6 +756,23 @@ onMounted(async () => {
   } else {
     console.error('No map found')
   }
+
+  const mockPositions: IPlayerPositionDTD[] = [
+    {
+      playerName: 'test',
+      x: 1,
+      y: 1,
+      z: 1,
+      angle: Math.PI,
+    },
+    {
+      playerName: 'test',
+      x: 2,
+      y: 2,
+      z: 1,
+      angle: 2 * Math.PI,
+    },
+  ]
   renderChicken(chickenPositions.value)
   animate()
 })

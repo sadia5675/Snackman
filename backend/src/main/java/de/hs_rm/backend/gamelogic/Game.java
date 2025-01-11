@@ -60,6 +60,7 @@ public class Game {
             characterWithNames.put("name", username); // Username hinzufügen
             characterWithNames.put("posX", character.getPosX());
             characterWithNames.put("posY", character.getPosY());
+            characterWithNames.put("posZ", character.getPosZ());
             characterWithNames.put("speed", character.getSpeed());
             characterWithNames.put("angleInDegrees", character.getAngleInDegrees());
 
@@ -346,15 +347,15 @@ public class Game {
 
     }
 
-    public boolean moveTest(String username, double posX, double posY, double angle){
+    public boolean moveTest(String username, double posX, double posY, double posZ, double angle){
         Character curCharacter = characters.get(username);
 
-        curCharacter.move(posX, posY, angle);
+        curCharacter.move(posX, posY, posZ, angle);
         LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
         return true;
     }
 
-    public boolean move(String username, double posY, double posX, double angle) {
+    public boolean move(String username, double posY, double posX, double posZ, double angle) {
         Character curCharacter = characters.get(username);
 
         int roundedPosX = (int) Math.floor(posX);
@@ -376,39 +377,36 @@ public class Game {
         }
         Tile targetTile = playmap.getTilesList().get(targetIndex);
     
-        // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
-        if (curIndex == targetIndex) {
-            LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
-
-            //posy und posx vertauscht 
-            curCharacter.move(posY, posX, angle); // Aktualisiere nur die Position des Charakters
-            return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
-        }
-    
         // Ziel-Tile prüfen
         if (targetTile.getType() == TileType.WALL) {
             LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
 
+        // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
+        if (curIndex == targetIndex) {
+            LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
+
+            //posy und posx vertauscht 
+            curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
+            return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
+        }
+
         if(targetTile.hasItem()){
             LOGGER.info("Item gefunden");
-            targetTile.addCharacter(curCharacter);
         }
     
         // Charakter bewegen
         curTile.removeCharacter(curCharacter);
 
         //posy und posx vertauscht
-        curCharacter.move(posY, posX, angle);
+        curCharacter.move(posY, posX, posZ, angle);
         targetTile.addCharacter(curCharacter);
     
         LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
         LOGGER.debug("TargetTile has item: {}, Items: {}", targetTile.hasItem(), targetTile.getItemList());
         return true;
     }
-    
-
 
     public Player findPlayerByUsername(String username) {
         if (players == null || players.isEmpty()) {

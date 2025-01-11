@@ -21,15 +21,16 @@ import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
+import org.python.util.PythonInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -216,27 +217,40 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/leave")
     @SendTo("/topic/game/{lobbyid}")
     public void leaveLobby(Player player, @DestinationVariable String lobbyid) {
-        // #63 NEW: gameService now handles Player join
-        HashMap<String, Object> response = new HashMap<>();
-        try {
-            Game existingGame = gameService.leaveGame(lobbyid, player);
-            logger.info("Player: {}, leaved game: {}", player.getName(), lobbyid);
+    HashMap<String, Object> response = new HashMap<>();
 
-            response.put("feedback", existingGame.getPlayers());
-            response.put("status", "ok");
-            response.put("time", LocalDateTime.now().toString());
+    try {
+        Game existingGame = gameService.getGameById(lobbyid);
 
-            messagingService.sendPlayerList(lobbyid, response);
-
-        } catch (GameLeaveException e) {
-            response.put("type", "playerJoin");
-            response.put("feedback", e.getMessage());
+        if (existingGame == null) {
+            logger.error("No game found with ID: {}", lobbyid);
+            response.put("type", "playerLeave");
+            response.put("feedback", "Game with ID " + lobbyid + " not found.");
             response.put("status", "error");
             response.put("time", LocalDateTime.now().toString());
-
             messagingService.sendPlayerList(lobbyid, response);
+            return;
         }
+
+        // Spieler aus dem Spiel entfernen
+        existingGame = gameService.leaveGame(lobbyid, player);
+        logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
+
+        response.put("feedback", existingGame.getPlayers());
+        response.put("status", "ok");
+        response.put("time", LocalDateTime.now().toString());
+
+        messagingService.sendPlayerList(lobbyid, response);
+
+    } catch (GameLeaveException e) {
+        response.put("type", "playerLeave");
+        response.put("feedback", e.getMessage());
+        response.put("status", "error");
+        response.put("time", LocalDateTime.now().toString());
+
+        messagingService.sendPlayerList(lobbyid, response);
     }
+}
 
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
@@ -249,7 +263,7 @@ public class GameAPIController {
 
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
         //boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
-        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
+        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
         logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(),position.getAngle(), validMove);
 
         //true nur zum testen, eig prüfen ob move valid ist oder nicht
@@ -443,15 +457,21 @@ public class GameAPIController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}")
-        public ResponseEntity<?> movePlayer(@PathVariable String gameId, @PathVariable String username, @PathVariable int coordinateX, @PathVariable int coordinateY) {
+    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}")
+        public ResponseEntity<?> movePlayer(
+                @PathVariable String gameId,
+                @PathVariable String username,
+                @PathVariable int coordinateX,
+                @PathVariable int coordinateY,
+                @PathVariable int coordinateZ
+    ) {
         Game existingGame = gameService.getGameById(gameId);
 
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
         try {
-            gameService.move(username, coordinateX, coordinateY);
+            gameService.move(username, coordinateX, coordinateY, coordinateZ,1);
             return createOkResponse(existingGame);
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());

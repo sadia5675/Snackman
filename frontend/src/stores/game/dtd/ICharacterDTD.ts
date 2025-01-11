@@ -5,11 +5,12 @@ export interface ICharacterDTD {
   playerSpeed: number;
   posX: number;
   posY: number;
+  posZ: number;
   angleInDegrees: number;
   currentPoints: number;
   touchcount?: number;
   item?: any | null;
-  items?: any[] | null; 
+  items?: any[] | null;
   life: number;
   maxLife: number;
 }

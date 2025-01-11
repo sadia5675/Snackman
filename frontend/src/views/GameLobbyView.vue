@@ -195,7 +195,7 @@ async function startGame() {
     if (!mapStore.mapsDTD.selectedMap?.map) {
       throw new Error("No map selected!");
     }
-    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name, lobbyId); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
+    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
     // Log zum Testen
     console.log(gameStore.gameState);
     console.log("playMap: ", gameStore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map

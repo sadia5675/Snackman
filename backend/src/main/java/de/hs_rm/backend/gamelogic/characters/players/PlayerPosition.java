@@ -2,6 +2,7 @@ package de.hs_rm.backend.gamelogic.characters.players;
 public class PlayerPosition {
     double posX;
     double posY;
+    double posZ;
     double angle;
     public double getAngle() {
         return angle;
@@ -31,6 +32,14 @@ public class PlayerPosition {
 
     public void setPosY(float posY) {
         this.posY = posY;
+    }
+
+    public double getPosZ() {
+        return posZ;
+    }
+
+    public void setPosZ(float posZ) {
+        this.posZ = posZ;
     }
 
     public String getPlayerName() {
