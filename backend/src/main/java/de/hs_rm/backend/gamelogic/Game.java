@@ -199,7 +199,9 @@ public class Game {
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
+            // Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
+            Chicken chicken = new Chicken(1, 1, testPathForScript, this);
+
             chickens.add(chicken);
             chicken.executeBehavior();
             //DONE: chicken zu random tile hinzufügen

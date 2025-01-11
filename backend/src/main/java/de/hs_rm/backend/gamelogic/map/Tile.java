@@ -74,13 +74,8 @@ public class Tile {
         return true;
     }
 
-    public boolean addChicken(Chicken chicken){
-        this.chickenList.add(chicken);
-        if(!itemList.isEmpty()){
-            // TODO: Item hier nehmen
-        }
-        return true;
-    }
+
+    
 
     public boolean addItem(Item item){
         this.itemList.add(item);
@@ -93,6 +88,28 @@ public class Tile {
             return true; 
         }
         return false; 
+    }
+
+    public boolean addChicken(Chicken chicken){
+        if(chickenList == null){
+            logger.debug("ChickenList is null. Creating new list.");
+            chickenList = new ArrayList<>();
+        }
+        logger.debug("Adding chicken to tile.");
+        this.chickenList.add(chicken);
+        if(!itemList.isEmpty()){
+            // TODO: Item hier nehmen
+        }
+        return true;
+    }
+
+    public void removeChicken(Chicken chicken){
+        if (chickenList != null && chickenList.contains(chicken)) {
+            chickenList.remove(chicken);
+            logger.debug("Chicken removed from tile.");
+        } else {
+            logger.error("Chicken not found in tile.");
+        }
     }
 
     public List<Item> getItemList() {

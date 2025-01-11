@@ -124,6 +124,7 @@ public void setTilesList(List<Tile> tilesList) {
 }
 
 public Tile getTileFromList(int x, int y) {
+    // ToDo Aron: Schauen ob rechnung richtig ist
     if (x >= 0 && x < map.length && y >= 0 && y < map[0].length) {
         Tile tile = tilesList.get(x * map[0].length + y);
         return tile;

@@ -9,32 +9,43 @@ import de.hs_rm.backend.gamelogic.map.Tile;
 // @Service
 public class ChickenEnvironmentApi {
 
+    private int width;
+    private int height;
+
     public ChickenEnvironmentApi(Game game) {
         this.existingGame = game;
+        this.width = game.getPlaymap().getWidth();
+        this.height = game.getPlaymap().getHeight();    
     }
 
     private Game existingGame;
     
 
-    // ToDo Aron: Muss hier wahrscheinlich die LobbyId mitgeben um aktuelles Spiel herauszubekommen. Woher bekomme ich die lobbyId des Games?
     public List<Tile> getEnvironment(int posX, int posY) {
-        // Game existingGame = gameService.getGameById(lobbyId);
+        int chickenIndexOntile = posY * width + posX;
         if(existingGame == null){
             throw new IllegalArgumentException("Game does not exist");
         }
 
         List<Tile> restrictedTileList = new ArrayList<>();
-        for (int i = posX -1; i <= posX + 1; i++) {
-            for (int j = posY -1; j <= posY + 1; j++) {
-
-                    Tile tile = existingGame.getPlaymap().getTileFromList(i, j);
-                    if (tile != null) {
-                        restrictedTileList.add(tile);
-                    }
+        // ToDo Aron:
+        for (int i = chickenIndexOntile - 4; i <= chickenIndexOntile + 4; i++) {
+            if (i >= 0 && i < existingGame.getPlaymap().getTilesList().size()) {
+                restrictedTileList.add(existingGame.getPlaymap().getTilesList().get(i));
             }
         }
+        
+        
 
         return restrictedTileList;
     }
+
+    public int getMapWidth() {
+        return width;
+    }
+
+    public int getMapHeight() {
+        return height;
+    }       
     
 }
