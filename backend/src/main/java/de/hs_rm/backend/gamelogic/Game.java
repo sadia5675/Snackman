@@ -191,7 +191,7 @@ public class Game {
         }
         // DONE: random position von hühnchen
         for (int i = 0; i < this.chickenNum; i++) {
-            LOGGER.info("Chicken number: {}", i);
+            LOGGER.info("Chicken number: {}", chickenNum);
             Tile randomTile;
             int index = -1;
             String testPathForScript = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py";
