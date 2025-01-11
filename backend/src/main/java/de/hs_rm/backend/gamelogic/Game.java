@@ -191,6 +191,7 @@ public class Game {
         }
         // DONE: random position von hühnchen
         for (int i = 0; i < this.chickenNum; i++) {
+            LOGGER.info("Chicken number: {}", i);
             Tile randomTile;
             int index = -1;
             String testPathForScript = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py";
@@ -206,6 +207,7 @@ public class Game {
             chicken.executeBehavior();
             //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
+            LOGGER.info("Chicken added to tile: {}", randomTile);
         }
         this.itemsNum = Math.max(1, playmap.getCountSurface()/ ITEMS_PER_SURFACE_RATIO ); // 1 Item pro ITEMS_PER_SURFACE_RATIO
 

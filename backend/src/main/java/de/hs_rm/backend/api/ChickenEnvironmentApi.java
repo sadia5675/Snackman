@@ -28,29 +28,24 @@ public class ChickenEnvironmentApi {
     
 
     public List<Tile> getEnvironment(int posX, int posY) {
-        int chickenIndexOntile = posY + posX * width;
-        logger.info("ChickenPosition: {}, {}", posX, posY);
-        logger.info("ChickenIndexOnTile: {}", chickenIndexOntile);
+        int chickenIndexOntile = posX + posY * width;
+        // logger.info("ChickenPosition: {}, {}", posX, posY);
+        // logger.info("ChickenIndexOnTile: {}", chickenIndexOntile);
         if(existingGame == null){
             throw new IllegalArgumentException("Game does not exist");
         }
 
         List<Tile> restrictedTileList = new ArrayList<>();
-        // ToDo Aron:
-        // for (int i = chickenIndexOntile - 4; i <= chickenIndexOntile + 4; i++) {
-        //     if (i >= 0 && i < existingGame.getPlaymap().getTilesList().size()) {
-        //         restrictedTileList.add(existingGame.getPlaymap().getTilesList().get(i));
-        //     }
-        // }
+        
         for (int y = posY - 1; y <= posY + 1; y++) {
             for (int x = posX - 1; x <= posX + 1; x++) {
                 if (x >= 0 && x < width && y >= 0 && y < height) {
                     int index = y * width + x;
-                    logger.info("Füge Tile bei Index {} hinzu", index);
-                    // ????
+                    // logger.info("Füge Tile bei Index {} hinzu", index);
+                   
                     if (index >= 0 && index < existingGame.getPlaymap().getTilesList().size()) {
                         restrictedTileList.add(existingGame.getPlaymap().getTilesList().get(index));
-                        logger.info("Environment for posX: " + posX + ", posY: " + posY + ", Tiles: " + restrictedTileList.size());
+                        // logger.info("Environment for posX: " + posX + ", posY: " + posY + ", Tiles: " + restrictedTileList.size());
 
                     }
                     
@@ -58,11 +53,7 @@ public class ChickenEnvironmentApi {
                 }
             }
         }
-        // ????
-        while (restrictedTileList.size() < 9) {
-            restrictedTileList.add(null); // Auffüllen der Liste
-        }
-        
+      
         
 
         return restrictedTileList;

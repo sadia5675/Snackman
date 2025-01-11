@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
-
-
+# PythonInterpreter ist nur in der Lage Python bis 2.7 zu interpretieren
 
 print("Vorherige Chicken Position: ", chicken.getPosX(), chicken.getPosY())
 
@@ -11,23 +10,17 @@ def move_logic():
     map_width = environment.getMapWidth()
     map_height = environment.getMapHeight()
     tile_index_game_list = chicken.getPosX() + chicken.getPosY() * map_width
-    chicken_index_environment_list = chicken.getPosX() + chicken.getPosY() * 3
+    chicken_index_environment_list = 4
 
 
     print("Map Width: ", map_width)
     print("Map Height: ", map_height)
-    print("Tile Index: ", tile_index_game_list)
-    print("Chicken Index on Tile: ", chicken_index_environment_list)
-
-    if len(actuell_environment) != 9:
-        print("Ungültige Umgebung")
-        return
-  
-    print("Chicken Position: ", chicken.getPosX(), chicken.getPosY())
+    print("Tile Index game List: ", tile_index_game_list)
+    print("Chicken Index on Tile evironment List: ", chicken_index_environment_list)
 
     print_environment(actuell_environment)
   
-    richtungen = {
+    richtung = {
         "Norden": -3,
         "Osten": 1,
         "Süden": +3,
@@ -35,65 +28,49 @@ def move_logic():
     }
 
    
-    if (actuell_environment[chicken_index_environment_list + richtungen["Osten"]].getType().name() == "SURFACE"):
+    # Wenn das Tile im Osten ein SURFACE ist, bewege das Chicken nach Osten    
+    if (actuell_environment[chicken_index_environment_list + richtung["Osten"]].getType().name() == "SURFACE"):
 
-        print("Betritt IF-Bedingung: actuell_environment[chicken_index_environment_list + richtungen[\"Osten\"]] == SURFACE")
+        print("Betritt IF-Bedingung: actuell_environment[chicken_index_environment_list + richtung[\"Osten\"]] == SURFACE")
         new_pos_x = chicken.getPosX() + 1
-        print("Neue Position X berechnet:", new_pos_x)
         new_pos_y = chicken.getPosY()
-        print("Neue Position Y berechnet:", new_pos_y)
         actuell_environment[tile_index_game_list].removeChicken(chicken)
-        print("Chicken von aktuellem Tile entfernt")
         chicken.move(new_pos_x, new_pos_y)
         print("Chicken bewegt sich nach Osten") 
-        actuell_environment[richtungen["Osten"]].addChicken(chicken)
-        print("Chicken auf neues Tile gesetzt")
-        print("IF-Bedingung actuell_environment[5] == SURFACE abgeschlossen")
+        actuell_environment[richtung["Osten"]].addChicken(chicken)
 
-
-    elif (actuell_environment[chicken_index_environment_list + richtungen["Norden"]].getType().name() == "SURFACE"):
+    # Anonsten, wenn das Tile im Norden ein SURFACE ist, bewege das Chicken nach Norden
+    elif (actuell_environment[chicken_index_environment_list + richtung["Norden"]].getType().name() == "SURFACE"):
 
         print("Betritt ELSE-IF-Bedingung: actuell_environment[1] == SURFACE")
         new_pos_x = chicken.getPosX()
-        print("Neue Position X berechnet:", new_pos_x)
         new_pos_y = chicken.getPosY() + 1
-        print("Neue Position Y berechnet:", new_pos_y)
         actuell_environment[tile_index_game_list].removeChicken(chicken)
         chicken.move(new_pos_x, new_pos_y)
         print("Chicken bewegt sich nach Norden")
-        print("Chicken von aktuellem Tile entfernt")
-        actuell_environment[richtungen["Norden"]].addChicken(chicken)
-        print("Chicken auf neues Tile gesetzt")
-        print("ELSE-IF-Bedingung actuell_environment[1] == SURFACE abgeschlossen")
+        actuell_environment[richtung["Norden"]].addChicken(chicken)
 
-    elif (actuell_environment[chicken_index_environment_list + richtungen["Westen"]].getType().name() == "SURFACE"):
+    # Anonsten, wenn das Tile im Westen ein SURFACE ist, bewege das Chicken nach Westen
+    elif (actuell_environment[chicken_index_environment_list + richtung["Westen"]].getType().name() == "SURFACE"):
 
         print("Betritt ELSE-IF-Bedingung: actuell_environment[3] == SURFACE")
         new_pos_x = chicken.getPosX() - 1
-        print("Neue Position X berechnet:", new_pos_x)
         new_pos_y = chicken.getPosY()
-        print("Neue Position Y berechnet:", new_pos_y)
         actuell_environment[tile_index_game_list].removeChicken(chicken)
-        print("Chicken von aktuellem Tile entfernt")
         chicken.move(new_pos_x, new_pos_y)
         print("Chicken bewegt sich nach Westen")
-        actuell_environment[richtungen["Westen"]].addChicken(chicken)
-        print("Chicken auf neues Tile gesetzt")
-        print("ELSE-IF-Bedingung actuell_environment[3] == SURFACE abgeschlossen")
+        actuell_environment[richtung["Westen"]].addChicken(chicken)
 
-    elif (actuell_environment[chicken_index_environment_list + richtungen["Süden"]].getType().name() == "SURFACE"):
+    # Anonsten, wenn das Tile im Süden ein SURFACE ist, bewege das Chicken nach Süden
+    elif (actuell_environment[chicken_index_environment_list + richtung["Süden"]].getType().name() == "SURFACE"):
 
         print("Betritt ELSE-IF-Bedingung: actuell_environment[7] == SURFACE")
         new_pos_x = chicken.getPosX()
-        print("Neue Position X berechnet:", new_pos_x)
         new_pos_y = chicken.getPosY() - 1
-        print("Neue Position Y berechnet:", new_pos_y)
         actuell_environment[tile_index_game_list].removeChicken(chicken)
-        print("Chicken von aktuellem Tile entfernt")
         chicken.move(new_pos_x, new_pos_y)
         print("Chicken bewegt sich nach Süden")
-        actuell_environment[richtungen["Süden"]].addChicken(chicken)
-        print("Chicken auf neues Tile gesetzt")
+        actuell_environment[richtung["Süden"]].addChicken(chicken)
         print("ELSE-IF-Bedingung actuell_environment[7] == SURFACE abgeschlossen")
 
     else:
@@ -112,13 +89,26 @@ def print_environment(actuell_environment):
    
     
     print("Umgebung:")
-    # for i in range(3):  
-    #     row = actuell_environment[i * 3:(i + 1) * 3]  
-    #     formatted_row = [element.getType() for element in row]  
-    #     print(formatted_row)
-    print(actuell_environment[0].getType(), actuell_environment[1].getType(), actuell_environment[2].getType())
-    print(actuell_environment[3].getType(), actuell_environment[4].getType(), actuell_environment[5].getType())
-    print(actuell_environment[6].getType(), actuell_environment[7].getType(), actuell_environment[8].getType())
+    tile_width = 10
+   
+    print("{:<{width}} {:<{width}} {:<{width}}".format(
+        actuell_environment[0].getType().name(),
+        actuell_environment[1].getType().name(),
+        actuell_environment[2].getType().name(),
+        width=tile_width
+    ))
+    print("{:<{width}} {:<{width}} {:<{width}}".format(
+        actuell_environment[3].getType().name(),
+        "CHICKEN",
+        actuell_environment[5].getType().name(),
+        width=tile_width
+    ))
+    print("{:<{width}} {:<{width}} {:<{width}}".format(
+        actuell_environment[6].getType().name(),
+        actuell_environment[7].getType().name(),
+        actuell_environment[8].getType().name(),
+        width=tile_width
+    ))
 
 
 def run_auto():
