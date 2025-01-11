@@ -200,8 +200,11 @@ public class Game {
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
+            // Nur zu testzwecken hier, um Chicken immer am linen Rand zu platzieren
+             Chicken chicken = new Chicken(1, 1, testPathForScript, this);
+            //  Das hier ist richtig, aber für Testzwecke wurde code auskommentiert
             // Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
-            Chicken chicken = new Chicken(1, 1, testPathForScript, this);
+           
 
             chickens.add(chicken);
             chicken.executeBehavior();
