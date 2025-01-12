@@ -141,7 +141,30 @@ public class GameAPIController {
 
         return createOkResponse(existingGame);
     }
+    @MessageMapping("/topic/game/{lobbyId}/setTheme")
+    @SendTo("/topic/game/{lobbyId}")
+    public Map<String, Object> setTheme(@DestinationVariable String lobbyId, @RequestBody Map<String, String> theme) {
+        messagingService.sendThemeUpdate(lobbyId, theme.get("themeName"));
+        return Map.of(
+            "type", "themeUpdate",
+            "status", "ok",
+            "feedback", theme.get("themeName")
+        );
+    }
 
+    @MessageMapping("/topic/game/{lobbyId}/setMap")
+    @SendTo("/topic/game/{lobbyId}")
+    public Map<String, Object> setMap(
+            @DestinationVariable String lobbyId,
+            @RequestBody Map<String, String> map) {
+        messagingService.sendMapUpdate(lobbyId, map.get("mapName"));
+        return Map.of(
+            "type", "mapUpdate",
+            "status", "ok",
+            "feedback", map.get("mapName")
+        );
+    }
+    
     @MessageMapping("/topic/game/{lobbyid}/start/{selectedMapName}")
     @SendTo("/topic/game/{lobbyid}")
     public void startGameViaStomp(
