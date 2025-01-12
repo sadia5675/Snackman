@@ -16,6 +16,9 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import { useThemeStore } from '@/stores/themes/themeStore';
+
+const themeStore = useThemeStore();
 
 const gameStore = useGameStore()
 

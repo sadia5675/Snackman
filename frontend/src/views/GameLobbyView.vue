@@ -64,7 +64,6 @@
           <p class="text-sm text-gray-400 mt-2">Selected Theme: {{ themeStore.selectedTheme || 'None' }}</p>
         </div>
      </div>
-
       <button
         :class="{
           'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
@@ -170,6 +169,7 @@ import { nextTick } from 'vue';
 import { useThemeStore } from "@/stores/themes/themeStore";
 
 const themeStore= useThemeStore();
+const isThemePopupVisible = ref(false);
 const gameStore = useGameStore()
 const { setPlayerRoleViaStomp } = gameStore
 
