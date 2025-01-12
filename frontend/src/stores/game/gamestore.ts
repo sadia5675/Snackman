@@ -10,6 +10,8 @@ import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
 import type {Result} from "@/stores/game/responses/Result";
+import { useThemeStore } from "../themes/themeStore";
+import { useMapStore } from "../map/MapStore";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -358,6 +360,27 @@ export const useGameStore = defineStore('gameStore', () => {
           case 'gameStart':
             gameState.gamedata = message.feedback as IGameDTD
             break
+            case 'themeUpdate':
+              const themeStore = useThemeStore()
+              const newTheme = message.feedback
+              if (themeStore.themes[newTheme]) {
+                themeStore.selectedTheme = newTheme
+                console.log(`Theme updated to: ${newTheme}`)
+              } else {
+                console.error('Received invalid theme:', newTheme)
+              }
+              break
+            case'mapUpdate':
+              const mapStore = useMapStore();
+              const newMapName = message.feedback;
+              const updatedMap = mapStore.mapsDTD.maps.find(map => map.name === newMapName);
+              if (updatedMap) {
+                mapStore.mapsDTD.selectedMap = updatedMap;
+                console.log(`Map updated to: ${updatedMap.name}`);
+              } else {
+                console.error('Received invalid map:', newMapName);
+              }
+              break;
           case 'playerMoveValidation':
             console.log("test")
           default:
