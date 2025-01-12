@@ -28,7 +28,7 @@ let lastSend: number = 0
 const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
-
+const map = ref<string[] | undefined>(undefined);
 
 
 //Movement
@@ -488,7 +488,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     (playerName) =>
       !playerPositions.map((position) => position.playerName).includes(playerName)
   );
-
+  const snackmanModel= themeStore.currentTheme?.character.snackman; 
+  const ghostModel= themeStore.currentTheme?.character.ghost; 
   missingPlayers.forEach((player) => {
     const objectId = players.get(player);
     if (objectId) {
@@ -502,13 +503,38 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
   playerPositions.forEach(async (playerPosition) => {
     if (!players.has(playerPosition.playerName) && !loadingPlayers.get(playerPosition.playerName)) {
-      const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
-
+      //const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       loadingPlayers.set(playerPosition.playerName, true);
-
-      modelLoader.load(snackmanModelURL, (gltf) => {
+      let modelPath;
+      const playersList = gameStore.gameState.gamedata?.players;
+      let playerData= undefined; 
+      if (playersList){
+        for (const player of playersList){
+          if (player.name == playerPosition.playerName){
+            playerData= player; 
+            break; 
+          }
+        }
+      }if (playerData?.playerrole == Playerrole.SNACKMAN) {
+          modelPath = snackmanModel;
+          console.log(`Snackman-Modell wird geladen für ${playerPosition.playerName}`, modelPath);
+      } else {
+          modelPath = ghostModel;
+          console.log(`Ghost-Modell wird geladen für ${playerPosition.playerName}`, modelPath);
+      }
+      if (modelPath){
+        let loadingPath: string; 
+        let scaleNumber: number
+        if (typeof modelPath === "string"){
+          loadingPath= modelPath;
+          scaleNumber=0.5; 
+        }else{
+          loadingPath=modelPath.path;
+          scaleNumber= modelPath.scale;  
+        }
+      modelLoader.load(loadingPath, (gltf) => {
         const model = gltf.scene;
-        model.scale.set(0.5, 0.5, 0.5);
+        model.scale.set(scaleNumber, scaleNumber,scaleNumber);
         players.set(playerPosition.playerName, model.id);
         scene.add(model);
 
@@ -517,6 +543,9 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
         loadingPlayers.delete(playerPosition.playerName);
       });
+    }else{
+      console.error("Kein Modell gefunden für", playerPosition.playerName);
+    }
     } else {
       //Modell updaten
       const index: number | undefined = players.get(playerPosition.playerName)
@@ -560,11 +589,11 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
-function loadMap(map: string[]) {
+function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
   const wallGeometry = new THREE.BoxGeometry(1, 2, 1);
-  const groundTexture = getCachedTexture(ground);
-  const wallTexture = getCachedTexture(wall);
+  const groundTexture = getCachedTexture(selectedTheme.ground);
+  const wallTexture = getCachedTexture(selectedTheme.wall);
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
   const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
 
@@ -706,6 +735,60 @@ function loadMap(map: string[]) {
   scene.add(wallMesh);
 }
 
+function addSkybox(scene: THREE.Scene, skyBoxPath:string | {right: string; left: string; top: string; bottom: string; front: string; back: string }) {
+  /*const loader = new GLTFLoader();
+  loader.load(
+    skyBox, 
+    (gltf) => {
+      console.log("Skybox GLB erfolgreich geladen:", skyBox);
+      const sky = gltf.scene;
+      sky.scale.set(100,100,100);
+      sky.position.set(0,0,0);  
+      scene.add(sky); 
+    },
+    undefined,
+    (error) => {
+      console.error("Fehler beim Laden der Skybox GLB:", error);
+    }
+  );*/
+  
+  const loader = new THREE.TextureLoader();
+  if (typeof skyBoxPath === 'string'){
+    loader.load(
+      skyBoxPath,
+    (texture) => {
+      const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+      const sphereMaterial = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.BackSide, 
+      });
+
+      const skySphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      scene.add(skySphere);
+      console.log("SkySphere erfolgreich hinzugefügt!");
+    },
+    undefined,
+    (error) => {
+      console.error("Fehler beim Laden der SkySphere-Textur:", error);
+    }
+  );
+  }else{
+    const materials = [
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.right), side: THREE.BackSide }), 
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.left), side: THREE.BackSide }),  
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.top), side: THREE.BackSide }),  
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.bottom), side: THREE.BackSide }),
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.front), side: THREE.BackSide }), 
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.back), side: THREE.BackSide }),  
+    ];
+
+    const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500); // Größe des Skybox-Würfels
+    const skybox = new THREE.Mesh(skyboxGeometry, materials);
+    skybox.position.set(0, 0, 0);
+    scene.add(skybox);
+  }
+}
+
 function loadMapFromLocalStorage(): string[] | null {
   const savedMap = localStorage.getItem(`gameMap-${lobbyId}`);
   if (savedMap) {
@@ -779,7 +862,8 @@ onMounted(async () => {
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
   }
-  const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
+  map.value= gameStore.gameState.gamedata.playmap?.map;
+  //const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
   // const map = [
   //   '********************',
   //   '*    *     *       *',
@@ -802,12 +886,20 @@ onMounted(async () => {
   //   '****************** *',
   //   '********************',
   // ]
-  if (map) {
-    loadMap(map)
+  if (map.value && themeStore.currentTheme) {
+    loadMap(map.value,{
+      ground: themeStore.currentTheme.ground,
+      wall: themeStore.currentTheme.wall,
+    });
   } else {
     console.error('No map found')
   }
-
+  if (themeStore.currentTheme.skybox) {
+    addSkybox(scene, themeStore.currentTheme.skybox); 
+    console.log("Skybox-Pfade:", themeStore.currentTheme.skybox);
+  } else {
+    console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
+  }
   const mockPositions: IPlayerPositionDTD[] = [
     {
       playerName: 'test',
@@ -826,7 +918,36 @@ onMounted(async () => {
   ]
   renderChicken(chickenPositions.value)
   animate()
+  console.log(ground)
+  console.log (wall)
 })
+watch(
+  () => themeStore.selectedTheme,
+  (newTheme) => {
+    if (newTheme) {
+      console.log(`Theme geändert zu: ${newTheme}`);
+      const currentTheme = themeStore.currentTheme;
+      //console.log(`Ändere Skybox zu: ${themeStore.currentTheme.sky}`);
+      //addSkybox(scene, themeStore.currentTheme.sky); // Dynamisch Skybox ändern
+      //console.log("Skybox-Pfad:", themeStore.currentTheme.sky);
+
+      // Map neu laden, falls vorhanden
+      if (map.value && currentTheme) {
+        loadMap(map.value, {
+          ground: currentTheme.ground,
+          wall: currentTheme.wall,
+        });
+      } else {
+        console.error('Keine Map oder kein aktuelles Theme gefunden');
+      }
+      if (themeStore.currentTheme.skybox){
+        addSkybox(scene, themeStore.currentTheme.skybox);
+      }else{
+        console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
+      }
+    }
+  }
+);
 
 </script>
 
