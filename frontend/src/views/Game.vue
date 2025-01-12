@@ -671,7 +671,7 @@ function loadMap(map: string[]) {
             } else if (randomModelPath.includes('apple')) {
               item.position.set(x - 2, 0.75, z);
               item.scale.set(0.0015, 0.0015, 0.0015);
-            } else if (randomModelPath.includes('banana')) { 
+            } else if (randomModelPath.includes('banana')) {
               item.position.set(x - 2, 0.75, z);
               item.scale.set(0.07, 0.07, 0.07);
             } else if (randomModelPath.includes('ginger_fixed')) {
@@ -697,11 +697,25 @@ function loadMap(map: string[]) {
     });
   });
 
+  localStorage.setItem('gameMap-${lobbyId}',JSON.stringify(map));
+
   // Add instanced meshes to the scene
   groundMesh.instanceMatrix.needsUpdate = true;
   wallMesh.instanceMatrix.needsUpdate = true;
   scene.add(groundMesh);
   scene.add(wallMesh);
+}
+
+function loadMapFromLocalStorage(): string[] | null {
+  const savedMap = localStorage.getItem(`gameMap-${lobbyId}`);
+  if (savedMap) {
+    try {
+      return JSON.parse(savedMap);
+    } catch (error) {
+      console.error('Error parsing saved map:', error);
+    }
+  }
+  return null;
 }
 
 async function handleCharacters(data: ICharacterDTD[]) {
