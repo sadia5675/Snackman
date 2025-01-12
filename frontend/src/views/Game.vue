@@ -27,6 +27,8 @@ let lastSend: number = 0
 //let lastMoveValid = false;
 const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
+const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
+
 
 
 //Movement
@@ -150,7 +152,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     renderer.domElement.requestPointerLock()
   })
 
-  window.addEventListener('resize',(e) => {
+  window.addEventListener('resize', (e) => {
     //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -210,8 +212,8 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
       case 'KeyD':
         movingRight = false
         break
-        case 'Space':
-          isChargingJump = false;
+      case 'Space':
+        isChargingJump = false;
         break
     }
   })
@@ -306,6 +308,11 @@ function animate() {
   setTimeout(function () {
     requestAnimationFrame(animate)
   }, 1000 / 60)
+
+  rotatingItems.forEach((item) => {
+    item.rotation.y += 0.01
+  })
+
   renderer.render(scene, camera)
   const delta = clock.getDelta()
   cameraPositionBewegen(delta)
@@ -328,10 +335,10 @@ function triggerJumpAfterChargeTime(delta: number) {
 
   }
   else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
-      jumpChargeTime = 0;
-      jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
-      isJumping = true; // Sprung aktivieren
-      console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+    jumpChargeTime = 0;
+    jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
+    isJumping = true; // Sprung aktivieren
+    console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
 
   }
 
@@ -362,7 +369,7 @@ function cameraPositionBewegen(delta: number) {
       camera.position.y = nextPosition.y;
       jumpVelocity = 0
       isJumping = false
-      jumpChargeTime =0
+      jumpChargeTime = 0
     }
   }
   // Setze die Y-Position unabhängig vom Rest
@@ -432,7 +439,7 @@ function cameraPositionBewegen(delta: number) {
   }
 
   // Überprüfe und führe den Sprung aus, wenn nötig
-  if(!isJumping){
+  if (!isJumping) {
     triggerJumpAfterChargeTime(delta);
   }
 }
@@ -528,7 +535,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   })
 }
 
-function renderChicken(chickenPositions: IChickenPositionDTD[]){
+function renderChicken(chickenPositions: IChickenPositionDTD[]) {
   const modelLoader = new GLTFLoader()
   const chickenModelURL = new URL('@/assets/game/realistic/chicken/chicken.gltf', import.meta.url).href;
 
@@ -629,8 +636,8 @@ function loadMap(map: string[]) {
               new URL("@/assets/game/items/B/banana/banana.glb", import.meta.url),
             ],
             A: [
-              new URL("@/assets/game/items/A/ginger/ginger.glb", import.meta.url),
-              new URL("@/assets/game/items/A/lemon/lemon.glb", import.meta.url)
+              new URL("@/assets/game/items/A/ginger/ginger_fixed.glb", import.meta.url),
+              new URL("@/assets/game/items/A/lemon/lemon_remake.glb", import.meta.url)
             ],
           };
 
@@ -641,14 +648,44 @@ function loadMap(map: string[]) {
 
           loadCachedModel(randomModelPath).then((model) => {
             const item = model.clone(); // Clone to avoid modifying the cached model
+
+
             if (randomModelPath.includes('chocolate_bar')) {
               item.position.set(x - 2, 0.75, z);
               item.scale.set(0.2, 0.2, 0.2);
-            } else {
+            } else if (randomModelPath.includes('strawberry_shortcake')) {
               item.position.set(x - 2, 0.5, z);
               item.scale.set(0.5, 0.5, 0.5);
+            } else if (randomModelPath.includes('cotton_candy')) {
+              item.position.set(x - 2, 0.5, z);
+              item.scale.set(0.2, 0.2, 0.2);
+            } else if (randomModelPath.includes('popcorn')) {
+              item.position.set(x - 2, 0.5, z);
+              item.scale.set(0.5, 0.5, 0.5);
+            } else if (randomModelPath.includes('candy_cane')) {
+              item.position.set(x - 2, 0.8, z);
+              item.scale.set(0.07, 0.07, 0.07);
+            } else if (randomModelPath.includes('chips')) {
+              item.position.set(x - 2, 0.8, z);
+              item.scale.set(0.1, 0.1, 0.1);
+            } else if (randomModelPath.includes('apple')) {
+              item.position.set(x - 2, 0.75, z);
+              item.scale.set(0.0015, 0.0015, 0.0015);
+            } else if (randomModelPath.includes('banana')) { 
+              item.position.set(x - 2, 0.75, z);
+              item.scale.set(0.07, 0.07, 0.07);
+            } else if (randomModelPath.includes('ginger_fixed')) {
+              item.position.set(x - 2, 0.75, z);
+              item.scale.set(0.1, 0.1, 0.1);
+              item.rotateZ(Math.PI / 1.5);
+            } else if (randomModelPath.includes('lemon_remake')) {
+              item.position.set(x - 2, 0.75, z);
+              item.scale.set(0.09, 0.09, 0.09);
+              item.rotateZ(Math.PI / 1.5);
             }
             scene.add(item);
+
+            rotatingItems.push(item);
           });
           break;
 
@@ -718,7 +755,7 @@ onMounted(async () => {
         const playerPosition: any = messageValidation.feedback
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
-            moveCamera();
+          moveCamera();
         }
 
         break
@@ -782,10 +819,7 @@ onMounted(async () => {
 <template>
   <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
   <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
-    <div
-      id="items"
-      class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45"
-    >
+    <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
       <!-- Items anzeigen, wenn vorhanden -->
       <div v-if="collectedItems.length > 0">
         {{ collectedItems.join(', ') }}
@@ -801,8 +835,8 @@ onMounted(async () => {
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-          <p>Points: {{ points }} / {{ maxPoints }}</p>
-        </div>
+        <p>Points: {{ points }} / {{ maxPoints }}</p>
+      </div>
     </div>
   </div>
 
@@ -811,7 +845,8 @@ onMounted(async () => {
   <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">
       <h3 class="text-2xl font-bold mb-4">Lautstärke</h3>
-      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{ musicVolume }}%
+      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{ musicVolume
+      }}%
       <br>
       Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
       {{ effectVolume }}%
