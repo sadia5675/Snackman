@@ -22,7 +22,7 @@ public class Chicken {
         this.currentCalorie =0;
     }
 
-    Egg eatSnack(FoodItems item, int posX, int posY){
+    public Egg eatSnack(FoodItems item, int posX, int posY){
         this.currentCalorie += item.getNutriScore().getCalorieBonus();
         if(this.currentCalorie>= this.CALORIESBONUS_EGG){
             this.currentCalorie = this.currentCalorie - this.CALORIESBONUS_EGG;
