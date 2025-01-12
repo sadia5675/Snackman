@@ -651,35 +651,35 @@ function loadMap(map: string[]) {
 
 
             if (randomModelPath.includes('chocolate_bar')) {
-              item.position.set(x - 2, 0.75, z);
+              item.position.set(x, 0.75, z);
               item.scale.set(0.2, 0.2, 0.2);
             } else if (randomModelPath.includes('strawberry_shortcake')) {
-              item.position.set(x - 2, 0.5, z);
+              item.position.set(x, 0.5, z);
               item.scale.set(0.5, 0.5, 0.5);
             } else if (randomModelPath.includes('cotton_candy')) {
-              item.position.set(x - 2, 0.5, z);
+              item.position.set(x, 0.5, z);
               item.scale.set(0.2, 0.2, 0.2);
             } else if (randomModelPath.includes('popcorn')) {
-              item.position.set(x - 2, 0.5, z);
+              item.position.set(x, 0.5, z);
               item.scale.set(0.5, 0.5, 0.5);
             } else if (randomModelPath.includes('candy_cane')) {
-              item.position.set(x - 2, 0.8, z);
+              item.position.set(x, 0.8, z);
               item.scale.set(0.07, 0.07, 0.07);
             } else if (randomModelPath.includes('chips')) {
-              item.position.set(x - 2, 0.8, z);
+              item.position.set(x, 0.8, z);
               item.scale.set(0.1, 0.1, 0.1);
             } else if (randomModelPath.includes('apple')) {
-              item.position.set(x - 2, 0.75, z);
+              item.position.set(x, 0.75, z);
               item.scale.set(0.0015, 0.0015, 0.0015);
             } else if (randomModelPath.includes('banana')) {
-              item.position.set(x - 2, 0.75, z);
+              item.position.set(x, 0.75, z);
               item.scale.set(0.07, 0.07, 0.07);
             } else if (randomModelPath.includes('ginger_fixed')) {
-              item.position.set(x - 2, 0.75, z);
+              item.position.set(x, 0.75, z);
               item.scale.set(0.1, 0.1, 0.1);
               item.rotateZ(Math.PI / 1.5);
             } else if (randomModelPath.includes('lemon_remake')) {
-              item.position.set(x - 2, 0.75, z);
+              item.position.set(x, 0.75, z);
               item.scale.set(0.09, 0.09, 0.09);
               item.rotateZ(Math.PI / 1.5);
             }
