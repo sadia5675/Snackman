@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { sendMessage, subscribeTo, stompClient } from '@/config/stompWebsocket'
-import type { IThemes } from '../game/dtd/ThemesDtD'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { sendMessage, subscribeTo, stompClient } from '@/config/stompWebsocket';
+import type { IThemes } from '@/stores/game/dtd/ThemesDTD';
 
 
 export const useThemeStore = defineStore("theme", () => {
