@@ -59,7 +59,7 @@ public class Tile {
                     if(item instanceof FoodItems){
                         snackman.eatSnack((FoodItems)item);
                         logger.info("Snackman eats FoodItem '{}'.", item.getName());
-                    } else if(item instanceof ObjectsItems){
+                    } else if(item instanceof ObjectsItems){+
                         snackman.collectObjectItem((ObjectsItems) item);
                     }
                     
@@ -80,6 +80,21 @@ public class Tile {
         this.chickenList.add(chicken);
         if(!itemList.isEmpty()){
             // TODO: Item hier nehmen
+            for (Item item : itemList) {
+                if(item instanceof FoodItems){
+                    FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
+                    Egg egg = chicken.eatSnack(foodItem);
+                    if(egg != null){
+                        itemList.remove(item);
+                        logger.info("Item '{}' removed from tile", item.getName());
+                        //Ei wird hier zum Tile hinzugefügt
+                        this.addItem(egg);
+                        logger.info("Egg by chicken geboren and added to tile");
+                        break;
+                    }
+
+                }
+            }
         }
         return true;
     }
