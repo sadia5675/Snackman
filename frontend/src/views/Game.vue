@@ -769,6 +769,8 @@ onMounted(async () => {
         const playerPosition: any = messageValidation.feedback
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
+          console.log(playerPosition)
+          nextPosition.set(playerPosition.posX,playerPosition.posZ,playerPosition.posY)
           moveCamera();
         }
 
