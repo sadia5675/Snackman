@@ -1,6 +1,9 @@
 
 package de.hs_rm.backend.gamelogic;
 
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -194,23 +197,37 @@ public class Game {
             LOGGER.info("Chicken number: {}", chickenNum);
             Tile randomTile;
             int index = -1;
-            String testPathForScript = "/Users/judithschlegel/Desktop/Uni/WS2024/SoftwareTechnikProjektNeu/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py";
+            Path testPathForScript = null;
+
+            // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
+            URL url = getClass().getResource("/scripts/test_script_wrong_location.py");
+            if (url != null) {
+                testPathForScript = Paths.get(url.getPath());
+                LOGGER.info("Path to test script: {}", testPathForScript.toString());      
+            } else {
+                LOGGER.error("Script not found");     
+            }
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
-            // Nur zu testzwecken hier, um Chicken immer am linen Rand zu platzieren
-             Chicken chicken = new Chicken(1, 1, testPathForScript, this);
-            //  Das hier ist richtig, aber für Testzwecke wurde code auskommentiert
-            // Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
+            
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
            
 
             chickens.add(chicken);
-            chicken.executeBehavior();
-            //DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
             LOGGER.info("Chicken added to tile: {}", randomTile);
+            Thread thread = new Thread(() -> {
+                LOGGER.info("Runnign in a thread" + Thread.currentThread().getName());
+
+                chicken.executeBehavior();
+            });
+            thread.start();
+            
+          
+            
         }
         this.itemsNum = Math.max(1, playmap.getCountSurface()/ ITEMS_PER_SURFACE_RATIO ); // 1 Item pro ITEMS_PER_SURFACE_RATIO
 

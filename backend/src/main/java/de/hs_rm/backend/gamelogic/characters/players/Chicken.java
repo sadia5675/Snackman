@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import org.python.util.PythonInterpreter;
@@ -16,7 +17,7 @@ public class Chicken {
     private static final Logger LOGGER = LoggerFactory.getLogger(Chicken.class);
     private int posX;
     private int posY;
-    private String script_path;
+    private Path script_path;
     private PythonInterpreter pyInterpreter;
     private Game game;
 
@@ -24,19 +25,13 @@ public class Chicken {
     // private ChickenEnvironmentApi environmentApi;
     private ChickenEnvironmentApi environmentApi;
 
-    public Chicken(int posX, int posY, String script_path, Game game) {
+    public Chicken(int posX, int posY, Path testPathForScript, Game game) {
         this.posX = posX;
         this.posY = posY;
-        this.script_path = script_path;
+        this.script_path = testPathForScript;
         this.pyInterpreter = new PythonInterpreter();
         this.game = game;
-        // ToDo Aron: Soll ich hier wirklich eine ChickenEnvironmentApi instanzieren.
-        // Wenn wir sie als Service Klasse/Schicht sehen, greifen wir ja von unteren Schichten auf die darüberliegenden.
-        // Vielleicht ist es doch besser die funktion getEnvironment()n einfach in Game zu packen und keine eigene Klasse dafür zu nutzen?
-        // Game könnte dann auch die Umgebung für die Chicken bereitstellen.
-
-        // ToDo Aron: Soll lieber Game in Kontruktor mitgegeben werden, oder einfach unten über die getEnvironment(x, y, game)?
-        // new ChickenEnvironmentApi();
+       
         this.environmentApi = new ChickenEnvironmentApi(game);
 
 
@@ -46,8 +41,7 @@ public class Chicken {
     public void executeBehavior() {
         LOGGER.info("executeBehavior() aufgerufen");
         try {
-            // ToDo Aron: script_path ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
-            File scriptFile = new File(script_path);
+            File scriptFile = new File(script_path.toString());
 
             if (scriptFile.exists()) {
                 LOGGER.info("Starte Python Skript...");
@@ -79,7 +73,7 @@ public class Chicken {
         this.posY = y;
     }
 
-    public String getScript_path() {
+    public Path getScript_path() {
         return script_path;
     }
 

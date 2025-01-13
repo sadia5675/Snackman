@@ -23,6 +23,7 @@ public class Tile {
         this.type = type;
         itemList = new ArrayList<>();
         characterList = new ArrayList<>();
+        chickenList = new ArrayList<>();
     }
 
     public boolean hasItem() {
@@ -100,14 +101,16 @@ public class Tile {
         
     }
 
-    public void removeChicken(Chicken chicken){
-        System.out.println("ChickenList: " + chickenList);
+    public boolean removeChicken(Chicken chicken){
+        System.out.println("ChickenList: " + chickenList.size());
         System.out.println("Chicken: " + chicken);
         if (chickenList != null && chickenList.contains(chicken)) {
             chickenList.remove(chicken);
             logger.info("ChickenList beim Entfernen: {}", chickenList);
+            return true;
         } else {
             logger.info("Chicken not found in tile.");
+            return false;
             
         }
     }

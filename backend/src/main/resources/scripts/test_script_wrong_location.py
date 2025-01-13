@@ -11,6 +11,9 @@ def move_logic():
     map_height = environment.getMapHeight()
     chicken_index_environment_list = 4
 
+    # print("Acteull Environment: ", actuell_environment)
+    # print("Chicken bekommt zum Start im script das Tile: ", actuell_environment[chicken_index_environment_list])
+
 
     print("Map Width: ", map_width)
     print("Map Height: ", map_height)
