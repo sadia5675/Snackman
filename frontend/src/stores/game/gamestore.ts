@@ -10,8 +10,8 @@ import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
 import type {Result} from "@/stores/game/responses/Result";
-import { useThemeStore } from "../themes/themeStore";
-import { useMapStore } from "../map/MapStore";
+import { useThemeStore } from "@/stores/themes/themeStore";
+import { useMapStore } from "@/stores/map/MapStore";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -362,7 +362,7 @@ export const useGameStore = defineStore('gameStore', () => {
             break
             case 'themeUpdate':
               const themeStore = useThemeStore()
-              const newTheme = message.feedback
+              const newTheme = message.feedback as string
               if (themeStore.themes[newTheme]) {
                 themeStore.selectedTheme = newTheme
                 console.log(`Theme updated to: ${newTheme}`)

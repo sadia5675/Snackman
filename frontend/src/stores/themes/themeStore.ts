@@ -16,8 +16,8 @@ const themes = ref <IThemes>({
       },
     },
     realistic: {
-        ground: new URL('@/assets/game/realistic/groundrea.png', import.meta.url).href,
-        wall: new URL('@/assets/game/realistic/wallrea.png', import.meta.url).href,
+        ground: new URL('@/assets/game/realistic/ground.png', import.meta.url).href,
+        wall: new URL('@/assets/game/realistic/wall.png', import.meta.url).href,
         skybox: new URL('@/assets/game/realistic/skyBox/reasky.png', import.meta.url).href,
       character: {
           snackman: new URL('@/assets/game/realistic/resnackman/reasnackman.glb', import.meta.url).href,
@@ -47,13 +47,13 @@ const themes = ref <IThemes>({
     },
     });
 
-    const selectedTheme= ref<keyof IThemes>("realistic"); 
+    const selectedTheme= ref<keyof IThemes>("realistic");
 
   function setSelectedTheme(themeName: keyof IThemes, lobbyId: string) {
     if(themes.value[themeName]){
       selectedTheme.value=themeName;
       console.log(`Theme: ${themeName} set successfully.`);
-      sendThemeUpdateToBackend(themeName, lobbyId)
+        sendThemeUpdateToBackend(themeName, lobbyId)
     }else{
       console.log("Fehlgeschlagen, ungültiger Theme:", themeName);
     }
@@ -61,7 +61,7 @@ const themes = ref <IThemes>({
 
   const currentTheme = computed(() => themes.value[selectedTheme.value])
 
-  function sendThemeUpdateToBackend(themeName: string, lobbyId: string) {
+  function sendThemeUpdateToBackend(themeName: string | number, lobbyId: string) {
     if (lobbyId) {
       sendMessage(`/topic/game/${lobbyId}/setTheme`, { themeName })
       console.log(`Theme update sent for lobbyId: ${lobbyId}`)
@@ -84,7 +84,7 @@ const themes = ref <IThemes>({
       }
     })
   }
-  
+
   function subscribeToThemeUpdatesHandler(lobbyId: string) {
     subscribeTo(`/game/${lobbyId}`, (message: any) => {
       if (message.type === 'themeUpdate' && message.status === 'ok') {
@@ -98,7 +98,7 @@ const themes = ref <IThemes>({
       }
     })
   }
-  
+
 
   return {
     themes,
