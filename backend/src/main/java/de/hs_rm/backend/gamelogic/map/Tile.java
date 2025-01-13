@@ -59,7 +59,7 @@ public class Tile {
                     if(item instanceof FoodItems){
                         snackman.eatSnack((FoodItems)item);
                         logger.info("Snackman eats FoodItem '{}'.", item.getName());
-                    } else if(item instanceof ObjectsItems){+
+                    } else if(item instanceof ObjectsItems){
                         snackman.collectObjectItem((ObjectsItems) item);
                     }
                     
