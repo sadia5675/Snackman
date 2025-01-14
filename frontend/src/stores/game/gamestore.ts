@@ -40,7 +40,6 @@ export const useGameStore = defineStore('gameStore', () => {
 
     const result: any = await response.json()
     jumpAllowed.value = result.jumpAllowed;
-    console.log("ALLOWED OR NOT : ",jumpAllowed.value)
   }
 
   function resetGameState() {
