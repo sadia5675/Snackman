@@ -2,7 +2,7 @@
 
   <Modal v-if="modal.isModalOpen">
     <template #titel>
-      <h2 class="font-bold text-3xl text-center">{{ modal.modalType === ModalType.JOIN_GAME ? "Join Game" : "New Game" }}
+      <h2 class="text-lg text-white text-semibold mb-4">{{ modal.modalType === ModalType.JOIN_GAME ? "Join Game" : "Create a new Game" }}
       </h2>
     </template>
     <template #content>
@@ -10,14 +10,14 @@
         <input v-model="newPlayer.name" type="text" name="name" id="name"
           class="block w-full rounded-md border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
           placeholder="Username eingeben" />
-        <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
+        <div v-if="modal.inputErrorMessage" class="input-error-message text-red-600">{{ modal.inputErrorMessage }}</div>
         <!-- TODO: überprüfen ob name eingeben worden ist -->
 
         <div v-if="modal.modalType === ModalType.NEW_GAME">
           <label class="mt-4 mb-4 mflex itmes-center space-x-2">
             <input type="checkbox" v-model="modal.requirePassword" id="requirePassword"
               class="form-checkbox rounded shadow-sm hover:shadow-md transition-shadow duration-300" />
-            <span>Privates Spiel</span>
+            <span class="text-white">Private Game</span>
           </label>
           <input v-if="modal.requirePassword" v-model="newPlayer.password" type="text" id="password"
             class="block w-full rounded-md mt-2 border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
@@ -35,9 +35,9 @@
 
 
       <div class="flex space-x-4">
-        <button class="button-small-adventure"
+        <button class="font-semibold text-zinc-800 p-3 rounded-md bg-gray-200"
           @click=" modal.modalType === ModalType.NEW_GAME ? modal.newGame(newPlayer) : modal.joinGame(newPlayer)">Weiter</button>
-        <button class="button-small-adventure" @click="modal.closeModal()">Schließen</button>
+        <button class="font-semibold text-zinc-800 p-3 rounded-md bg-gray-200" @click="modal.closeModal()">Schließen</button>
       </div>
     </template>
   </Modal>
@@ -48,18 +48,20 @@
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
       <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video>
-    <h1 class="header-adventure">Snackman</h1>
+    <div>
+      <img src="../assets/snackmanlogo-2.png" class="-mb-4" >
+    </div>
 
     <div class="flex flex-col gap-3">
-      <button class="buttons-top-bottom" @click="modal.openModal(ModalType.NEW_GAME, '', false)">New Game</button>
+      <button class="btn-new" @click="modal.openModal(ModalType.NEW_GAME, '', false)">New Game</button>
       <div>
-        <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="gameid-input-field">
+        <input type="text" v-model="gameId" placeholder="Game Id eingeben" class="p-3 bg-white/70 backdrop-blur-lg placeholder:text-zinc-700 rounded-l">
         <!-- @click="game.joinGame()"-->
-        <button class="button-middle" @click="modal.checkPrivateGame(gameId)">Join</button>
+        <button class="bg-white/40 text-black p-3 font-semibold hover:bg-gray-100 backdrop-blur-lg shadow-sm rounded-r text-black" @click="modal.checkPrivateGame(gameId)">Join</button>
       </div>
       <!-- @click="game.findLobbies()"-->
-      <button class="buttons-top-bottom" @click="router.push('/lobby')">Find Lobbies/Games</button>
-      <button class="buttons-top-bottom" v-on:click="toMapCreator">Map Creator</button>
+      <button class="btn-new" @click="router.push('/lobby')">Find Lobbies/Games</button>
+      <button class="btn-new" v-on:click="toMapCreator">Map Creator</button>
     </div>
   </div>
 
@@ -98,56 +100,3 @@ function toMapCreator() {
   router.push({ name: 'createmap' });
 }
 </script>
-
-<style>
-@media (min-width: 1024px) {
-  h1 {
-    font-size: 50px;
-    margin-bottom: 80px;
-  }
-
-  .homeMenue {
-    background-color: grey;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .form-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .buttons-top-bottom {
-    background-color: bisque;
-    border-radius: 10px;
-    padding: 10px;
-  }
-
-  .button-middle {
-    background-color: bisque;
-    border-radius: 0 10px 10px 0;
-    padding: 10px;
-  }
-
-  .button-middle:hover,
-  .buttons-top-bottom:hover {
-    background-color: rgb(247, 194, 130);
-  }
-
-  .gameid-input-field {
-    height: 44px;
-    border-radius: 10px 0 0 10px;
-    text-align: center;
-  }
-
-
-}
-</style>
-
-
-
-<style></style>
