@@ -135,5 +135,15 @@ public class Tile {
     public void setCharacterList(List<Character> characterList) {
         this.characterList = characterList;
     }
+
+    public List<Chicken> getChickenList() {
+        return chickenList;
+    }
+
+    public void setChickenList(List<Chicken> chickenList) {
+        this.chickenList = chickenList;
+    }
+
+    
     
 }
