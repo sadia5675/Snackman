@@ -255,6 +255,9 @@ public class GameAPIController {
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
 
+        //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
+        float offset = 0.005f;
+
         //Zum Testen logik um Spieler zu bewegen fehlt noch
 
         HashMap<String, Object> validationResponse = new HashMap<>();
@@ -269,16 +272,16 @@ public class GameAPIController {
         //Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle 4 Himmelsrichtungen)
         if (!validMove) {
             if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
-                position.setPosX((float) Math.round(position.getPosX()));
+                position.setPosX((float) (Math.round(position.getPosX()) + offset));
                 validMove = true;
             } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
-                position.setPosY((float) Math.round(position.getPosY()));
+                position.setPosY((float) (Math.round(position.getPosY()) + offset));
                 validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - 0.0001, position.getPosY(), position.getPosZ(), position.getAngle())) {
-                position.setPosX((float) (Math.floor(position.getPosX())-0.0001));
+            } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
+                position.setPosX((float) (Math.floor(position.getPosX()) - offset));
                 validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY())  - 0.0001, position.getPosZ(), position.getAngle())) {
-                position.setPosY((float) (Math.floor(position.getPosY()) - 0.0001));
+            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
+                position.setPosY((float) (Math.floor(position.getPosY()) - offset));
                 validMove = true;
             }
         }
