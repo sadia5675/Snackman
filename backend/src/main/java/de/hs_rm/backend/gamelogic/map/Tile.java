@@ -83,12 +83,12 @@ public class Tile {
             for (Item item : itemList) {
                 if(item instanceof FoodItems){
                     FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
-                    Egg egg = chicken.eatSnack(foodItem);
+                    Egg egg = chicken.eatSnack(foodItem, chicken.getPosX(), chicken.getPosY());
                     if(egg != null){
                         itemList.remove(item);
                         logger.info("Item '{}' removed from tile", item.getName());
                         //Ei wird hier zum Tile hinzugefügt
-                        this.addItem(egg);
+                        itemList.add(egg); //FEHLER!
                         logger.info("Egg by chicken geboren and added to tile");
                         break;
                     }
