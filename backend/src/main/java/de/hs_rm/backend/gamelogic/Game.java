@@ -44,10 +44,8 @@ public class Game {
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
-    private List <FoodItems> placedSnacks = new ArrayList<>();
+    private List<FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
-
-
 
     public Map<String, Object> getCharacterDataWithNames() {
         Map<String, Object> characterData = new HashMap<>();
@@ -70,7 +68,6 @@ public class Game {
         return characterData;
     }
 
-
     public void setCharacters(Map<String, Character> characters) {
         this.characters = characters;
     }
@@ -80,9 +77,16 @@ public class Game {
     // TO-DO: beide Listen müssen nochmal angepasst werden
     // Globale Liste der vordefinierten FoodItems
     private static final List<FoodItems> FOOD_ITEMS = List.of(
-            new FoodItems("Banana", -1, -1, NutriScore.A), // Positionen werden später festgelegt
-            new FoodItems("Cookie", -1, -1, NutriScore.C),
-            new FoodItems("Apple", -1, -1, NutriScore.B));
+            new FoodItems("ginger", -1, -1, NutriScore.A), // Positionen werden später festgelegt
+            new FoodItems("lemon", -1, -1, NutriScore.A),
+            new FoodItems("apple", -1, -1, NutriScore.B),
+            new FoodItems("banana", -1, -1, NutriScore.B),
+            new FoodItems("candycane", -1, -1, NutriScore.C),
+            new FoodItems("chips", -1, -1, NutriScore.C),
+            new FoodItems("cottoncandy", -1, -1, NutriScore.D),
+            new FoodItems("popcorn", -1, -1, NutriScore.D),
+            new FoodItems("chocolatebar", -1, -1, NutriScore.E),
+            new FoodItems("strawberryshortcake", -1, -1, NutriScore.E));
     // vordefinierten ObjectsItems --> Pos muss geändert werden
     private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
             new GhostObjectItem("Speed Boost", -1, -1, "Increases movement speed temporarily"),
@@ -101,7 +105,6 @@ public class Game {
         this.characters = new HashMap<>();
         this.selectedMap = selectedMap;
 
-
         if (gamemaster.getPassword() != null && !gamemaster.getPassword().isEmpty()) {
             this.password = gamemaster.getPassword();
             this.privateLobby = true;
@@ -109,7 +112,6 @@ public class Game {
             this.password = null;
             this.privateLobby = false;
         }
-
 
         this.snackmanLife = snackmanLife;
         this.snackmanMaxLife = snackmanMaxLife;
@@ -162,7 +164,8 @@ public class Game {
 
         Random random = new Random();
 
-        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro itemsPerSurfaceRatio
+        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro
+                                                                                       // itemsPerSurfaceRatio
 
         for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
@@ -190,7 +193,7 @@ public class Game {
                 playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), newItem.getSymbol()); // für
                                                                                                                      // Food
                 // zur Liste der platzierten Snacks hinzufügen
-                placedSnacks.add(newItem);                                                                                                       
+                placedSnacks.add(newItem);
             } else {
 
                 // Zufälliges ObjectsItem aus der vordefinierten Liste
@@ -246,7 +249,8 @@ public class Game {
                 case SNACKMAN -> {
 
                     characters.put(player.getName(),
-                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(), snackmanLife, snackmanMaxLife));
+                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(),
+                                    snackmanLife, snackmanMaxLife));
                     randomTile.addCharacter(characters.get(player.getName()));
                 }
                 default -> {
@@ -273,9 +277,9 @@ public class Game {
         return started;
     }
 
-    public void calculateMaxPointsSnackman(){
+    public void calculateMaxPointsSnackman() {
         int total = 0;
-        for(int i = 0; i < placedSnacks.size(); i++) {
+        for (int i = 0; i < placedSnacks.size(); i++) {
             total += placedSnacks.get(i).getNutriScore().getCalorieBonus();
         }
         maxPointsSnackman = total;
@@ -347,64 +351,69 @@ public class Game {
 
     }
 
-    public boolean moveTest(String username, double posX, double posY, double posZ, double angle){
+    public boolean moveTest(String username, double posX, double posY, double posZ, double angle) {
         Character curCharacter = characters.get(username);
 
         curCharacter.move(posX, posY, posZ, angle);
-        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
+       // LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(), curCharacter.getPosY());
         return true;
     }
 
+   
     public boolean move(String username, double posY, double posX, double posZ, double angle) {
         Character curCharacter = characters.get(username);
 
         int roundedPosX = (int) Math.floor(posX);
         int roundedPosY = (int) Math.floor(posY);
-    
+
         // Berechnung des aktuellen Index
-        int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth() + (int) Math.floor(curCharacter.getPosX());
+        int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth()
+                + (int) Math.floor(curCharacter.getPosX());
         if (curIndex < 0 || curIndex >= playmap.getTilesList().size()) {
-            LOGGER.error("Ungültiger aktueller Index: curIndex={}, Größe der Tile-Liste={}", curIndex, playmap.getTilesList().size());
+            LOGGER.error("Ungültiger aktueller Index: curIndex={}, Größe der Tile-Liste={}", curIndex,
+                    playmap.getTilesList().size());
             return false;
         }
         Tile curTile = playmap.getTilesList().get(curIndex);
-    
+        LOGGER.info("{}",curTile.getItemList());
+
         // Berechnung des Zielindex
         int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
         if (targetIndex < 0 || targetIndex >= playmap.getTilesList().size()) {
-            LOGGER.error("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex, playmap.getTilesList().size());
+            LOGGER.error("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex,
+                    playmap.getTilesList().size());
             return false;
         }
         Tile targetTile = playmap.getTilesList().get(targetIndex);
-    
+
         // Ziel-Tile prüfen
         if (targetTile.getType() == TileType.WALL) {
-            LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
+            //LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
 
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
         if (curIndex == targetIndex) {
-            LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
+           // LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
 
-            //posy und posx vertauscht 
+            // posy und posx vertauscht
             curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
 
-        if(targetTile.hasItem()){
-            LOGGER.info("Item gefunden");
+        if (curTile.hasItem()) {
+            curTile.addCharacter(curCharacter);
         }
-    
+
         // Charakter bewegen
         curTile.removeCharacter(curCharacter);
 
-        //posy und posx vertauscht
+        // posy und posx vertauscht
         curCharacter.move(posY, posX, posZ, angle);
         targetTile.addCharacter(curCharacter);
-    
-        LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
-        LOGGER.debug("TargetTile has item: {}, Items: {}", targetTile.hasItem(), targetTile.getItemList());
+
+       // LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
+       
         return true;
     }
 
@@ -499,7 +508,6 @@ public class Game {
         this.itemsNum = itemsNum;
     }
 
-    
     public int getSnackmanLife() {
         return snackmanLife;
     }
@@ -548,7 +556,7 @@ public class Game {
         this.maxPointsSnackman = maxPointsSnackman;
     }
 
-    public String getPassword(){
+    public String getPassword() {
         if (!privateLobby) {
             return null;
         }
@@ -563,11 +571,11 @@ public class Game {
         }
     }
 
-    public void setPrivateLobby(boolean privateLobby){
+    public void setPrivateLobby(boolean privateLobby) {
         this.privateLobby = privateLobby;
     }
 
-    public boolean getPrivateLobby(){
+    public boolean getPrivateLobby() {
         return privateLobby;
     }
 

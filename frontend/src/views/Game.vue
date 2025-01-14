@@ -591,13 +591,13 @@ function loadMap(map: string[]) {
         );
       }));
     }
-    return modelCache.get(url)!;
+    return modelCache.get(url)!; 
   }
-
+  console.log(map)
   map.forEach((row, rowIndex) => {
     [...row].forEach((tile, colIndex) => {
-      const x = rowIndex + mapOffset;
-      const z = colIndex + mapOffset;
+      const z = rowIndex + mapOffset;
+      const x = colIndex + mapOffset;
 
       switch (tile) {
         case '*': // Wall
@@ -621,7 +621,7 @@ function loadMap(map: string[]) {
           const itemPaths: { [key: string]: URL[] } = {
             E: [
               new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url),
-              new URL("@/assets/game/items/E/chocolate_bar/chocolate_bar.glb", import.meta.url)
+              new URL("@/assets/game/items/E/chocolate_bar/chocolatebar.glb", import.meta.url)
             ],
             D: [
               new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url),
@@ -650,18 +650,18 @@ function loadMap(map: string[]) {
             const item = model.clone(); // Clone to avoid modifying the cached model
 
 
-            if (randomModelPath.includes('chocolate_bar')) {
+            if (randomModelPath.includes('chocolatebar')) {
               item.position.set(x, 0.75, z);
-              item.scale.set(0.2, 0.2, 0.2);
+              item.scale.set(0.1, 0.1, 0.1);
             } else if (randomModelPath.includes('strawberry_shortcake')) {
               item.position.set(x, 0.5, z);
-              item.scale.set(0.5, 0.5, 0.5);
-            } else if (randomModelPath.includes('cotton_candy')) {
-              item.position.set(x, 0.5, z);
+              item.scale.set(0.25, 0.25, 0.25);
+            } else if (randomModelPath.includes('cottoncandy')) {
+              item.position.set(x, 0.75, z);
               item.scale.set(0.2, 0.2, 0.2);
             } else if (randomModelPath.includes('popcorn')) {
-              item.position.set(x, 0.5, z);
-              item.scale.set(0.5, 0.5, 0.5);
+              item.position.set(x, 0.75, z);
+              item.scale.set(0.09, 0.09, 0.09);
             } else if (randomModelPath.includes('candy_cane')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.07, 0.07, 0.07);

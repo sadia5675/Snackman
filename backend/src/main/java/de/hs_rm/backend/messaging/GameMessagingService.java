@@ -18,7 +18,7 @@ public class GameMessagingService {
     }
 
     public void sendPositionValidation(String lobbyid, Object position){
-        logger.info("Sending Validation");
+        //logger.info("Sending Validation");
         template.convertAndSend("/topic/ingame/"+ lobbyid, position);
     }
 
@@ -27,7 +27,7 @@ public class GameMessagingService {
     }
 
     public void sendNewCharacterPosition(String lobbyid, Object position){
-        logger.info("Sending playerPositions");
+        //logger.info("Sending playerPositions");
         template.convertAndSend("/topic/ingame/playerPositions/" + lobbyid, position);
     }
 
