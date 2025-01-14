@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package de.hs_rm.backend.gamelogic.characters.players;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +46,4 @@ public class GhostTest {
     }
 
 }
-=======
-version https://git-lfs.github.com/spec/v1
-oid sha256:ac9f9bf327f67bec86ed5bb1e19464ebd65d962ba97a42b2ef97527893001d8f
-size 1069
->>>>>>> 8b291f9 (merge dev into #149-springen)
+
