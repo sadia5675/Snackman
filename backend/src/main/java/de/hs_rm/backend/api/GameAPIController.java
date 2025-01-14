@@ -93,7 +93,7 @@ public class GameAPIController {
         // PythonInterpreter interpreter = new PythonInterpreter();
         // try {
         //     String scriptPath = "ChickenBotMovement.py";
-            
+
         //     File scriptFile = new File(scriptsDirectory, scriptPath);
 
         //     if (scriptFile.exists()) {
@@ -217,40 +217,40 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/leave")
     @SendTo("/topic/game/{lobbyid}")
     public void leaveLobby(Player player, @DestinationVariable String lobbyid) {
-    HashMap<String, Object> response = new HashMap<>();
+        HashMap<String, Object> response = new HashMap<>();
 
-    try {
-        Game existingGame = gameService.getGameById(lobbyid);
+        try {
+            Game existingGame = gameService.getGameById(lobbyid);
 
-        if (existingGame == null) {
-            logger.error("No game found with ID: {}", lobbyid);
+            if (existingGame == null) {
+                logger.error("No game found with ID: {}", lobbyid);
+                response.put("type", "playerLeave");
+                response.put("feedback", "Game with ID " + lobbyid + " not found.");
+                response.put("status", "error");
+                response.put("time", LocalDateTime.now().toString());
+                messagingService.sendPlayerList(lobbyid, response);
+                return;
+            }
+
+            // Spieler aus dem Spiel entfernen
+            existingGame = gameService.leaveGame(lobbyid, player);
+            logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
+
+            response.put("feedback", existingGame.getPlayers());
+            response.put("status", "ok");
+            response.put("time", LocalDateTime.now().toString());
+
+            messagingService.sendPlayerList(lobbyid, response);
+
+        } catch (GameLeaveException e) {
             response.put("type", "playerLeave");
-            response.put("feedback", "Game with ID " + lobbyid + " not found.");
+            response.put("feedback", e.getMessage());
             response.put("status", "error");
             response.put("time", LocalDateTime.now().toString());
+
             messagingService.sendPlayerList(lobbyid, response);
-            return;
         }
-
-        // Spieler aus dem Spiel entfernen
-        existingGame = gameService.leaveGame(lobbyid, player);
-        logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
-
-        response.put("feedback", existingGame.getPlayers());
-        response.put("status", "ok");
-        response.put("time", LocalDateTime.now().toString());
-
-        messagingService.sendPlayerList(lobbyid, response);
-
-    } catch (GameLeaveException e) {
-        response.put("type", "playerLeave");
-        response.put("feedback", e.getMessage());
-        response.put("status", "error");
-        response.put("time", LocalDateTime.now().toString());
-
-        messagingService.sendPlayerList(lobbyid, response);
     }
-}
 
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
@@ -264,9 +264,24 @@ public class GameAPIController {
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
         //boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
         boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
-        logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(),position.getAngle(), validMove);
+        logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle(), validMove);
 
-        //true nur zum testen, eig prüfen ob move valid ist oder nicht
+        //Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle 4 Himmelsrichtungen)
+        if (!validMove) {
+            if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
+                position.setPosX((float) Math.round(position.getPosX()));
+                validMove = true;
+            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
+                position.setPosY((float) Math.round(position.getPosY()));
+                validMove = true;
+            } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - 0.0001, position.getPosY(), position.getPosZ(), position.getAngle())) {
+                position.setPosX((float) (Math.floor(position.getPosX())-0.0001));
+                validMove = true;
+            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY())  - 0.0001, position.getPosZ(), position.getAngle())) {
+                position.setPosY((float) (Math.floor(position.getPosY()) - 0.0001));
+                validMove = true;
+            }
+        }
 
         if (validMove) {
 
@@ -315,15 +330,15 @@ public class GameAPIController {
 
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
     @SendTo("/topic/game/{lobbyid}")
-    public ResponseEntity<?> kickUser(@PathVariable String gameId ,@PathVariable String usernameKicker, @PathVariable String usernameKicked) {
+    public ResponseEntity<?> kickUser(@PathVariable String gameId, @PathVariable String usernameKicker, @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
-        HashMap<String,Object> response = new HashMap<>();
+        HashMap<String, Object> response = new HashMap<>();
 
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
         try {
-            if(existingGame.kick(usernameKicker, usernameKicked)){
+            if (existingGame.kick(usernameKicker, usernameKicked)) {
                 return createOkResponse(existingGame);
             }
 
@@ -341,14 +356,14 @@ public class GameAPIController {
 
             messagingService.sendPlayerList(gameId, response);
         }
-        return createErrorResponse("can not kick "+ usernameKicked +"!");
+        return createErrorResponse("can not kick " + usernameKicked + "!");
 
     }
 
 
     // Method to set the number of elements (e.g., chickens) in the game
     @PostMapping("/setChicken/{gameId}/{number}")
-    public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId ,@PathVariable int number) {
+    public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId, @PathVariable int number) {
         // #63 NEW: gameService now sets the number of Chickens
         Game existingGame = gameService.setChicken(gameId, number);
 
@@ -458,12 +473,12 @@ public class GameAPIController {
     }
 
     @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}")
-        public ResponseEntity<?> movePlayer(
-                @PathVariable String gameId,
-                @PathVariable String username,
-                @PathVariable int coordinateX,
-                @PathVariable int coordinateY,
-                @PathVariable int coordinateZ
+    public ResponseEntity<?> movePlayer(
+            @PathVariable String gameId,
+            @PathVariable String username,
+            @PathVariable int coordinateX,
+            @PathVariable int coordinateY,
+            @PathVariable int coordinateZ
     ) {
         Game existingGame = gameService.getGameById(gameId);
 
@@ -471,7 +486,7 @@ public class GameAPIController {
             return createErrorResponse("No game found.");
         }
         try {
-            gameService.move(username, coordinateX, coordinateY, coordinateZ,1);
+            gameService.move(username, coordinateX, coordinateY, coordinateZ, 1);
             return createOkResponse(existingGame);
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage());
@@ -496,7 +511,7 @@ public class GameAPIController {
         String gameJSON;
         feedbackData.put("status", "ok");
         feedbackData.put("time", LocalDateTime.now().toString());
-        feedbackData.put("password", game.getPassword()); 
+        feedbackData.put("password", game.getPassword());
         try {
             gameJSON = ow.writeValueAsString(game);
             feedbackData.put("feedback", game);
