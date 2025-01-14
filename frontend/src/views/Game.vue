@@ -77,6 +77,18 @@ watch(
   }
 );
 
+// Ghost-Touches aktualisieren
+const touch = computed(() => currentCharacter.value?.touchcount ?? 0);
+
+watch(
+  () => currentCharacter.value?.touchcount,
+  (newTouches, oldTouches) => {
+    if (newTouches !== oldTouches) {
+      console.log(`Ghost-Touches changed from ${oldTouches} to ${newTouches}`);
+    }
+  }
+);
+
 // Maximales Leben des Charakters
 const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
 
@@ -646,6 +658,33 @@ onMounted(async () => {
     }
   })
 
+  subscribeTo(`/ingame/PlayerKollision/${lobbyId}`, async (message) => {
+   // Prüfe den Typ der Nachricht
+   console.log("message: ", message);
+   const myName = sessionStorage.getItem('myName');
+
+  switch (message.type) {
+
+    case 'collisionValidation': {
+      gameStore.gameState.gamedata.characters = message.updateCharacters
+      console.log(" gameState.gamedata.characters: ", message.updateCharacters);
+
+      if (currentPlayer.value?.playerrole === Playerrole.SNACKMAN) {
+        console.log("snackman curr:", currentCharacter.value?.life ?? 0);
+      }
+      if (currentPlayer.value?.playerrole === Playerrole.GHOST) {
+        console.log("ghost curr:", currentCharacter.value?.touchcount ?? 0);
+      }
+
+      break;
+  }
+
+    default:
+      console.warn("Unerwarteter Nachrichtentyp:", message.type);
+      break;
+  }
+});
+
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
   }
@@ -706,6 +745,10 @@ onMounted(async () => {
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
           <p>Points: {{ points }} / {{ maxPoints }}</p>
+        </div>
+      <!-- TouchCountanzeige -->
+      <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
+          <p>Hits: {{ touch }}</p>
         </div>
     </div>
   </div>

@@ -1,34 +1,12 @@
 package de.hs_rm.backend.api;
 
-import de.hs_rm.backend.exception.SetRoleException;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.hs_rm.backend.exception.GameJoinException;
-import de.hs_rm.backend.exception.GameLeaveException;
-import de.hs_rm.backend.gamelogic.Game;
-import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
-import de.hs_rm.backend.gamelogic.characters.players.Player;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
-import de.hs_rm.backend.gamelogic.map.PlayMap;
-import de.hs_rm.backend.gamelogic.map.PlayMapService;
-import de.hs_rm.backend.messaging.GameMessagingService;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
-
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -40,9 +18,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.python.util.PythonInterpreter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.hs_rm.backend.exception.GameJoinException;
+import de.hs_rm.backend.exception.GameLeaveException;
+import de.hs_rm.backend.exception.SetRoleException;
+import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMapService;
+import de.hs_rm.backend.messaging.GameMessagingService;
 
 /**
  * REST controller for managing game-related operations.
@@ -66,7 +60,7 @@ public class GameAPIController {
     PlayMapService playMapService;
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameAPIController.class);
 
 
     // private Game game;
@@ -240,13 +234,14 @@ public class GameAPIController {
 
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
-
+        
         //Zum Testen logik um Spieler zu bewegen fehlt noch
 
         HashMap<String, Object> validationResponse = new HashMap<>();
         HashMap<String, Object> response = new HashMap<>();
+        HashMap<String, Object> collisionDetails = new HashMap<>();
         Game existingGame = gameService.getGameById(lobbyid);
-
+  
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
         //boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
         boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
@@ -263,6 +258,15 @@ public class GameAPIController {
             validationResponse.put("time", LocalDateTime.now().toString());
 
             messagingService.sendPositionValidation(lobbyid, validationResponse);
+
+
+            // sendet all immer dieseer charackteren (mit oder ohne updates wie life oder ghosttouch)
+            Map<String, Character> updateCharacters = existingGame.getCharacters();
+            collisionDetails.put("type", "collisionValidation");
+            collisionDetails.put("updateCharacters", updateCharacters);
+            collisionDetails.put("status", "ok");
+            collisionDetails.put("time", LocalDateTime.now().toString());
+            messagingService.sendPlayerCollision(lobbyid, collisionDetails);   
 
             //senden der Liste von Charsd
             response.put("type", "playerPosition");

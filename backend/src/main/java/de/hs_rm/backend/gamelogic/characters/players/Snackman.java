@@ -1,17 +1,20 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /*
  * Die Snackman Klasse erbt von der Charackter Klasse.
  */
 public class Snackman extends Character {
-    //Initialisierung
+    
     private int maxLife;
     private int life; 
     private int currentPoints;
+    private boolean recentlyCaught;
+    private long lastCaughtTime = 0; // Zeitpunkt der letzten Kollision in Millisekunden
 
 
 
@@ -22,6 +25,7 @@ public class Snackman extends Character {
         this.life=life; 
         this.maxLife=maxLife;
         currentPoints = 0;
+        this.recentlyCaught = false; 
     }
 
 
@@ -55,6 +59,10 @@ public class Snackman extends Character {
         this.currentPoints = currentPoints;
     }
 
+    public boolean isRecentlyCaught() {
+        return this.recentlyCaught;
+    }
+
      //abstrakte Methode zum fortbewegen--> Logik fehlt noch
     // @Override
     // public PlayerPosition move(){
@@ -73,7 +81,6 @@ public class Snackman extends Character {
         item = getCurrentObjectItem();
         if (item != null) {
             logger.info("Snackman uses ObjectItem '{}'.", item.getName());
-            // Hier die Logik
             setCurrentObjectItem(null); 
         } else {
             logger.warn("No ObjectItem to use.");
@@ -82,10 +89,35 @@ public class Snackman extends Character {
 
     //Methode zum Verhhalten nachdem man erwicht worden ist  
     public void caught (){
-        this.life--; 
-        if(this.life <= 0 ){
-            logger.info("Snackman has been caught and has no more lives.");
-        }
-    }
 
+        if (!recentlyCaught) { // Nur wennn keine Immunität aktiv ist
+        long currentTime = System.currentTimeMillis();
+
+        // Überprüfen, ob 5 Sekunden seit der letzten Kollision vergangen sind
+    if (currentTime - lastCaughtTime >= 5000) {
+        this.life--;
+        lastCaughtTime = currentTime; // Zeitpunkt der letzten Kollision aktualisieren
+        recentlyCaught = true; // Immunität aktivieren
+
+        logger.info("Snackman lost a life. Remaining lives: {}", this.life);
+
+        if (this.life <= 0) {
+            logger.info("Snackman has been caught and has no more lives.");
+        } else {
+            logger.info("Snackman is immune for 5 seconds.");
+        }
+
+        // Nach 5 Sekunden Immunität beenden
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                recentlyCaught = false; 
+                logger.info("Snackman is no longer immune.");
+            }
+        }, 5000); 
+    } else {
+        logger.info("Snackman is immune and cannot lose a life right now.");
+    }
+    }
+    }
 }
