@@ -234,12 +234,13 @@ public class GameAPIController {
 
             // Spieler aus dem Spiel entfernen
             existingGame = gameService.leaveGame(lobbyid, player);
-            logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
+            if(existingGame == null){
+                return;
+            }
 
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
-
             messagingService.sendPlayerList(lobbyid, response);
 
         } catch (GameLeaveException e) {
