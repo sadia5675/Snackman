@@ -12,7 +12,7 @@
     @apply min-h-screen bg-cover flex flex-col items-center justify-center;
 }
 .layout-modal {
-    @apply fixed bg-black backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 w-full h-full
+    @apply fixed backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 w-full h-full
 }
 .centered {
     @apply fixed flex items-center justify-center w-full h-full
@@ -21,6 +21,10 @@
     @apply text-red-500 text-sm mt-2
 }
 
+
+.btn-new {
+    @apply bg-white/40 text-black rounded-md p-3 font-semibold hover:bg-gray-100 backdrop-blur-lg shadow-sm
+}
 
 
 

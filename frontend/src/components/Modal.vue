@@ -1,7 +1,7 @@
 <template>
     <div class="layout-modal">
 
-        <div>
+        <div class="bg-black/70 backdrop-blur p-4 rounded-xl w-1/4">
             <div>
                 <slot name="titel"></slot>
             </div>
