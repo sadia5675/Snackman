@@ -112,6 +112,30 @@ public class Tile {
         return false; 
     }
 
+    public boolean addChicken(Chicken chicken){
+        
+        this.chickenList.add(chicken);
+        // if(!itemList.isEmpty()){
+        //     // TODO: Item hier nehmen
+        // }
+        return true;
+        
+    }
+
+    public boolean removeChicken(Chicken chicken){
+        // System.out.println("ChickenList: " + chickenList.size());
+        // System.out.println("Chicken: " + chicken);
+        if (chickenList != null && chickenList.contains(chicken)) {
+            chickenList.remove(chicken);
+            // logger.info("ChickenList beim Entfernen: {}", chickenList.);
+            return true;
+        } else {
+            logger.info("Chicken not found in tile.");
+            return false;
+            
+        }
+    }
+
     public List<Item> getItemList() {
         return itemList;
     }
