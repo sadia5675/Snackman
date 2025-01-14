@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic.characters.players;
 
 public enum NutriScore {
+    EGG("White", loadCalorieBonusForEgg()),
     A("Blue", 10),
     B("Green",20),
     C("Yellow", 30),
@@ -23,5 +24,10 @@ public enum NutriScore {
         return calorieBonus;
     }
 
+
+    private static int loadCalorieBonusForEgg() {
+        NutriscoreConfig config = new NutriscoreConfig();
+        return config.getEggCalorieBonus();
+    }
 
 }
