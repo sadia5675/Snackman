@@ -60,7 +60,7 @@ function createGrid() {
     }
     // Raster als 2D-Array erstellen
     grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-      Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
+      Array.from({ length: cols.value }, () => "weg")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
     );
     for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
       for (let colIndex = 0; colIndex < cols.value; colIndex++) {
