@@ -193,8 +193,10 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         movingRight = true
         break
       case 'Space':
-        isChargingJump = true;
-        break
+          if(gameStore.jumpAllowed){
+              isChargingJump = true;
+          }
+        break;
     }
   })
   window.addEventListener('keyup', (e) => {
@@ -737,6 +739,12 @@ async function handleCharacters(data: ICharacterDTD[]) {
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
+    const playerName = sessionStorage.getItem('myName');
+        if (playerName) {
+          console.log(playerName)
+          await gameStore.getJumpAllowed(playerName,lobbyId);
+        }
+    
   } catch (error) {
     console.error('Error fetching game status:', error)
   }

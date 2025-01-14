@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket';
-import { type Reactive, reactive } from "vue";
+import { type Reactive, reactive, ref } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
 import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
@@ -20,10 +20,27 @@ export const useGameStore = defineStore('gameStore', () => {
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore()
 
+  const jumpAllowed = ref(false);
+
   const router = useRouter();
 
   function handleGameStateError() {
     resetGameState()
+  }
+
+  async function getJumpAllowed(name: string, lobbyid: string) {
+    const playerName = sessionStorage.getItem('myName')
+    const response = await fetch(`${restUrl}/${lobbyid}/jumpAllowed`,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    })
+
+    const result: any = await response.json()
+    jumpAllowed.value = result.jumpAllowed;
+    console.log("ALLOWED OR NOT : ",jumpAllowed.value)
   }
 
   function resetGameState() {
@@ -389,6 +406,7 @@ export const useGameStore = defineStore('gameStore', () => {
 
   return {
     gameState,
+    jumpAllowed,
     createGame,
     startGameViaStomp,
     endGame,
@@ -401,7 +419,8 @@ export const useGameStore = defineStore('gameStore', () => {
     setPlayerRole,
     setPlayerRoleViaStomp,
     closeTab,
-    isGamePrivate
+    isGamePrivate,
+    getJumpAllowed,
   }
 })
 

@@ -312,6 +312,23 @@ public class GameAPIController {
 
     }
 
+    @PostMapping("/{gameId}/jumpAllowed")
+    public ResponseEntity<Map<String, Boolean>> checkJumpAllowed(
+            @PathVariable String gameId,
+            @RequestBody Map<String, String> requestBody) {
+
+        String playerName = requestBody.get("name");
+        if (playerName == null || playerName.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("jumpAllowed", false)); 
+        }
+        boolean isJumpAllowed = gameService.isJumpAllowed(gameId, playerName);
+
+        return ResponseEntity.ok(Map.of("jumpAllowed", isJumpAllowed));
+    }
+
+    
+
     // Method to end the game
     @PostMapping("/end/{gameId}")
     public ResponseEntity<?> endGame(@PathVariable String gameId) {
