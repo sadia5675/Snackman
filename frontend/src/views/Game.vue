@@ -16,11 +16,16 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import router from '@/router';
 
 const gameStore = useGameStore()
 
 const route = useRoute()
 const lobbyId = route.params.id.toString()
+const gameOver= ref(false);
+watch(gameOver, (newValue, oldValue) => {
+  console.log(`Game Over Zustand geändert: ${oldValue} → ${newValue}`);
+});
 
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
@@ -103,7 +108,7 @@ const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // Maximale Punkte
-const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman);
+const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
 
 // Aktuelle Punkte
 const points = computed(() => currentCharacter.value?.currentPoints ?? 0);
@@ -678,7 +683,18 @@ onMounted(async () => {
         gameStore.gameState.gamedata.characters = message.updateCharacters;
         const currLife = currentCharacter.value?.life ?? 0;
         const currTouch = currentCharacter.value?.touchcount ?? 0;
-        
+
+        console.log("points sidn<: {} udnn maxpoint sind : {}", points.value, maxPoints.value)
+        if(currLife=== 0 || points.value=== maxPoints.value){
+          console.log(" in der schleife : points sidn<: {} udnn amxpoint sind : {}", points.value, maxPoints.value)
+              gameOver.value= true;
+              console.log("gameover", gameOver.value)_
+        }
+        if(gameOver.value= true){
+          console.log("gameover ja war true", gameOver.value)
+          router.push({ name: 'GameEnd', params: { id: lobbyId } }); 
+        }
+
         console.log(" gameState.gamedata.characters: ", message.updateCharacters);
 
         if(prevLife != currLife || prevTouch  != currTouch) {//Überprüft ob das Leben oder Touch geändert hat
