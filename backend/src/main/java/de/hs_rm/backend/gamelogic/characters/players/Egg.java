@@ -2,7 +2,7 @@ package de.hs_rm.backend.gamelogic.characters.players;
 
 import org.springframework.beans.factory.annotation.Value;
 
-public class Egg extends Item{
+public class Egg extends FoodItems{
 
     @Value("${egg.caloriesbonus}")
     private int CALORIESBONUS_EGG;
@@ -10,8 +10,8 @@ public class Egg extends Item{
 
     private boolean isEaten;
 
-    public Egg( int x, int y){
-        super("Egg", x, y,PlayerRole.SNACKMAN);
+    public Egg(int x, int y){
+        super("Egg", x, y, NutriScore.EGG);
         this.isEaten = false;
     }
 
@@ -25,19 +25,5 @@ public class Egg extends Item{
 
     public void setEaten(boolean isEaten) {
         this.isEaten = isEaten;
-    }
-
-    @Override
-    public void applyEffect(Player player) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'applyEffect'");
-    }
-
-    @Override
-    public char getSymbol() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSymbol'");
-    }
-
-    
+    } 
 }

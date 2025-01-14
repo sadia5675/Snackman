@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
+
 class ChickenTest {
 
     private Chicken chicken;
@@ -14,7 +16,7 @@ class ChickenTest {
     @BeforeEach
     void setUp() {
         // Initialize a Chicken object with initial position
-        chicken = new Chicken(0, 0);
+        chicken = new Chicken(0, 0, null);
 
         // Set the value of CALORIESBONUS_EGG via ReflectionTestUtils
         ReflectionTestUtils.setField(chicken, "CALORIESBONUS_EGG", 50);
@@ -34,8 +36,8 @@ class ChickenTest {
 
         // Check that an egg was created
         assertNotNull(newEgg, "An egg should be created when calorie threshold is reached.");
-        assertEquals(3, newEgg.getPosX());
-        assertEquals(3, newEgg.getPosY());
+        assertEquals(3, newEgg.getX());
+        assertEquals(3, newEgg.getY());
     }
 
     @Test
