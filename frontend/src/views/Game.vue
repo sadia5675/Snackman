@@ -853,7 +853,25 @@ onMounted(async () => {
       </div>
     </div>
   </div>
+  <!-- Ladebalken für den kleinen Sprung -->
+  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 flex gap-4 justify-center items-center w-full max-w-[600px]">
+    <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
+      <div
+        class="jump-bar bg-red-500 h-full transition-all duration-100 ease-in-out"
+        id="smallJumpBar"
+        :style="{ width: smallJumpWidth + '%' }">
+      </div>
+    </div>
 
+    <!-- Ladebalken für den großen Sprung -->
+    <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
+      <div
+        class="jump-bar bg-green-500 h-full transition-all duration-100 ease-in-out"
+        id="bigJumpBar"
+        :style="{ width: bigJumpWidth + '%' }">
+      </div>
+    </div>
+  </div>
 
 
   <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
