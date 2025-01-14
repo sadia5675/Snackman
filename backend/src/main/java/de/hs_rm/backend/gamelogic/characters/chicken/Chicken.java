@@ -1,31 +1,43 @@
 package de.hs_rm.backend.gamelogic.characters.chicken;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.python.util.PythonInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import de.hs_rm.backend.api.ChickenEnvironmentApi;
+import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.characters.players.Egg;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
-import de.hs_rm.backend.gamelogic.map.PlayMap;
+
 
 public class Chicken {
     private int posX;
     private int posY;
-    private String behaviorScript;
+    private Path script_path;
     private List<Egg> eggList;
     private int currentCalorie;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Chicken.class);
+    private PythonInterpreter pyInterpreter;
+    private ChickenEnvironmentApi environmentApi;
 
     @Value("${egg.caloriesbonus}")
     private int CALORIESBONUS_EGG;
 
-    public Chicken(int posX, int posY, String behaviorScript) {
+    public Chicken(int posX, int posY, Path behaviorScript, Game game) {
         this.posX = posX;
         this.posY = posY;
-        this.behaviorScript = behaviorScript;
+        this.script_path = behaviorScript;
                 
         this.eggList = new ArrayList<>();
         this.currentCalorie =0;
+
+        this.pyInterpreter = new PythonInterpreter();
+        this.environmentApi = new ChickenEnvironmentApi(game);
     }
 
     public Egg eatSnack(FoodItems item, int posX, int posY){
@@ -40,25 +52,32 @@ public class Chicken {
 
     }
 
-      public void executeBehavior(PlayMap playMap) {
-        /*try (PythonInterpreter pyInterp = new PythonInterpreter()) {
-            // Skript laden
-            pyInterp.execfile(behaviorScript);
+    public void executeBehavior() {
+        LOGGER.info("executeBehavior() aufgerufen");
+        try {
+            File scriptFile = new File(script_path.toString());
 
-            // Python-Variablen setzen
-            pyInterp.set("posX", posX);
-            pyInterp.set("posY", posY);
-            pyInterp.set("playMap", playMap);
+            if (scriptFile.exists()) {
+                LOGGER.info("Starte Python Skript...");
+                pyInterpreter.set("chicken", this);
+                // pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
+                pyInterpreter.set("environment", environmentApi);
 
-            // Hier die Methoden aufrufen der ChickenBotMovement.py
+                pyInterpreter.execfile(scriptFile.getAbsolutePath());
+                LOGGER.info("Python Skript erfolgreich gestartet");
+            } else {
 
-            
+                LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
-    }
+            
+        }
 
-    
+        LOGGER.error("run_auto() aufgerufen");
+        pyInterpreter.exec("run_auto()");
+
+    }
 
     public int getPosX() {
         return posX;
@@ -73,12 +92,12 @@ public class Chicken {
         this.posY = posY;
     }
 
-    public String getBehaviorScript() {
-        return behaviorScript;
+    public Path getBehaviorScript() {
+        return script_path;
     }
 
-    public void setBehaviorScript(String behaviorScript) {
-        this.behaviorScript = behaviorScript;
+    public void setBehaviorScript(Path behaviorScript) {
+        this.script_path = behaviorScript;
     }
 
     public List<Egg> getEggList() {

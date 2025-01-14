@@ -112,15 +112,6 @@ public class Tile {
         return false; 
     }
 
-    public boolean addChicken(Chicken chicken){
-        
-        this.chickenList.add(chicken);
-        // if(!itemList.isEmpty()){
-        //     // TODO: Item hier nehmen
-        // }
-        return true;
-        
-    }
 
     public boolean removeChicken(Chicken chicken){
         // System.out.println("ChickenList: " + chickenList.size());
