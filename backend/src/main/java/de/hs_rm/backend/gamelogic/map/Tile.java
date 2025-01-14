@@ -80,6 +80,21 @@ public class Tile {
         this.chickenList.add(chicken);
         if(!itemList.isEmpty()){
             // TODO: Item hier nehmen
+            for (Item item : itemList) {
+                if(item instanceof FoodItems){
+                    FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
+                    Egg egg = chicken.eatSnack(foodItem, chicken.getPosX(), chicken.getPosY());
+                    if(egg != null){
+                        itemList.remove(item);
+                        logger.info("Item '{}' removed from tile", item.getName());
+                        //Ei wird hier zum Tile hinzugefügt
+                        itemList.add(egg); //FEHLER!
+                        logger.info("Egg by chicken geboren and added to tile");
+                        break;
+                    }
+
+                }
+            }
         }
         return true;
     }
@@ -120,5 +135,15 @@ public class Tile {
     public void setCharacterList(List<Character> characterList) {
         this.characterList = characterList;
     }
+
+    public List<Chicken> getChickenList() {
+        return chickenList;
+    }
+
+    public void setChickenList(List<Chicken> chickenList) {
+        this.chickenList = chickenList;
+    }
+
+    
     
 }
