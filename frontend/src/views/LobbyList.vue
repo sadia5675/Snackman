@@ -9,6 +9,7 @@ import { PlayerType } from '@/stores/game/dtd/PlayerType';
 import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD';
 import { ModalType } from '@/stores/game/dtd/EModalType';
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import router from '@/router';
 
 const modal = useModalStore();
 const apiUrl = "/api/game";
@@ -98,6 +99,9 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+      <button class="mt-4 w-full p-3 font-semibold text-zinc-800 rounded-md bg-gray-200 hover:bg-gray-100 backdrop-blur-lg shadow-sm" @click="router.push('/index')">
+        Back
+      </button>
     </div>
   </div>
 </template>
