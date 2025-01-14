@@ -79,6 +79,11 @@ public class Chicken {
 
     }
 
+    public void move(int x, int y) {
+        this.posX = x;
+        this.posY = y;
+    }
+
     public int getPosX() {
         return posX;
     }
