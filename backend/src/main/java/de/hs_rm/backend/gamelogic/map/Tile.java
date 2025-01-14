@@ -87,9 +87,7 @@ public class Tile {
                 if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
                     snackman.caught();
                     ghost.hit();
-                    logger.info("Collision: Snackman caught by Ghost!");
-                } else {
-                    logger.info("Collision ignored: Snackman is immune.");
+                    logger.info("Collision: Snackman caught by Ghost! Now imun fo the next 5 sec");
                 }
                 }
             }

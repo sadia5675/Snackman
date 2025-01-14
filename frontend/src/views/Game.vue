@@ -64,6 +64,14 @@ const currentCharacter = computed(() => {
   return character;
 });
 
+const collisionMessage = ref<string | null>(null);
+
+function showCollisionMessage(message: string) {
+  collisionMessage.value = message;
+  setTimeout(() => {
+    collisionMessage.value = null; // nach 5 Sekunden weg
+  }, 5000);
+}
 
 // Aktuelles Leben des Charakters
 const life = computed(() => currentCharacter.value?.life ?? 0);
@@ -145,7 +153,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     renderer.domElement.requestPointerLock()
   })
 
-  window.addEventListener('resize',(e) => {
+  window.addEventListener('resize', (e) => {
     //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -292,9 +300,9 @@ pointLight.position.set(10, 20, 10) //extra Lightning for the ball
 scene.add(pointLight)
 
 function animate() {
-  setTimeout( function() {
+  setTimeout(function () {
     requestAnimationFrame(animate)
-  }, 1000 / 60 );
+  }, 1000 / 60);
   renderer.render(scene, camera)
   const delta = clock.getDelta()
   cameraPositionBewegen(delta)
@@ -463,7 +471,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   });
 }
 
-function renderChicken(chickenPositions: IChickenPositionDTD[]){
+function renderChicken(chickenPositions: IChickenPositionDTD[]) {
   const modelLoader = new GLTFLoader()
 
   chickenPositions.forEach((chickenPosition) => {
@@ -651,7 +659,7 @@ onMounted(async () => {
         const playerPosition: any = messageValidation.feedback
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
-            moveCamera();
+          moveCamera();
         }
 
         break;
@@ -659,31 +667,44 @@ onMounted(async () => {
   })
 
   subscribeTo(`/ingame/PlayerKollision/${lobbyId}`, async (message) => {
-   // Prüfe den Typ der Nachricht
-   console.log("message: ", message);
-   const myName = sessionStorage.getItem('myName');
+    // Prüfe den Typ der Nachricht
+    console.log("message: ", message);
 
-  switch (message.type) {
+    switch (message.type) {
 
-    case 'collisionValidation': {
-      gameStore.gameState.gamedata.characters = message.updateCharacters
-      console.log(" gameState.gamedata.characters: ", message.updateCharacters);
+      case 'collisionValidation': {
+        const prevLife = currentCharacter.value?.life ?? 0;
+        const prevTouch = currentCharacter.value?.touchcount ?? 0;
+        gameStore.gameState.gamedata.characters = message.updateCharacters;
+        const currLife = currentCharacter.value?.life ?? 0;
+        const currTouch = currentCharacter.value?.touchcount ?? 0;
+        
+        console.log(" gameState.gamedata.characters: ", message.updateCharacters);
 
-      if (currentPlayer.value?.playerrole === Playerrole.SNACKMAN) {
-        console.log("snackman curr:", currentCharacter.value?.life ?? 0);
+        if(prevLife != currLife || prevTouch  != currTouch) {//Überprüft ob das Leben oder Touch geändert hat
+        for (const [name, character] of Object.entries(gameStore.gameState.gamedata.characters)) {
+          if (name !== currentPlayer.value?.name) {//Prüft ob aktuelle Charakter nicht der Spieler selbst ist
+            console.log(" currentPlayer.value?.name: ", currentPlayer.value?.name);
+            console.log(" cname: ", name);
+            if (character.life > 0) { //ob der nicht akt Chararcter Leben hat
+              showCollisionMessage(`Snackman ${name} has ${character.life} remaining Lifes.`);
+            } 
+            const ghosttouch= character.touchcount ?? 0;
+            if(ghosttouch > 0){
+              showCollisionMessage(`Ghost ${name} has ${character.touchcount} total Hits.`);
+            }
+          }
+        }
       }
-      if (currentPlayer.value?.playerrole === Playerrole.GHOST) {
-        console.log("ghost curr:", currentCharacter.value?.touchcount ?? 0);
+
+        break;
       }
 
-      break;
-  }
-
-    default:
-      console.warn("Unerwarteter Nachrichtentyp:", message.type);
-      break;
-  }
-});
+      default:
+        console.warn("Unerwarteter Nachrichtentyp:", message.type);
+        break;
+    }
+  });
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
@@ -725,10 +746,7 @@ onMounted(async () => {
 <template>
   <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
   <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
-    <div
-      id="items"
-      class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45"
-    >
+    <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
       <!-- Items anzeigen, wenn vorhanden -->
       <div v-if="collectedItems.length > 0">
         {{ collectedItems.join(', ') }}
@@ -744,12 +762,15 @@ onMounted(async () => {
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-          <p>Points: {{ points }} / {{ maxPoints }}</p>
-        </div>
+        <p>Points: {{ points }} / {{ maxPoints }}</p>
+      </div>
       <!-- TouchCountanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
-          <p>Hits: {{ touch }}</p>
-        </div>
+        <p>Hits: {{ touch }}</p>
+      </div>
+    </div>
+    <div v-if="collisionMessage" class="fixed bottom-4 left-4 bg-red-400 text-white p-5 rounded-lg shadow-lg z-50">
+      {{ collisionMessage }}
     </div>
   </div>
 
@@ -758,7 +779,8 @@ onMounted(async () => {
   <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">
       <h3 class="text-2xl font-bold mb-4">Lautstärke</h3>
-      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{ musicVolume }}%
+      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{ musicVolume
+      }}%
       <br>
       Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
       {{ effectVolume }}%
