@@ -324,6 +324,13 @@ function triggerJumpAfterChargeTime(delta: number) {
     // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
     jumpChargeTime += delta; // Ladezeit hochzählen
 
+    // Der Ladebalken wird hiermit auf dem Bildschirm sichtbar geladen
+    const jumpBarContainer = document.getElementById('jumpBarContainer');
+    if (jumpBarContainer.classList.contains('hidden')) {
+      jumpBarContainer.classList.remove('hidden');
+    }
+
+
     if (jumpChargeTime >= maxJumpChargeTime) {
       jumpChargeTime = 0; // Ladezeit zurücksetzen
       // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
@@ -341,7 +348,23 @@ function triggerJumpAfterChargeTime(delta: number) {
     console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
 
   }
+  // Wichtig für den Sprung Ladebalken
+  updateJumpBar();
 
+}
+// Funktion, die den Sprung Ladebalken dynamisch aktualisiert
+function updateJumpBar() {
+  const jumpBar = document.getElementById("jumpBar");
+  const progress = Math.min((jumpChargeTime / maxJumpChargeTime) * 100, 100); // Prozent
+  jumpBar.style.width = `${progress}%`; // Breite Balken setzen
+
+  // Ladebalken soll nicht sichtbar sein, wenn man nicht springt
+  if (progress === 0) {
+    const jumpBarContainer = document.getElementById('jumpBarContainer');
+    if (!jumpBarContainer.classList.contains('hidden')) {
+      jumpBarContainer.classList.add('hidden');
+    }
+  }
 }
 
 function cameraPositionBewegen(delta: number) {
@@ -853,22 +876,16 @@ onMounted(async () => {
       </div>
     </div>
   </div>
-  <!-- Ladebalken für den kleinen Sprung -->
-  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 flex gap-4 justify-center items-center w-full max-w-[600px]">
+  <!-- Sprung-Ladebalken -->
+  <div
+    id="jumpBarContainer"
+    class="fixed z-50 bottom-10 left-1/2 transform -translate-x-1/2 flex justify-center items-center w-full max-w-[600px] hidden">
+    <!-- Ladebalken -->
     <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
       <div
-        class="jump-bar bg-red-500 h-full transition-all duration-100 ease-in-out"
-        id="smallJumpBar"
-        :style="{ width: smallJumpWidth + '%' }">
-      </div>
-    </div>
-
-    <!-- Ladebalken für den großen Sprung -->
-    <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
-      <div
-        class="jump-bar bg-green-500 h-full transition-all duration-100 ease-in-out"
-        id="bigJumpBar"
-        :style="{ width: bigJumpWidth + '%' }">
+        id="jumpBar"
+        class="bg-red-500 h-full transition-all duration-100 ease-in-out"
+        style="width: 0%;">
       </div>
     </div>
   </div>
