@@ -591,13 +591,13 @@ function loadMap(map: string[]) {
         );
       }));
     }
-    return modelCache.get(url)!; 
+    return modelCache.get(url)!;
   }
   console.log(map)
   map.forEach((row, rowIndex) => {
     [...row].forEach((tile, colIndex) => {
-      const z = rowIndex + mapOffset;
-      const x = colIndex + mapOffset;
+      const x = rowIndex + mapOffset;
+      const z = colIndex + mapOffset;
 
       switch (tile) {
         case '*': // Wall
@@ -620,35 +620,30 @@ function loadMap(map: string[]) {
 
           const itemPaths: { [key: string]: URL[] } = {
             E: [
-              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url),
-              new URL("@/assets/game/items/E/chocolate_bar/chocolatebar.glb", import.meta.url)
+              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url)
             ],
             D: [
-              new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url),
-              new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url)
+              new URL("@/assets/game/items/E/chocolate_bar/chocolatebar.glb", import.meta.url)
             ],
             C: [
-              new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url),
-              new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url),
+              new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url)
             ],
             B: [
-              new URL("@/assets/game/items/B/apple/apple.glb", import.meta.url),
-              new URL("@/assets/game/items/B/banana/banana.glb", import.meta.url),
+              new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url)
             ],
             A: [
-              new URL("@/assets/game/items/A/ginger/ginger_fixed.glb", import.meta.url),
-              new URL("@/assets/game/items/A/lemon/lemon_remake.glb", import.meta.url)
+              new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url)
             ],
           };
 
           const randomModelPath = new URL(
-            itemPaths[tile][Math.random() > 0.5 ? 0 : 1],
+            itemPaths[tile][0],
             import.meta.url
           ).href;
 
           loadCachedModel(randomModelPath).then((model) => {
             const item = model.clone(); // Clone to avoid modifying the cached model
-
+            console.log(randomModelPath)
 
             if (randomModelPath.includes('chocolatebar')) {
               item.position.set(x, 0.75, z);
@@ -665,23 +660,9 @@ function loadMap(map: string[]) {
             } else if (randomModelPath.includes('candy_cane')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.07, 0.07, 0.07);
-            } else if (randomModelPath.includes('chips')) {
+            } else if (randomModelPath.includes('chips')) { 
               item.position.set(x, 0.8, z);
               item.scale.set(0.1, 0.1, 0.1);
-            } else if (randomModelPath.includes('apple')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.0015, 0.0015, 0.0015);
-            } else if (randomModelPath.includes('banana')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.07, 0.07, 0.07);
-            } else if (randomModelPath.includes('ginger_fixed')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.1, 0.1, 0.1);
-              item.rotateZ(Math.PI / 1.5);
-            } else if (randomModelPath.includes('lemon_remake')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.09, 0.09, 0.09);
-              item.rotateZ(Math.PI / 1.5);
             }
             scene.add(item);
 
@@ -697,7 +678,7 @@ function loadMap(map: string[]) {
     });
   });
 
-  localStorage.setItem('gameMap-${lobbyId}',JSON.stringify(map));
+  localStorage.setItem('gameMap-${lobbyId}', JSON.stringify(map));
 
   // Add instanced meshes to the scene
   groundMesh.instanceMatrix.needsUpdate = true;
@@ -732,6 +713,29 @@ async function handleCharacters(data: ICharacterDTD[]) {
     }
   })
   renderCharactersTest(playerPositions)
+}
+
+function removeItemFromSceneByPosition(posX: number, posY: number) {
+  const itemToRemove = rotatingItems.find(
+    (item) =>
+      Math.abs(item.position.x - posX) < 0.5 && Math.abs(item.position.z - posY) < 0.5
+  );
+  console.log(`Player Position: (${posX}, ${posY})`);
+
+
+  if (itemToRemove) {
+    // Entferne das Item aus der Szene
+    scene.remove(itemToRemove);
+
+    // Entferne es aus der rotatingItems-Liste
+    const index = rotatingItems.indexOf(itemToRemove);
+    if (index > -1) {
+      rotatingItems.splice(index, 1);
+    }
+    console.log(`Item an Position( {} {}`, posX, posY);
+  } else {
+    console.warn(`Kein Item an Position {} {}`, posX, posY)
+  }
 }
 
 onMounted(async () => {
@@ -770,13 +774,26 @@ onMounted(async () => {
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
           console.log(playerPosition)
-          nextPosition.set(playerPosition.posX,playerPosition.posZ,playerPosition.posY)
+          nextPosition.set(playerPosition.posX, playerPosition.posZ, playerPosition.posY)
           moveCamera();
         }
 
         break
     }
   })
+
+  subscribeTo(`/ingame/${lobbyId}/itemUpdates`, async (message: any) => {
+    switch (message.type) {
+      case "itemCollected":
+        console.log(`collected at{} {}`, message.post, message.posY)
+        removeItemFromSceneByPosition(message.position.posX, message.position.posY);
+        break;
+
+      default:
+        console.warn("Unbekannter Nachrichtentyp:", message.type);
+    }
+  })
+
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)

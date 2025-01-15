@@ -51,6 +51,7 @@ public class Tile {
         List<Item> itemsToRemove = new ArrayList<>();
 
         this.characterList.add(character);
+       // logger.info("AAAAAAAAAAAAAAAAAAAAAAAA {}",itemList.toString());
         if(!itemList.isEmpty()){
             // DONE: Item hier nehmen
             for(Item item: itemList){

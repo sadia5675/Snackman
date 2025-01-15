@@ -77,15 +77,10 @@ public class Game {
     // TO-DO: beide Listen müssen nochmal angepasst werden
     // Globale Liste der vordefinierten FoodItems
     private static final List<FoodItems> FOOD_ITEMS = List.of(
-            new FoodItems("ginger", -1, -1, NutriScore.A), // Positionen werden später festgelegt
-            new FoodItems("lemon", -1, -1, NutriScore.A),
-            new FoodItems("apple", -1, -1, NutriScore.B),
-            new FoodItems("banana", -1, -1, NutriScore.B),
-            new FoodItems("candycane", -1, -1, NutriScore.C),
-            new FoodItems("chips", -1, -1, NutriScore.C),
-            new FoodItems("cottoncandy", -1, -1, NutriScore.D),
-            new FoodItems("popcorn", -1, -1, NutriScore.D),
-            new FoodItems("chocolatebar", -1, -1, NutriScore.E),
+            new FoodItems("candycane", -1, -1, NutriScore.A),
+            new FoodItems("chips", -1, -1, NutriScore.B),
+            new FoodItems("cottoncandy", -1, -1, NutriScore.C),
+            new FoodItems("chocolatebar", -1, -1, NutriScore.D),
             new FoodItems("strawberryshortcake", -1, -1, NutriScore.E));
     // vordefinierten ObjectsItems --> Pos muss geändert werden
     private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
@@ -223,6 +218,7 @@ public class Game {
                 playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(),
                         newObjectItem.getSymbol()); // für Object
             }
+            
 
         }
         // dynamische maxPoints
@@ -355,11 +351,27 @@ public class Game {
         Character curCharacter = characters.get(username);
 
         curCharacter.move(posX, posY, posZ, angle);
-       // LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(), curCharacter.getPosY());
+        // LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),
+        // curCharacter.getPosY());
         return true;
     }
 
-   
+    public boolean isItemCollected(double posX, double posY) {
+        // Implement the logic to check if an item was collected at the given position
+        Tile tile = getTileAtPosition(posX, posY);
+        return tile != null && tile.hasItem();
+    }
+
+    private Tile getTileAtPosition(double posX, double posY) {
+        int roundedposX = (int) Math.round(posX);
+        int roundedposY = (int) Math.round(posY);
+        int index = roundedposY * playmap.getWidth() + roundedposX;
+        if (index < 0 || index >= playmap.getTilesList().size()) {
+            return null;
+        }
+        return playmap.getTilesList().get(index);
+    }
+
     public boolean move(String username, double posY, double posX, double posZ, double angle) {
         Character curCharacter = characters.get(username);
 
@@ -375,7 +387,8 @@ public class Game {
             return false;
         }
         Tile curTile = playmap.getTilesList().get(curIndex);
-        LOGGER.info("{}",curTile.getItemList());
+
+        LOGGER.info("Hier die aktuellen items: {} und dann {}", curTile.getItemList(),curIndex);
 
         // Berechnung des Zielindex
         int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
@@ -388,19 +401,21 @@ public class Game {
 
         // Ziel-Tile prüfen
         if (targetTile.getType() == TileType.WALL) {
-            //LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
+            // LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}",
+            // posX, posY);
             return false;
         }
 
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
         if (curIndex == targetIndex) {
-           // LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
+            // LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX,
+            // posY);
 
             // posy und posx vertauscht
             curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
-
+        //LOGGER.info("BBBBBBBBBBBBBBBBBBBBBBBBBBBBB {} {}",curTile.hasItem() , curTile.getItemList());
         if (curTile.hasItem()) {
             curTile.addCharacter(curCharacter);
         }
@@ -412,8 +427,8 @@ public class Game {
         curCharacter.move(posY, posX, posZ, angle);
         targetTile.addCharacter(curCharacter);
 
-       // LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
-       
+        // LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
+
         return true;
     }
 
