@@ -18,7 +18,6 @@ import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
 const gameStore = useGameStore()
-
 const route = useRoute()
 const lobbyId = route.params.id.toString()
 
@@ -119,7 +118,6 @@ watch(
 
 // Typ falsch?
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
-
 
 
 function addItem(itemName: string) {
@@ -326,6 +324,13 @@ function triggerJumpAfterChargeTime(delta: number) {
     // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
     jumpChargeTime += delta; // Ladezeit hochzählen
 
+    // Der Ladebalken wird hiermit auf dem Bildschirm sichtbar geladen
+    const jumpBarContainer = document.getElementById('jumpBarContainer');
+    if (jumpBarContainer?.classList.contains('hidden')) {
+      jumpBarContainer?.classList.remove('hidden');
+    }
+
+
     if (jumpChargeTime >= maxJumpChargeTime) {
       jumpChargeTime = 0; // Ladezeit zurücksetzen
       // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
@@ -343,6 +348,9 @@ function triggerJumpAfterChargeTime(delta: number) {
     console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
 
   }
+  // Wichtig für den Sprung Ladebalken
+  updateJumpBar();
+
 
 }
 
@@ -401,6 +409,24 @@ function calculateMovementDirection(
   }
 
   return movementVector;
+}
+
+function updateJumpBar() {
+  const jumpBar = document.getElementById("jumpBar");
+  const progress = Math.min((jumpChargeTime / maxJumpChargeTime) * 100, 100); // Prozent
+
+  if (jumpBar){
+
+    jumpBar.style.width = `${progress}%`; // Breite Balken setzen
+
+  }
+  // Ladebalken soll nicht sichtbar sein, wenn man nicht springt
+  if (progress === 0) {
+    const jumpBarContainer = document.getElementById('jumpBarContainer');
+    if (!jumpBarContainer?.classList.contains('hidden')) {
+      jumpBarContainer?.classList.add('hidden');
+    }
+  }
 }
 
 function applyJumpLogic(delta: number, nextPosition: THREE.Vector3) {
@@ -750,7 +776,7 @@ onMounted(async () => {
           console.log(playerName)
           await gameStore.getJumpAllowed(playerName,lobbyId);
         }
-    
+
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
@@ -870,7 +896,19 @@ onMounted(async () => {
     </div>
   </div>
 
-
+  <!-- Sprung-Ladebalken -->
+  <div
+    id="jumpBarContainer"
+    class="fixed z-50 bottom-10 left-1/2 transform -translate-x-1/2 flex justify-center items-center w-full max-w-[600px] hidden">
+    <!-- Ladebalken -->
+    <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
+      <div
+        id="jumpBar"
+        class="bg-red-500 h-full transition-all duration-100 ease-in-out"
+        style="width: 0%;">
+      </div>
+    </div>
+  </div>
 
   <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">
