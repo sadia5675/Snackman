@@ -90,6 +90,26 @@ public class GameService {
         return game;
     }
 
+    public Boolean isJumpAllowed(String gameId, String playerName){
+
+        Game curGame = gameList.get(gameId);
+        Player curPlayer = curGame.getPlayers().stream()
+                                                .filter(p -> p.getName().equals(playerName))
+                                                .findFirst()
+                                                .orElse(null);
+
+        if(curPlayer != null){
+            if(curPlayer.getPlayerrole() == PlayerRole.GHOST){
+                return false;
+            }else{
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
     public Game joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 
