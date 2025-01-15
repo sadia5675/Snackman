@@ -77,11 +77,11 @@ public class Game {
     // TO-DO: beide Listen müssen nochmal angepasst werden
     // Globale Liste der vordefinierten FoodItems
     private static final List<FoodItems> FOOD_ITEMS = List.of(
-            new FoodItems("candycane", -1, -1, NutriScore.A),
-            new FoodItems("chips", -1, -1, NutriScore.B),
-            new FoodItems("cottoncandy", -1, -1, NutriScore.C),
-            new FoodItems("chocolatebar", -1, -1, NutriScore.D),
-            new FoodItems("strawberryshortcake", -1, -1, NutriScore.E));
+        new FoodItems("strawberryshortcake", -1, -1, NutriScore.A),
+            new FoodItems("candycane", -1, -1, NutriScore.B),
+            new FoodItems("chocolatebar", -1, -1, NutriScore.C),
+            new FoodItems("chips", -1, -1, NutriScore.D),
+            new FoodItems("cottoncandy", -1, -1, NutriScore.E));
     // vordefinierten ObjectsItems --> Pos muss geändert werden
     private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
             new GhostObjectItem("Speed Boost", -1, -1, "Increases movement speed temporarily"),
@@ -388,7 +388,7 @@ public class Game {
         }
         Tile curTile = playmap.getTilesList().get(curIndex);
 
-        LOGGER.info("Hier die aktuellen items: {} und dann {}", curTile.getItemList(),curIndex);
+      
 
         // Berechnung des Zielindex
         int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
@@ -416,7 +416,8 @@ public class Game {
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
         if (curTile.hasItem()) {
-            curTile.addCharacter(curCharacter);
+            LOGGER.info("Hier die aktuellen items: {} und dann {}", curTile.getItemList(),curIndex);
+            curTile.takeItems(curCharacter);
         }
 
         // Charakter bewegen

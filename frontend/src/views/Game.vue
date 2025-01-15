@@ -620,19 +620,19 @@ function loadMap(map: string[]) {
 
           const itemPaths: { [key: string]: URL[] } = {
             E: [
-              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url)
-            ],
-            D: [
-              new URL("@/assets/game/items/E/chocolate_bar/chocolatebar.glb", import.meta.url)
-            ],
-            C: [
               new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url)
             ],
-            B: [
+            D: [
               new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url)
             ],
-            A: [
+            C: [
+              new URL("@/assets/game/items/E/chocolate_bar/chocolatebar.glb", import.meta.url)
+              ],
+              B: [
               new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url)
+            ],
+            A: [
+              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url)
             ],
           };
 
@@ -640,7 +640,7 @@ function loadMap(map: string[]) {
             itemPaths[tile][0],
             import.meta.url
           ).href;
-
+          // ITEMS SIND SPIEGELVERKEHRT
           loadCachedModel(randomModelPath).then((model) => {
             const item = model.clone(); // Clone to avoid modifying the cached model
             console.log(randomModelPath)
@@ -660,7 +660,7 @@ function loadMap(map: string[]) {
             } else if (randomModelPath.includes('candy_cane')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.07, 0.07, 0.07);
-            } else if (randomModelPath.includes('chips')) { 
+            } else if (randomModelPath.includes('chips')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.1, 0.1, 0.1);
             }
@@ -771,7 +771,7 @@ onMounted(async () => {
     switch (messageValidation.type) {
       case 'playerMoveValidation':
         const playerPosition: any = messageValidation.feedback
-
+        console.log(gameStore.gameState.gamedata.playmap)
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
           console.log(playerPosition)
           nextPosition.set(playerPosition.posX, playerPosition.posZ, playerPosition.posY)

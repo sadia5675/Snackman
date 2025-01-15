@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import de.hs_rm.backend.gamelogic.characters.players.*;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 
-
 public class Tile {
     private TileType type;
     List<Item> itemList;
@@ -17,7 +16,6 @@ public class Tile {
     List<Chicken> chickenList;
 
     Logger logger = LoggerFactory.getLogger(Tile.class);
-
 
     public Tile(TileType type) {
         this.type = type;
@@ -32,38 +30,46 @@ public class Tile {
     public boolean hasCharacter() {
         return characterList != null && !characterList.isEmpty();
     }
+
     public boolean hasChicken() {
         return chickenList != null && !chickenList.isEmpty();
     }
 
     /**
-     * Wenn Charakter zu Tile kommt, wird es überprüft, ob passende items in tile sind oder andere Gegner/hühnchen da sind, 
+     * Wenn Charakter zu Tile kommt, wird es überprüft, ob passende items in tile
+     * sind oder andere Gegner/hühnchen da sind,
      * wenn ja -> Kollision
      * 
      * @param character
      * @return true wenn Charakter erfolgreich rein kommt und ggfs. Item nehmen
      */
-    public boolean addCharacter(Character character){
+    public boolean addCharacter(Character character) {
         for (Item item : itemList) {
             logger.debug("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
         }
 
+        this.characterList.add(character);
+
+        return true;
+    }
+
+    public void takeItems(Character character) {
         List<Item> itemsToRemove = new ArrayList<>();
 
-        this.characterList.add(character);
-        if(!itemList.isEmpty()){
+        if (!itemList.isEmpty()) {
             // DONE: Item hier nehmen
-            for(Item item: itemList){
-                if(character instanceof Snackman && item.getType()==PlayerRole.SNACKMAN){
+            for (Item item : itemList) {
+                if (character instanceof Snackman && item.getType() == PlayerRole.SNACKMAN) {
                     Snackman snackman = (Snackman) character; // Cast zu Snackman
-                    if(item instanceof FoodItems){
-                        snackman.eatSnack((FoodItems)item);
+                    if (item instanceof FoodItems) {
+                        snackman.eatSnack((FoodItems) item);
                         logger.info("Snackman eats FoodItem '{}'.", item.getName());
-                    } else if(item instanceof ObjectsItems){
+                    } else if (item instanceof ObjectsItems) {
                         snackman.collectObjectItem((ObjectsItems) item);
                     }
                     itemsToRemove.add(item);
-                } else if (character instanceof Ghost && item.getType()==PlayerRole.GHOST && item instanceof ObjectsItems){
+                } else if (character instanceof Ghost && item.getType() == PlayerRole.GHOST
+                        && item instanceof ObjectsItems) {
                     Ghost ghost = (Ghost) character;
                     ghost.collectObjectItem((ObjectsItems) item);
                     itemsToRemove.add(item);
@@ -74,19 +80,17 @@ public class Tile {
             logger.debug("Item removed. Remaining items: {}", itemList.size());
         }
 
-        // TODO: Kollision zwischen Ghost und Snackman
-        return true;
     }
 
-    public boolean addChicken(Chicken chicken){
+    public boolean addChicken(Chicken chicken) {
         this.chickenList.add(chicken);
-        if(!itemList.isEmpty()){
+        if (!itemList.isEmpty()) {
             // TODO: Item hier nehmen
         }
         return true;
     }
 
-    public boolean addItem(Item item){
+    public boolean addItem(Item item) {
         this.itemList.add(item);
         return true;
     }
@@ -94,9 +98,9 @@ public class Tile {
     public boolean removeCharacter(Character character) {
         if (characterList != null && characterList.contains(character)) {
             characterList.remove(character);
-            return true; 
+            return true;
         }
-        return false; 
+        return false;
     }
 
     public List<Item> getItemList() {
@@ -122,5 +126,5 @@ public class Tile {
     public void setCharacterList(List<Character> characterList) {
         this.characterList = characterList;
     }
-    
+
 }
