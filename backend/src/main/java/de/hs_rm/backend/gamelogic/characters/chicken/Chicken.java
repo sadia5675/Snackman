@@ -18,19 +18,23 @@ import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 public class Chicken {
     private int posX;
     private int posY;
+    private int angle;
+    private String id;
     private Path script_path;
     private List<Egg> eggList;
     private int currentCalorie;
     private static final Logger LOGGER = LoggerFactory.getLogger(Chicken.class);
     private PythonInterpreter pyInterpreter;
     private ChickenEnvironmentApi environmentApi;
+    
 
     @Value("${egg.caloriesbonus}")
     private int CALORIESBONUS_EGG;
 
-    public Chicken(int posX, int posY, Path behaviorScript, Game game) {
+    public Chicken(int posX, int posY, Path behaviorScript, Game game, String id) {
         this.posX = posX;
         this.posY = posY;
+        this.id = id;
         this.script_path = behaviorScript;
                 
         this.eggList = new ArrayList<>();
@@ -95,6 +99,18 @@ public class Chicken {
     }
     public void setPosY(int posY) {
         this.posY = posY;
+    }
+    public String getId() {
+        return id;
+    }
+    public void setAngle(int angle) {
+        this.angle = angle;
+    }
+    public int getAngle() {
+        return angle;
+    }
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Path getBehaviorScript() {

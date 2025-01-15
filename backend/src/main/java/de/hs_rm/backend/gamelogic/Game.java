@@ -45,7 +45,7 @@ public class Game {
 
     private boolean privateLobby;
     private String password;
-    private int itemsNum;
+    // private int itemsNum;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
@@ -279,7 +279,7 @@ public class Game {
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, "Chicken_" + i);
 
 
             chickens.add(chicken);
@@ -615,11 +615,11 @@ public class Game {
         return privateLobby;
     }
 
-    public int getItemsNum() {
-        return itemsNum;
-    }
+    // public int getItemsNum() {
+    //     return itemsNum;
+    // }
 
-    public void setItemsNum(int itemsNum) {
-        this.itemsNum = itemsNum;
-    }
+    // public void setItemsNum(int itemsNum) {
+    //     this.itemsNum = itemsNum;
+    // }
 }
