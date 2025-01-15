@@ -87,6 +87,11 @@ public class GameService {
 
         game.leaveGame(player);
 
+        if(game.getPlayers().isEmpty()){
+            gameList.remove(gameId);
+            game = null;
+        }
+
         return game;
     }
 
