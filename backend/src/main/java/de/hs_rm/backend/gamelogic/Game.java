@@ -33,6 +33,16 @@ public class Game {
     private String selectedMap;
     private int itemsNum;
 
+    public String getSelectedTheme() {
+        return selectedTheme;
+    }
+
+    public void setSelectedTheme(String selectedTheme) {
+        this.selectedTheme = selectedTheme;
+    }
+
+    private String selectedTheme;
+
     private int snackmanLife;
     private int snackmanMaxLife;
     private double snackmanSpeed;

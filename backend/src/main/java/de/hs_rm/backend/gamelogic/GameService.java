@@ -46,6 +46,22 @@ public class GameService {
         return gameList.get(gameId);
     }
 
+    public void setSelectedTheme(String lobbyid, String theme){
+        Game existingGame = gameList.get(lobbyid);
+
+        if(existingGame){
+            existingGame.setSelectedTheme(theme);
+        }
+    }
+
+    public String getSelectedTheme(String lobbyid){
+        Game existingGame = gameList.get(lobbyid);
+
+        if(existingGame){
+            return existingGame.getSelectedTheme();
+        }
+    }
+
     public Game createGame(Player gamemaster){
         Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio);
         gameList.put(newGame.getId(), newGame);

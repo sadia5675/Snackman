@@ -70,6 +70,17 @@ const themes = ref <IThemes>({
     }
   }
 
+  async function fetchSelectedTheme(lobbyId: string) {
+    const response = await fetch(`/api/game/${lobbyId}/selectedTheme`,{
+      method: 'POST'
+    });
+
+    const result: any = await response.json();
+
+    selectedTheme.value = result.selectedTheme;
+
+  }
+
   function subscribeToThemeUpdates(lobbyId: string): Promise<boolean> {
     return new Promise((resolve) => {
       if (!stompClient.connected) {
@@ -106,6 +117,7 @@ const themes = ref <IThemes>({
     setSelectedTheme,
     currentTheme,
     subscribeToThemeUpdates,
+    fetchSelectedTheme
   };
 
 });

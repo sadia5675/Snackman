@@ -58,7 +58,7 @@
             class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
             @click="openThemePopup()"
         >
-        Select Themes 
+        Select Themes
         </button>
         <div class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600">
           <p class="text-sm text-gray-400 mt-2">Selected Theme: {{ themeStore.selectedTheme || 'None' }}</p>
@@ -134,8 +134,8 @@
         :key="themeName"
         :class="[
           'p-4 rounded-lg shadow-lg transition font-semibold',
-          themeName === themeStore.selectedTheme 
-            ? 'bg-blue-700 text-white border-blue-400' 
+          themeName === themeStore.selectedTheme
+            ? 'bg-blue-700 text-white border-blue-400'
             : 'bg-gray-800 text-zinc-200 hover:bg-gray-700'
         ]"
         @click="themeStore.setSelectedTheme(themeName, lobbyId)"
@@ -300,6 +300,7 @@ async function leaveGame(lobbyId: string) {
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus();
+    await themeStore.fetchSelectedTheme(lobbyId);
     console.log("Passwort von gamestate", gameStore.gameState.gamedata?.password);
   } catch (error) {
     console.error('Error fetching game status:', error);
@@ -466,7 +467,7 @@ function selectRandomMap() {
 function selectMap(map: MapDTD) {
   selectedMap.value = map;
   mapStore.mapsDTD.selectedMap = map;
-  mapStore.sendMapUpdateToBackend(map.name, lobbyId); 
+  mapStore.sendMapUpdateToBackend(map.name, lobbyId);
   localStorage.setItem(`map-${lobbyId}`, JSON.stringify(map));
 }
 
@@ -502,12 +503,12 @@ function drawMapCanvas(map: MapDTD) {
 
   console.log(`Map ${map.id} drawn successfully.`);
 }
-// Themes 
+// Themes
 function openThemePopup() {
       isThemePopupVisible.value = true;
 }
 function closeThemePopup() {
-  const selectedTheme = themeStore.selectedTheme; 
+  const selectedTheme = themeStore.selectedTheme;
     if(selectedTheme){
       console.log("Selected theme:", selectedTheme);
       themeStore.subscribeToThemeUpdates(lobbyId).then(() => {
