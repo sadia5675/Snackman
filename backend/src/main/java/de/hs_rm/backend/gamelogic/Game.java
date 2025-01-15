@@ -360,7 +360,7 @@ public class Game {
 
         int roundedPosX = (int) Math.floor(posX);
         int roundedPosY = (int) Math.floor(posY);
-    
+
         // Berechnung des aktuellen Index
         int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth() + (int) Math.floor(curCharacter.getPosX());
         if (curIndex < 0 || curIndex >= playmap.getTilesList().size()) {
@@ -378,7 +378,7 @@ public class Game {
         Tile targetTile = playmap.getTilesList().get(targetIndex);
     
         // Ziel-Tile prüfen
-        if (targetTile.getType() == TileType.WALL) {
+        if (targetTile.getType() == TileType.WALL && curCharacter.getPosZ() < 3) {
             LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
