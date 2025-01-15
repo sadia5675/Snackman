@@ -415,7 +415,6 @@ public class Game {
             curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
-        //LOGGER.info("BBBBBBBBBBBBBBBBBBBBBBBBBBBBB {} {}",curTile.hasItem() , curTile.getItemList());
         if (curTile.hasItem()) {
             curTile.addCharacter(curCharacter);
         }
