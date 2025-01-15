@@ -49,7 +49,7 @@ public class GameService {
     public void setSelectedTheme(String lobbyid, String theme){
         Game existingGame = gameList.get(lobbyid);
 
-        if(existingGame){
+        if(existingGame != null){
             existingGame.setSelectedTheme(theme);
         }
     }
@@ -57,9 +57,11 @@ public class GameService {
     public String getSelectedTheme(String lobbyid){
         Game existingGame = gameList.get(lobbyid);
 
-        if(existingGame){
+        if(existingGame != null){
             return existingGame.getSelectedTheme();
         }
+
+        return "realistic";
     }
 
     public Game createGame(Player gamemaster){

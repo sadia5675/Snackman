@@ -142,8 +142,8 @@ public class GameAPIController {
         return createOkResponse(existingGame);
     }
 
-    @PosMapping("/{lobbyId}/selectedTheme")
-    public ResponseEntity<Map<String, Boolean>> checkSelectedTheme(@PathVariable String lobbyId){
+    @PostMapping("/{lobbyId}/selectedTheme")
+    public ResponseEntity<Map<String, String>> checkSelectedTheme(@PathVariable String lobbyId){
         return ResponseEntity.ok(Map.of("selectedTheme", gameService.getSelectedTheme(lobbyId)));
     }
     @MessageMapping("/topic/game/{lobbyId}/setTheme")

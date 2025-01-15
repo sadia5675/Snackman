@@ -33,15 +33,7 @@ public class Game {
     private String selectedMap;
     private int itemsNum;
 
-    public String getSelectedTheme() {
-        return selectedTheme;
-    }
-
-    public void setSelectedTheme(String selectedTheme) {
-        this.selectedTheme = selectedTheme;
-    }
-
-    private String selectedTheme;
+    private String selectedTheme = "realistic";
 
     private int snackmanLife;
     private int snackmanMaxLife;
@@ -57,7 +49,13 @@ public class Game {
     private List <FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
 
+    public String getSelectedTheme() {
+        return this.selectedTheme;
+    }
 
+    public void setSelectedTheme(String selectedTheme) {
+        this.selectedTheme = selectedTheme;
+    }
 
     public Map<String, Object> getCharacterDataWithNames() {
         Map<String, Object> characterData = new HashMap<>();
