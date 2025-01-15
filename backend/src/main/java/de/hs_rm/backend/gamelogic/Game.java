@@ -44,7 +44,7 @@ public class Game {
 
     private boolean privateLobby;
     private String password;
-    // private int itemsNum;
+    private int itemsNum;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
