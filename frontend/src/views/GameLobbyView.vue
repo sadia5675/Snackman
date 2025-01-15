@@ -4,9 +4,9 @@
   </video>
 
 
-  <div class="flex gap-12 mx-auto max-w-7xl justify-center h-screen py-4 items-center">
-  <div class="flex-1 h-full">
-    <ul class="space-x-2 bg-black/70 border-2 border-yellow-400 backdrop-blur rounded-xl h-full p-2 w-full divide-y divide-gray-300/30">
+  <div class="flex gap-12 mx-auto max-w-7xl justify-center h-auto mt-24 py-4 items-center">
+  <div class="flex-1 h-max">
+    <ul class="space-x-2 bg-black/70 border-2 h-max border-yellow-400 backdrop-blur rounded-xl h-full p-2 w-full divide-y divide-gray-300/30">
         <li v-for="(player, i) in players" :key="player.name"
         class="pr-4 pl-4 p-2 flex items-center space-x-4 text-white">
         <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
