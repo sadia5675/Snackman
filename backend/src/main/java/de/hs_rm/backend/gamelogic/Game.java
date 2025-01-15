@@ -45,6 +45,7 @@ public class Game {
 
     private boolean privateLobby;
     private String password;
+    private int itemsNum;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
@@ -162,7 +163,7 @@ public class Game {
     public int getChickenNum() {
         return chickenNum;
     }
-    
+
 
     public void setChickenNum(int chickenNum) {
         this.chickenNum = chickenNum;
@@ -209,7 +210,7 @@ public class Game {
     }
 
     public boolean start(PlayMap playMap, int chickenNum) {
-        
+
         this.chickenNum = chickenNum;
         this.started = true;
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
@@ -222,7 +223,7 @@ public class Game {
         LOGGER.info("Requested chicken count exceeds allowed maximum: Requested={}, Allowed={}, SurfaceTiles={}", this.chickenNum, maxChickenAllowed, surfaceCount);
         if (this.chickenNum> maxChickenAllowed) {
             LOGGER.warn("Requested chicken count exceeds allowed maximum: Requested={}, Allowed={}, SurfaceTiles={}", this.chickenNum, maxChickenAllowed, surfaceCount);
-        return false; 
+        return false;
         }
 
         Random random = new Random();
@@ -268,18 +269,18 @@ public class Game {
             URL url = getClass().getResource("/scripts/test_script_wrong_location.py");
             if (url != null) {
                 testPathForScript = Paths.get(url.getPath());
-                LOGGER.info("Path to test script: {}", testPathForScript.toString());      
+                LOGGER.info("Path to test script: {}", testPathForScript.toString());
             } else {
-                LOGGER.error("Script not found");     
+                LOGGER.error("Script not found");
             }
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
-            
+
             Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this);
-           
+
 
             chickens.add(chicken);
             // DONE: chicken zu random tile hinzufügen
@@ -293,9 +294,9 @@ public class Game {
                 chicken.executeBehavior();
             });
             thread.start();
-            
-          
-            
+
+
+
         }
 
         this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro
@@ -429,6 +430,12 @@ public class Game {
         players.add(newPlayer);
         LOGGER.info("Player with name {} has been added to the game.", newPlayer.getName());
         return true;
+    }
+
+    public void setChicken(int total) {
+        LOGGER.info("Chicken: {}, Game: {}", total, this.id);
+        this.chickenNum = total;
+
     }
 
     public boolean moveTest(String username, double posX, double posY, double angle){
@@ -608,4 +615,11 @@ public class Game {
         return privateLobby;
     }
 
+    public int getItemsNum() {
+        return itemsNum;
+    }
+
+    public void setItemsNum(int itemsNum) {
+        this.itemsNum = itemsNum;
+    }
 }
