@@ -107,8 +107,6 @@ public class Game {
             this.password = null;
             this.privateLobby = false;
         }
-
-
     }
 
     public String getSelectedMap() {

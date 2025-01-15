@@ -34,4 +34,10 @@ public class GameMessagingService {
     public void sendGameStart(String lobbyid, Object gameState){
         template.convertAndSend("/topic/game/" + lobbyid, gameState);
     }
+
+    public void sendNewChickenPosition(String lobyid, Object position){ 
+        logger.info("Sending chickenPositions {}", position, "to lobby: {}", lobyid);
+        template.convertAndSend("/topic/ingame/chickenPosition/" + lobyid, position);
+    }
+
 }
