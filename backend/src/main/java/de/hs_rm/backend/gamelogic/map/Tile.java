@@ -69,7 +69,8 @@ public class Tile {
                     itemsToRemove.add(item);
                 }
             }
-            itemList.removeAll(itemsToRemove); // enfernt alle zu entfernenen Items ausserhalb der schleife
+            itemsToRemove.forEach(item -> itemList.remove(item));
+            itemsToRemove.clear();
             logger.debug("Item removed. Remaining items: {}", itemList.size());
         }
 

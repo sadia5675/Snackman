@@ -310,6 +310,19 @@ public class GameAPIController {
 
         messagingService.sendNewCharacterPosition(lobbyid, response);
 
+        //Sende Item-Update
+
+        HashMap<String, Object> itemUpdateResponse = new HashMap<>();
+        itemUpdateResponse.put("type", "itemCollected");
+
+        itemUpdateResponse.put("position",position);
+        response.put("status", "ok");
+
+        itemUpdateResponse.put("time", LocalDateTime.now().toString());
+
+        messagingService.sendPositionValidation(lobbyid, itemUpdateResponse);
+
+
     }
 
     // Method to end the game
