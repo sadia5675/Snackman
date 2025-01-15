@@ -357,6 +357,7 @@ export const useGameStore = defineStore('gameStore', () => {
             break
           case 'gameStart':
             gameState.gamedata = message.feedback as IGameDTD
+            console.log(gameState)
             break
           case 'playerMoveValidation':
             console.log("test")

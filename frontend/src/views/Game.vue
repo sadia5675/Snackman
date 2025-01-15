@@ -43,6 +43,8 @@ let movementSpeed = slowMovementSpeed
 const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
+let spawnX = ref(1);
+let spawnZ = ref(2);
 
 
 
@@ -734,13 +736,22 @@ async function handleCharacters(data: ICharacterDTD[]) {
   renderCharactersTest(playerPositions)
 }
 
+watch([spawnX, spawnZ], ([newX, newZ]) => {
+      if (camera) {
+        camera.position.z = newZ;
+        camera.position.x = newX;
+      }
+    });
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
-
+  const spawnPoints = gameStore.gameState.gamedata.spawnPoints;
+  console.log("SPAWNS: ", spawnPoints)
+  
   if (gameStore.gameState.gamedata.chickens === null) {
     chickenPositions.value = []
     console.log("Keine Positionsdaten weil Chicken Array leer")
@@ -749,7 +760,7 @@ onMounted(async () => {
     console.log("Chickens-Positionsdaten: " + chickenPositions.value)
   }
 
-
+  
 
   //const chickenList = gameStore.gameState.gamedata.chickens
 
@@ -828,6 +839,15 @@ onMounted(async () => {
   ]
   renderChicken(chickenPositions.value)
   animate()
+
+  if(spawnPoints !== null){
+    spawnPoints.forEach(spawnPoint => {
+      if(sessionStorage.getItem('myName') == spawnPoint.playerName){
+        spawnX.value = Number(spawnPoint.posX);
+        spawnZ.value = Number(spawnPoint.posY);
+      }
+    })
+  }
 })
 
 </script>

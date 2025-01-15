@@ -13,6 +13,7 @@ import de.hs_rm.backend.gamelogic.characters.players.GhostObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -43,6 +44,16 @@ public class Game {
     private String password;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
+    private List<PlayerPosition> spawnPoints;
+
+    public List<PlayerPosition> getSpawnPoints() {
+        return spawnPoints;
+    }
+
+
+    public void setSpawnPoints(List<PlayerPosition> spawnPoints) {
+        this.spawnPoints = spawnPoints;
+    }
 
     private List <FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
@@ -102,6 +113,7 @@ public class Game {
         this.selectedMap = selectedMap;
 
 
+
         if (gamemaster.getPassword() != null && !gamemaster.getPassword().isEmpty()) {
             this.password = gamemaster.getPassword();
             this.privateLobby = true;
@@ -138,7 +150,7 @@ public class Game {
         Random random = new Random();
 
         for (int i = 0; i < length; i++) {
-            int index = random.nextInt(alphaNumericString.length()); // zwischen 0 und alphaNumericString.length() - 1
+            int index = random.nextInt(alphaNumericString.length()); 
             sb.append(alphaNumericString.charAt(index));
         }
         return sb.toString();
@@ -151,6 +163,69 @@ public class Game {
         return start(this.playmap);
     }
 
+    public List<PlayerPosition> createSpawnPoints() {
+        List<int[]> freePositions = new ArrayList<>();
+        List<PlayerPosition> generatedSpawnPoints = new ArrayList<>();
+        
+        int playerCount = players.size();
+        int spawnPointsSet = 0;
+    
+        Random random = new Random();
+        int minDistance = 3; // Initialer Mindestabstand
+        int maxAttempts = 10; // Maximale Anzahl der Versuche, bevor der Abstand verringert wird
+        int attempts = 0; // Zähler für die Anzahl der Versuche
+    
+        // Sammel alle freien Positionen
+        for (int x = 0; x < playmap.getWidth(); x++) {
+            for (int y = 0; y < playmap.getHeight(); y++) {
+                if (playmap.getMap()[y][x] == ' ') {
+                    freePositions.add(new int[]{x, y});
+                }
+            }
+        }
+    
+        // Spawnpunkte generieren
+        while (playerCount > spawnPointsSet && !freePositions.isEmpty()) {
+            
+            // Zufällige Position auswählen
+            int[] pos = freePositions.remove(random.nextInt(freePositions.size()));
+            
+            if (!isTooClose(pos, generatedSpawnPoints, minDistance)) {
+                PlayerPosition newSpawnPoint = new PlayerPosition();
+                newSpawnPoint.setPosX(pos[0]);
+                newSpawnPoint.setPosY(pos[1]);
+                newSpawnPoint.setPlayerName(players.get(spawnPointsSet).getName());
+    
+                generatedSpawnPoints.add(newSpawnPoint);
+                spawnPointsSet++;
+                attempts = 0; // Zurücksetzen des Zählers nach erfolgreicher Platzierung
+            } else {
+                attempts++; // Versuchszähler erhöhen
+    
+                // Mindestabstand verringern, wenn die maximale Anzahl der Versuche erreicht ist
+                if (attempts >= maxAttempts) {
+                    minDistance = Math.max(0, minDistance - 1); // Abstand reduzieren, aber nicht unter 0
+                    attempts = 0; // Zähler zurücksetzen
+                }
+            }
+        }
+    
+        return generatedSpawnPoints;
+    }
+
+    private static boolean isTooClose(int[] pos, List<PlayerPosition> spawnPoints, int minDistance){
+        for(PlayerPosition pp: spawnPoints){
+            if(distance(pos, pp) < minDistance){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static double distance(int[] pos, PlayerPosition pp){
+        return Math.sqrt(Math.pow(pos[0]-pp.getPosX(), 2) + Math.pow(pos[1]-pp.getPosY(), 2));
+    }
+
     public boolean start(PlayMap playMap) {
         this.started = true;
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
@@ -161,6 +236,9 @@ public class Game {
         }
 
         Random random = new Random();
+
+        //Spawn Points erstellen
+        this.spawnPoints = createSpawnPoints();
 
         this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro itemsPerSurfaceRatio
 
