@@ -5,7 +5,7 @@
 
 
   <div class="flex gap-12 mx-auto max-w-7xl justify-center h-auto mt-24 py-4 items-center">
-  <div class="flex-1 h-max">
+  <div class="flex-1 h-max self-start">
     <ul class="space-x-2 bg-black/70 border-2 h-max border-yellow-400 backdrop-blur rounded-xl h-full p-2 w-full divide-y divide-gray-300/30">
         <li v-for="(player, i) in players" :key="player.name"
         class="pr-4 pl-4 p-2 flex items-center space-x-4 text-white">
@@ -78,6 +78,7 @@
     </div>
         
      </div>
+     <div class="flex gap-2">
       <button
         :class="{
           'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
@@ -94,8 +95,9 @@
       'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
       'bg-gray-600': !isHost
     }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
-      leave
+      Leave
     </button>
+  </div>
   </div>
 
   <!--Pop up-->
