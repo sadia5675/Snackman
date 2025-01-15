@@ -344,103 +344,109 @@ function triggerJumpAfterChargeTime(delta: number) {
 
 }
 
-function cameraPositionBewegen(delta: number) {
-  const cameraViewDirection = new THREE.Vector3()
-  camera.getWorldDirection(cameraViewDirection)
+function calculateMovementDirection(
+  cameraViewDirection: THREE.Vector3,
+  yPlaneVector: THREE.Vector3,
+  delta: number
+): THREE.Vector3 {
+  const movementVector = new THREE.Vector3();
 
-  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
-  cameraViewDirection.y = 0
-  cameraViewDirection.normalize()
+  // Forward/backward movement
+  if (movingForward && !movingBackward) {
+    if (movingRight && !movingLeft) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
+        movementSpeed * delta
+      );
+    } else if (movingLeft && !movingRight) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 4),
+        movementSpeed * delta
+      );
+    } else {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, 2 * Math.PI),
+        movementSpeed * delta
+      );
+    }
+  } else if (movingBackward && !movingForward) {
+    if (movingRight && !movingLeft) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
+        movementSpeed * delta
+      );
+    } else if (movingLeft && !movingRight) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
+        movementSpeed * delta
+      );
+    } else {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI),
+        movementSpeed * delta
+      );
+    }
+  } else if (movingRight && !movingLeft) {
+    movementVector.addScaledVector(
+      cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
+      movementSpeed * delta
+    );
+  } else if (movingLeft && !movingRight) {
+    movementVector.addScaledVector(
+      cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 2),
+      movementSpeed * delta
+    );
+  }
 
-  const yPlaneVector = new THREE.Vector3(0, 1, 0)
+  return movementVector;
+}
 
-  nextPosition = camera.position.clone()
-  // Sprungberechnung
+function applyJumpLogic(delta: number, nextPosition: THREE.Vector3) {
   if (isJumping) {
-    jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
-    nextPosition.y += jumpVelocity * delta
-    validatePosition(nextPosition)
-    camera.position.y = nextPosition.y;
+    jumpVelocity += gravity * delta; // Beschleunigung durch Schwerkraft
+    nextPosition.y += jumpVelocity * delta;
 
     // Bodenberührung
     if (nextPosition.y <= 1) {
-      nextPosition.y = 1
-      validatePosition(nextPosition)
-      camera.position.y = nextPosition.y;
-      jumpVelocity = 0
-      isJumping = false
-      jumpChargeTime = 0
+      nextPosition.y = 1;
+      jumpVelocity = 0;
+      isJumping = false;
+      jumpChargeTime = 0;
     }
-  }
-  // Setze die Y-Position unabhängig vom Rest
-  camera.position.y = nextPosition.y;
-
-  if (movingForward || movingBackward || movingLeft || movingRight) {
-    if (!walkingSound.isPlaying) {
-      walkingSound.play()
-    }
-    if (movingForward) {
-      if (movingRight) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingLeft) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingBackward) {
-        //foward und backward canceln sich
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingBackward) {
-      if (movingRight) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingLeft) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingRight) {
-      if (movingLeft) {
-        //right und left canceln sich
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingLeft) {
-      nextPosition.addScaledVector(
-        cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2),
-        movementSpeed * delta,
-      )
-    }
-    validatePosition(nextPosition)
-  }
-  else {
-    if (walkingSound.isPlaying) {
-      walkingSound.pause()
-    }
-  }
-
-  // Überprüfe und führe den Sprung aus, wenn nötig
-  if (!isJumping) {
+  } else {
     triggerJumpAfterChargeTime(delta);
+  }
+}
+
+function cameraPositionBewegen(delta: number) {
+  const cameraViewDirection = new THREE.Vector3();
+  camera.getWorldDirection(cameraViewDirection);
+
+  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
+  cameraViewDirection.y = 0;
+  cameraViewDirection.normalize();
+
+  const yPlaneVector = new THREE.Vector3(0, 1, 0);
+  nextPosition = camera.position.clone();
+
+  // Apply jumping logic
+  applyJumpLogic(delta, nextPosition);
+
+  // Apply movement logic
+  const movementVector = calculateMovementDirection(cameraViewDirection, yPlaneVector, delta);
+  nextPosition.add(movementVector);
+
+  // Validate position
+  validatePosition(nextPosition);
+
+  // Update camera position
+  camera.position.copy(nextPosition);
+
+  // Handle walking sound
+  if (movementVector.length() > 0) {
+    if (!walkingSound.isPlaying) walkingSound.play();
+  } else {
+    if (walkingSound.isPlaying) walkingSound.pause();
   }
 }
 
