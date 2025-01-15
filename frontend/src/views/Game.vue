@@ -16,6 +16,7 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import type { GameResponse } from '@/stores/game/responses/GameResponse'
 
 const gameStore = useGameStore()
 
@@ -56,6 +57,7 @@ let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
 const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
 let isChargingJump = false // Ob der Spieler einen Sprung auflädt
 let isJumping = false // Verhindert doppeltes Springen
+let isValidatingChargeJump = false
 let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
 const gravity = -9.8 // Schwerkraft
 const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
@@ -318,30 +320,65 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
+async function isValidChargeJump(): Promise<boolean> {
+  const restUrl: string = '/api/game';
+  const playerId: string = currentPlayer.value?.name ?? "";
+
+  if (playerId === "") {
+    console.error('Error: Unable to validate charging jump, player ID is missing');
+    return false;
+  }
+
+  try {
+    // Perform the fetch request
+    const response: Response = await fetch(`${restUrl}/ingame/${lobbyId}/${playerId}/isValidChargeJump`);
+
+    // Check if the response is successful
+    if (!response.ok) {
+      console.error('Error: Unable to validate charging jump', response.statusText);
+      return false; // Return false if the backend call fails
+    }
+
+    // Parse the JSON response
+    const isValid: boolean = await response.json();
+    console.log('Charging jump backend validation:', isValid);
+
+    // Return the parsed value
+    return isValid;
+  } catch (error) {
+    console.error('Error while validating charging jump:', error);
+    return false; // Return false in case of an error
+  }
+}
+
 // Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
 function triggerJumpAfterChargeTime(delta: number) {
   if (isChargingJump) {
+    if (isValidatingChargeJump) return
     // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
+
     jumpChargeTime += delta; // Ladezeit hochzählen
 
     if (jumpChargeTime >= maxJumpChargeTime) {
-      jumpChargeTime = 0; // Ladezeit zurücksetzen
-      // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
-      isChargingJump = false; // Leertaste kann losgelassen werden
-      jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
-      isJumping = true; // Der Spieler springt jetzt
-      console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+      isValidatingChargeJump = true;
+      isValidChargeJump().then((valid) => {
+        jumpChargeTime = 0; // Ladezeit zurücksetzen
+        isChargingJump = false; // Leertaste kann losgelassen werden
+        if (valid) {
+          // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
+          jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
+          isJumping = true; // Der Spieler springt jetzt
+          console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+        }
+        isValidatingChargeJump = false;
+      })
     }
-
-  }
-  else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
+  } else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
     jumpChargeTime = 0;
     jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
     isJumping = true; // Sprung aktivieren
     console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
-
   }
-
 }
 
 function calculateMovementDirection(

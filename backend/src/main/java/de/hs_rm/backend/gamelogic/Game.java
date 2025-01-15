@@ -47,6 +47,8 @@ public class Game {
     private List <FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
 
+    private static final int CHARGE_JUMP_COST = 100;
+
 
 
     public Map<String, Object> getCharacterDataWithNames() {
@@ -406,6 +408,19 @@ public class Game {
         LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
         LOGGER.debug("TargetTile has item: {}, Items: {}", targetTile.hasItem(), targetTile.getItemList());
         return true;
+    }
+
+    public boolean isValidChargeJump(String playerId) {
+        boolean isValid = false;
+        Character potentialJumper = characters.get(playerId);
+        if (potentialJumper instanceof Snackman player) {
+            int nutriScore = player.getCurrentPoints();
+            if (nutriScore >= CHARGE_JUMP_COST) {
+                isValid = true;
+                player.setCurrentPoints(Math.max(nutriScore - CHARGE_JUMP_COST, 0));
+            }
+        }
+        return isValid;
     }
 
     public Player findPlayerByUsername(String username) {
