@@ -492,9 +492,11 @@ async function handleChickenPositions(data: IChickenDTD[]) {
   let chickenPositions: IChickenDTD[]= [];
   data.forEach(chicken => {
     chickenPositions.push({
-      id: chicken.id,
+      chickenID: chicken.chickenID,
       posX: chicken.posX,
-      posY: chicken.posY
+      posY: chicken.posY,
+      angle: chicken.angle,
+      eggList: chicken.eggList || [] 
     });
     console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });

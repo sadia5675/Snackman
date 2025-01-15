@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import de.hs_rm.backend.api.ChickenEnvironmentApi;
-import de.hs_rm.backend.gamelogic.ChickenService;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.characters.players.Egg;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
