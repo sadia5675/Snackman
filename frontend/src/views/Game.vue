@@ -17,8 +17,8 @@ import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 
-const gameStore = useGameStore()
 
+const gameStore = useGameStore()
 const route = useRoute()
 const lobbyId = route.params.id.toString()
 
@@ -119,7 +119,6 @@ watch(
 
 // Typ falsch?
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
-
 
 
 function addItem(itemName: string) {
@@ -326,8 +325,8 @@ function triggerJumpAfterChargeTime(delta: number) {
 
     // Der Ladebalken wird hiermit auf dem Bildschirm sichtbar geladen
     const jumpBarContainer = document.getElementById('jumpBarContainer');
-    if (jumpBarContainer.classList.contains('hidden')) {
-      jumpBarContainer.classList.remove('hidden');
+    if (jumpBarContainer?.classList.contains('hidden')) {
+      jumpBarContainer?.classList.remove('hidden');
     }
 
 
@@ -356,13 +355,17 @@ function triggerJumpAfterChargeTime(delta: number) {
 function updateJumpBar() {
   const jumpBar = document.getElementById("jumpBar");
   const progress = Math.min((jumpChargeTime / maxJumpChargeTime) * 100, 100); // Prozent
-  jumpBar.style.width = `${progress}%`; // Breite Balken setzen
 
+  if (jumpBar){
+
+    jumpBar.style.width = `${progress}%`; // Breite Balken setzen
+
+  }
   // Ladebalken soll nicht sichtbar sein, wenn man nicht springt
   if (progress === 0) {
     const jumpBarContainer = document.getElementById('jumpBarContainer');
-    if (!jumpBarContainer.classList.contains('hidden')) {
-      jumpBarContainer.classList.add('hidden');
+    if (!jumpBarContainer?.classList.contains('hidden')) {
+      jumpBarContainer?.classList.add('hidden');
     }
   }
 }
