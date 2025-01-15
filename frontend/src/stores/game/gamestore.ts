@@ -404,7 +404,7 @@ export const useGameStore = defineStore('gameStore', () => {
     leaveGame,
     kickUser,
     joinLobby,
-    setChickenCount,
+    //setChickenCount,
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,

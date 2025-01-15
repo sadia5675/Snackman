@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import de.hs_rm.backend.api.ChickenEnvironmentApi;
+import de.hs_rm.backend.gamelogic.ChickenService;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.characters.players.Egg;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
+
 
 
 public class Chicken {
@@ -24,6 +26,8 @@ public class Chicken {
     private static final Logger LOGGER = LoggerFactory.getLogger(Chicken.class);
     private PythonInterpreter pyInterpreter;
     private ChickenEnvironmentApi environmentApi;
+    private ChickenService chickenService;
+
 
     @Value("${egg.caloriesbonus}")
     private int CALORIESBONUS_EGG;

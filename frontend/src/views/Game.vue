@@ -487,6 +487,19 @@ async function handleCharacters(data: ICharacterDTD[]) {
   });
   renderCharactersTest(playerPositions);
 }
+
+async function handleChickenPositions(data: IChickenDTD[]) {
+  let chickenPositions: IChickenDTD[]= [];
+  data.forEach(chicken => {
+    chickenPositions.push({
+      id: chicken.id,
+      posX: chicken.posX,
+      posY: chicken.posY
+    });
+    console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
+  });
+}
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
@@ -517,9 +530,9 @@ onMounted(async () => {
     }
   });
 
-  subscribeTo(`/ingame/chickenPositions/${lobbyId}`, async (message) => {
-        console.log("FROM CHICKEN POSITIONS: ", message.feedback);
-        //await handleChickenPositions(message.feedback);
+  subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
+        console.log("FROM CHICKEN POSITIONS: ", message);
+        await handleChickenPositions(message);
     });
 
   if (threeContainer.value) {

@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import de.hs_rm.backend.gamelogic.characters.players.Chicken;
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
+import de.hs_rm.backend.gamelogic.characters.players.ChickenPosition;
 import de.hs_rm.backend.messaging.GameMessagingService;
 
 @Service
@@ -28,19 +30,17 @@ public class ChickenService {
     @Scheduled(fixedRate = 50)
     public void sendChickenPositions() {
         for (Game game : gameService.getGameList()) {
-            Map<String, Object> chickenPositions = getChickenPositions(game);
+            List<ChickenPosition> chickenPositions = getChickenPositions(game);
             gameMessagingService.sendNewChickenPosition(game.getId(), chickenPositions);
         }
     }
 
-    private Map<String, Object> getChickenPositions(Game game) {
-        Map<String, Object> positions = new HashMap<>();
+    private List<ChickenPosition> getChickenPositions(Game game) {
+        List<ChickenPosition> positions = new ArrayList<>();
         for (int i = 0; i < game.getChickens().size(); i++) {
             Chicken chicken = game.getChickens().get(i);
-            Map<String, Integer> chickenPosition = new HashMap<>();
-            chickenPosition.put("posX", chicken.getPosX());
-            chickenPosition.put("posY", chicken.getPosY());
-            positions.put("chicken_" + i, chickenPosition);
+            ChickenPosition newChicken = new ChickenPosition(i, chicken.getPosX(), chicken.getPosY());
+            positions.add(newChicken);
         }
         return positions;
     }

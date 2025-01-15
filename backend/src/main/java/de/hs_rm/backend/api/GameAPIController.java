@@ -13,8 +13,9 @@ import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.ChickenService;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
-import de.hs_rm.backend.gamelogic.characters.players.Chicken;
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
@@ -57,6 +58,9 @@ public class GameAPIController {
 
     @Autowired
     GameService gameService;
+
+    @Autowired
+    ChickenService chickenService;
 
     @Autowired
     PlayMapService playMapService;

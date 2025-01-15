@@ -33,7 +33,6 @@ public class Game {
     private PlayMap playmap;
     private int chickenNum;
     private String selectedMap;
-    private int itemsNum;
 
     private int snackmanLife;
     private int snackmanMaxLife;
@@ -294,8 +293,6 @@ public class Game {
                 chicken.executeBehavior();
             });
             thread.start();
-
-
 
         }
 
@@ -582,14 +579,6 @@ public class Game {
 
     public void addCharacter(String username, Character character) {
         this.characters.put(username, character);
-    }
-
-    public int getItemsNum() {
-        return itemsNum;
-    }
-
-    public void setItemsNum(int itemsNum) {
-        this.itemsNum = itemsNum;
     }
 
     public String getPassword(){
