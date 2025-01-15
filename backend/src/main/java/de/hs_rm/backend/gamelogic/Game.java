@@ -260,7 +260,8 @@ public class Game {
         }
         // DONE: random position von hühnchen
         for (int i = 0; i < this.chickenNum; i++) {
-            LOGGER.info("Chicken number: {}", chickenNum);
+            
+            UUID uniqueID = UUID.randomUUID();
             Tile randomTile;
             int index = -1;
             Path testPathForScript = null;
@@ -279,7 +280,7 @@ public class Game {
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, "Chicken_" + i);
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, uniqueID.toString());
 
 
             chickens.add(chicken);
