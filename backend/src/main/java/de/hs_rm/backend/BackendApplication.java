@@ -19,6 +19,8 @@ public class BackendApplication {
 		try {
             // Extrahiere script.py aus resources/scripts/script.py
             ResourceExtractor.extractScript("/scripts/test.py", "./test.py");
+			ResourceExtractor.extractScript("/maps/Trest.txt", "base/maps/Trest.txt");
+			ResourceExtractor.extractScript("/maps/1.txt", "base/maps/1.txt");
 
             // Weitere Logik hier
         } catch (IOException e) {
