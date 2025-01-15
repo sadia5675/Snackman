@@ -2,7 +2,6 @@ package de.hs_rm.backend.api;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,7 +12,6 @@ import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
@@ -26,11 +24,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +37,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.python.util.PythonInterpreter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * REST controller for managing game-related operations.
@@ -393,6 +386,21 @@ public class GameAPIController {
         }
 
         return createOkResponse(existingGame);
+    }
+
+    @GetMapping("/ingame/{gameId}/{playerId}/isValidChargeJump")
+    public ResponseEntity<?> isValidChargeJump(
+            @PathVariable String gameId,
+            @PathVariable String playerId
+    ) {
+        Game existingGame = gameService.getGameById(gameId);
+        if (existingGame == null) {
+            return createErrorResponse("No game found.");
+        }
+
+        boolean isValid = existingGame.isValidChargeJump(playerId);
+
+        return ResponseEntity.ok(isValid);
     }
 
     // Retrieve the game status
