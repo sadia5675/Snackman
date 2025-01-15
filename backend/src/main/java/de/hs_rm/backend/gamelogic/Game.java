@@ -33,6 +33,8 @@ public class Game {
     private String selectedMap;
     private int itemsNum;
 
+    private String selectedTheme = "realistic";
+
     private int snackmanLife;
     private int snackmanMaxLife;
     private double snackmanSpeed;
@@ -42,14 +44,20 @@ public class Game {
     private boolean privateLobby;
     private String password;
 
+    private static final int CHARGE_JUMP_COST = 100;
+
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
     private List <FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
 
-    private static final int CHARGE_JUMP_COST = 100;
+    public String getSelectedTheme() {
+        return this.selectedTheme;
+    }
 
-
+    public void setSelectedTheme(String selectedTheme) {
+        this.selectedTheme = selectedTheme;
+    }
 
     public Map<String, Object> getCharacterDataWithNames() {
         Map<String, Object> characterData = new HashMap<>();

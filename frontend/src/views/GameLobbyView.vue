@@ -48,18 +48,33 @@
         @click="openMapPopup()">
         Select Map
       </button>
-      <div class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600">
-        <p class="text-sm text-gray-400 mt-2">Selected: {{ selectedMap?.name || 'None' }}</p>
-      </div>
-    </div>
-
-    <button :class="{
-      'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
-      'bg-gray-600': !isHost,
-    }" :disabled="!isHost" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
-      @click="startGame()">
-      {{ isHost ? 'Start Game' : '---' }}
-    </button>
+        <div
+        class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
+        >
+        <p class="text-sm text-gray-400 mt-2">Selected: {{ mapStore.mapsDTD.selectedMap?.name || 'None' }}</p>
+        </div>
+        <button
+        v-if="isGamemaster"
+            class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+            @click="openThemePopup()"
+        >
+        Select Themes
+        </button>
+        <div class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600">
+          <p class="text-sm text-gray-400 mt-2">Selected Theme: {{ themeStore.selectedTheme || 'None' }}</p>
+        </div>
+     </div>
+      <button
+        :class="{
+          'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
+          'bg-gray-600': !isHost,
+        }"
+        :disabled="!isHost"
+        class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition"
+        @click="startGame()"
+      >
+        {{ isHost ? 'Start Game' : '---' }}
+      </button>
     <button :class="{
       'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
       'bg-gray-600': !isHost
@@ -99,6 +114,38 @@
     </div>
   </div>
 </div>
+<!-- Theme Popup -->
+<div v-if="isThemePopupVisible" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+  <div class="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-lg w-full">
+    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Theme</h2>
+    <p class="text-zinc-300">Choose a Theme for the game.</p>
+
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <button
+        v-for="(theme, themeName) in themeStore.themes"
+        :key="themeName"
+        :class="[
+          'p-4 rounded-lg shadow-lg transition font-semibold',
+          themeName === themeStore.selectedTheme
+            ? 'bg-blue-700 text-white border-blue-400'
+            : 'bg-gray-800 text-zinc-200 hover:bg-gray-700'
+        ]"
+        @click="themeStore.setSelectedTheme(themeName, lobbyId)"
+      >
+        {{ themeName }}
+      </button>
+    </div>
+
+    <div class="flex justify-end mt-4">
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-zinc-200 py-1 px-4 rounded-lg transition"
+        @click="closeThemePopup()"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -111,7 +158,10 @@ import type { Result } from '@/stores/game/responses/Result'
 import { useMapStore } from '@/stores/map/MapStore'
 import type { MapDTD } from '@/stores/game/dtd/MapsDTD'
 import { nextTick } from 'vue';
+import { useThemeStore } from "@/stores/themes/themeStore";
 
+const themeStore= useThemeStore();
+const isThemePopupVisible = ref(false);
 const gameStore = useGameStore()
 const { setPlayerRoleViaStomp } = gameStore
 
@@ -242,6 +292,7 @@ async function leaveGame(lobbyId: string) {
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus();
+    await themeStore.fetchSelectedTheme(lobbyId);
     console.log("Passwort von gamestate", gameStore.gameState.gamedata?.password);
   } catch (error) {
     console.error('Error fetching game status:', error);
@@ -408,6 +459,7 @@ function selectRandomMap() {
 function selectMap(map: MapDTD) {
   selectedMap.value = map;
   mapStore.mapsDTD.selectedMap = map;
+  mapStore.sendMapUpdateToBackend(map.name, lobbyId);
   localStorage.setItem(`map-${lobbyId}`, JSON.stringify(map));
 }
 
@@ -443,5 +495,21 @@ function drawMapCanvas(map: MapDTD) {
 
   console.log(`Map ${map.id} drawn successfully.`);
 }
+// Themes
+function openThemePopup() {
+      isThemePopupVisible.value = true;
+}
+function closeThemePopup() {
+  const selectedTheme = themeStore.selectedTheme;
+    if(selectedTheme){
+      console.log("Selected theme:", selectedTheme);
+      themeStore.subscribeToThemeUpdates(lobbyId).then(() => {
+      console.log("Successfully subscribed to theme updates.")
+      });
+    } else {
+      console.error("no theme selected!");
+    }
 
+      isThemePopupVisible.value = false;
+}
 </script>

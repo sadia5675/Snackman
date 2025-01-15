@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { MapsDTD } from "@/stores/game/dtd/MapsDTD";
-
+import { sendMessage, subscribeTo, stompClient } from '@/config/stompWebsocket'
 export const useMapStore = defineStore("map", ()=> {
 //onMounted? nachschauen
 //ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
@@ -159,9 +159,48 @@ async function saveMap(){
       alert("Somethink went Wrong :( ");
     }
 }
+function sendMapUpdateToBackend(mapName: string, lobbyId: string) {
+  if (lobbyId) {
+      sendMessage(`/topic/game/${lobbyId}/setMap`, { mapName });
+      console.log(`Map update sent for lobbyId: ${lobbyId}, Map: ${mapName}`);
+  } else {
+      console.error("Lobby ID not provided.");
+  }
+}
+function subscribeToMapUpdates(lobbyId: string): Promise<boolean> {
+  return new Promise((resolve) => {
+      if (!stompClient.connected) {
+          stompClient.activate();
+          stompClient.onConnect = () => {
+              subscribeToMapUpdatesHandler(lobbyId);
+              resolve(true);
+          };
+      } else {
+          subscribeToMapUpdatesHandler(lobbyId);
+          resolve(true);
+      }
+  });
+}
 
+function subscribeToMapUpdatesHandler(lobbyId: string) {
+  subscribeTo(`/game/${lobbyId}`, (message: any) => {
+      if (message.type === 'mapUpdate' && message.status === 'ok') {
+          const newMap = message.feedback;
+          const foundMap = mapsDTD.value.maps.find((map) => map.name === newMap);
+          if (foundMap) {
+              mapsDTD.value.selectedMap = foundMap;
+              console.log(`Map updated to: ${newMap}`);
+          } else {
+              console.error("Received invalid map:", newMap);
+          }
+      }
+  });
+}
 // Rückgabe der Funktionen und Variablen, die im Store verfügbar sind
   return{
-    mapName, rows, cols, grid,minGridSize,maxGridSize, mapsDTD,fetchMaps,saveMap,fetchGridLimits,createGrid,updateCell,
+    mapName, rows, cols, grid,minGridSize,maxGridSize, mapsDTD,
+    fetchMaps,saveMap,fetchGridLimits,createGrid,updateCell,
+    sendMapUpdateToBackend,
+    subscribeToMapUpdates,subscribeToMapUpdatesHandler
   };
 });
