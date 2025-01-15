@@ -46,7 +46,6 @@
   <div class="layout-main">
     <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
       <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
-      <source src="@/assets/BackgroundVideo.mp4" type="video/mp4">
     </video>
     <div>
       <img src="../assets/snackmanlogo-2.png" class="-mb-4" >

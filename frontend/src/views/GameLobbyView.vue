@@ -1,69 +1,84 @@
 <template>
-  <div class="h-screen bg-zinc-900">
-    <div class="max-w-lg mx-auto mt-0 px-4">
-      <h1 class="text-2xl font-semibold text-center text-zinc-200 mb-10">Game Lobby</h1>
+ <video autoplay loop muted class="absolute blur-sm top-0 left-0 w-full h-full object-cover -z-10">
+   <source src="@/assets/BackgroundVideo.mp4" type="video/webm">
+  </video>
+
+
+  <div class="flex gap-12 mx-auto max-w-7xl justify-center h-auto mt-24 py-4 items-center">
+  <div class="flex-1 h-max self-start">
+    <ul class="space-x-2 bg-black/70 border-2 h-max border-yellow-400 backdrop-blur rounded-xl h-full p-2 w-full divide-y divide-gray-300/30">
+        <li v-for="(player, i) in players" :key="player.name"
+        class="pr-4 pl-4 p-2 flex items-center space-x-4 text-white">
+        <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
+      </li>
+      <li v-for="placeholder in placeholderCount"
+      class="pr-4 pl-4 p-2 text-gray-200/40 flex items-center justify-between transition-colors">
+      Empty
+    </li>
+  </ul>
+  
+  <button v-if="isGamemaster" class="w-full mt-2 flex gap-2 px-4 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 font-semibold text-black p-3 rounded-lg hover:bg-yellow-600 transition"
+        @click="randomizeRoles()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dices"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
+        Randomize Roles
+      </button>
+  </div>
+
+  <div class="flex-1 h-full">
+    <div class="max-w-lg bg-black/70 border-yellow-400 backdrop-blur rounded-xl border-2 p-4">
+      <h1 class="text-2xl font-semibold text-zinc-200">{{ gameStore.gameState.gamedata.gamemaster?.name }}'s Game</h1>
+      <hr class="my-4 border-white/20">
+      <div class="flex gap-2">
+          <div class="text-white flex gap-2 p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></svg>
+          <p>{{ mapStore.mapsDTD.selectedMap?.name || 'None' }}</p>
+          </div>
+          <div class="text-white flex gap-2 p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paintbrush"><path d="m14.622 17.897-10.68-2.913"/><path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"/><path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/></svg>         
+          <p>{{ themeStore.selectedTheme || 'None' }}</p>
+        </div>
+      </div>
+      <hr class="my-4 border-white/20">
       <div class="mb-4">
-        <p class="text-lg font-semibold text-zinc-200">Lobby Code:</p>
+        <p class="text-lg font-semibold text-zinc-200">Lobby Code</p>
         <div class="flex items-center space-x-2">
-          <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" disabled="true"
+          <input type="text" class="w-full p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300" disabled="true"
             v-model="lobbyId" />
-          <button class="bg-yellow-500 text-zinc-900 p-3 rounded-lg hover:bg-yellow-600 transition"
+          <button class="bg-gradient-to-r from-yellow-400 to-amber-500 font-semibold text-black p-3 rounded-lg hover:bg-yellow-600 transition"
             @click="copyToClipboard()">
             Copy
           </button>
         </div>
       </div>
 
-      <div v-if="isGamemaster" class="mb-4 max-w-lg">
-        <p class="text-lg font-semibold text-zinc-200">Lobby Passwort:</p>
+      <div v-if="isGamemaster && gamePassword" class="mb-4 max-w-lg">
+        <p class="text-lg font-semibold text-zinc-200">Lobby Passwort</p>
         <div class="flex items-center space-x-2">
-          <input type="text" class="w-full p-3 bg-gray-800 shadow-lg rounded-lg text-zinc-300" :value="gamePassword"
+          <input type="text" class="w-full p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300" :value="gamePassword"
             disabled="true" />
         </div>
       </div>
 
-      <ul class="space-x-2 mt-3 bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-900 max-w-lg mb-4">
-        <li v-for="(player, i) in players" :key="player.name"
-        class="pr-4 pl-4 p-2 flex items-center space-x-4 transition-colors">
-        <PlayerTile v-model="players[i]" :lobby-id="lobbyId" />
-      </li>
-      <li v-for="placeholder in placeholderCount"
-      class="pr-4 pl-4 p-2 text-gray-500 flex items-center justify-between transition-colors">
-      Empty
-    </li>
-  </ul>
-
-
-    <div class="flex items-center space-x-2 mt-3">
-      <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-      <input type="number" v-model="chickenCount" class="w-50  p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600" />
-      <button v-if="isGamemaster" class="w-80 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        @click="randomizeRoles()">
-        Randomize Roles
-      </button>
-    </div>
-
-    <div class="flex items-center space-x-2 mt-3">
-      <button v-if="isGamemaster" class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+    <div class="flex w-full gap-2 mt-2">
+      <button v-if="isGamemaster" class="bg-gradient-to-r flex-1 from-yellow-400 to-amber-500 font-semibold text-black p-3 rounded-lg hover:bg-yellow-600 transition"
         @click="openMapPopup()">
         Select Map
       </button>
-        <div
-        class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600"
-        >
-        <p class="text-sm text-gray-400 mt-2">Selected: {{ mapStore.mapsDTD.selectedMap?.name || 'None' }}</p>
-        </div>
         <button
         v-if="isGamemaster"
-            class="w-50 p-2 bg-blue-800 shadow-lg rounded-lg text-white-600  hover:bg-gray-800"
+            class="bg-gradient-to-r flex-1 from-yellow-400 to-amber-500 font-semibold text-black p-3 rounded-lg hover:bg-yellow-600 transition"
             @click="openThemePopup()"
         >
         Select Themes
         </button>
-        <div class="w-50 p-2 bg-gray-800 shadow-lg rounded-lg text-blue-600">
-          <p class="text-sm text-gray-400 mt-2">Selected Theme: {{ themeStore.selectedTheme || 'None' }}</p>
-        </div>
+        <div class="flex flex-col flex-1">
+      <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
+      <input type="number" v-model="chickenCount" class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
+    
+    </div>
+        
      </div>
+     <div class="flex gap-2">
       <button
         :class="{
           'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
@@ -75,12 +90,14 @@
       >
         {{ isHost ? 'Start Game' : '---' }}
       </button>
+      
     <button :class="{
       'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
       'bg-gray-600': !isHost
     }" class="w-full mt-5 px-6 py-3 text-lg font-semibold rounded-lg transition" @click="leaveGame(lobbyId)">
-      leave
+      Leave
     </button>
+  </div>
   </div>
 
   <!--Pop up-->
@@ -145,6 +162,7 @@
       </button>
     </div>
   </div>
+</div>
 </div>
 </template>
 
