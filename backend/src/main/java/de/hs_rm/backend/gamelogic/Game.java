@@ -415,10 +415,7 @@ public class Game {
             curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
-        if (curTile.hasItem()) {
-            LOGGER.info("Hier die aktuellen items: {} und dann {}", curTile.getItemList(),curIndex);
-            curTile.takeItems(curCharacter);
-        }
+
 
         // Charakter bewegen
         curTile.removeCharacter(curCharacter);

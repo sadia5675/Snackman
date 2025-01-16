@@ -15,6 +15,7 @@ public class Tile {
     List<Character> characterList;
     List<Chicken> chickenList;
 
+    boolean itemWasRecentlyCollected = false;
     Logger logger = LoggerFactory.getLogger(Tile.class);
 
     public Tile(TileType type) {
@@ -44,9 +45,12 @@ public class Tile {
      * @return true wenn Charakter erfolgreich rein kommt und ggfs. Item nehmen
      */
     public boolean addCharacter(Character character) {
-        for (Item item : itemList) {
-            logger.debug("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
+        for (int i = 0; i < itemList.size(); i++) {
+            Item item = itemList.get(i);
+            logger.info("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
+            takeItems(character);
         }
+
 
         this.characterList.add(character);
 
@@ -64,14 +68,17 @@ public class Tile {
                     if (item instanceof FoodItems) {
                         snackman.eatSnack((FoodItems) item);
                         logger.info("Snackman eats FoodItem '{}'.", item.getName());
+                        itemWasRecentlyCollected = true;
                     } else if (item instanceof ObjectsItems) {
                         snackman.collectObjectItem((ObjectsItems) item);
+                        itemWasRecentlyCollected = true;
                     }
                     itemsToRemove.add(item);
                 } else if (character instanceof Ghost && item.getType() == PlayerRole.GHOST
                         && item instanceof ObjectsItems) {
                     Ghost ghost = (Ghost) character;
                     ghost.collectObjectItem((ObjectsItems) item);
+                    itemWasRecentlyCollected = true;
                     itemsToRemove.add(item);
                 }
             }
@@ -127,4 +134,11 @@ public class Tile {
         this.characterList = characterList;
     }
 
+    public boolean isItemWasRecentlyCollected() {
+        return itemWasRecentlyCollected;
+    }
+
+    public void setItemWasRecentlyCollected(boolean itemWasRecentlyCollected) {
+        this.itemWasRecentlyCollected = itemWasRecentlyCollected;
+    }
 }

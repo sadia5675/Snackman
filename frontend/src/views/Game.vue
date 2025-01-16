@@ -718,10 +718,8 @@ async function handleCharacters(data: ICharacterDTD[]) {
 function removeItemFromSceneByPosition(posX: number, posY: number) {
   const itemToRemove = rotatingItems.find(
     (item) =>
-      Math.abs(item.position.x - posX) < 0.5 && Math.abs(item.position.z - posY) < 0.5
+      Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
   );
-  console.log(`Player Position: (${posX}, ${posY})`);
-
 
   if (itemToRemove) {
     // Entferne das Item aus der Szene
@@ -732,7 +730,6 @@ function removeItemFromSceneByPosition(posX: number, posY: number) {
     if (index > -1) {
       rotatingItems.splice(index, 1);
     }
-    console.log(`Item an Position( {} {}`, posX, posY);
   } else {
     console.warn(`Kein Item an Position {} {}`, posX, posY)
   }
@@ -785,8 +782,9 @@ onMounted(async () => {
   subscribeTo(`/ingame/${lobbyId}/itemUpdates`, async (message: any) => {
     switch (message.type) {
       case "itemCollected":
-        console.log(`collected at{} {}`, message.post, message.posY)
-        removeItemFromSceneByPosition(message.position.posX, message.position.posY);
+        console.log(`collected at{} {}`, message.posX, message.positionY)
+        console.log('MESSAGE: ' + message.toString())
+        removeItemFromSceneByPosition(message.positionX, message.positionY);
         break;
 
       default:

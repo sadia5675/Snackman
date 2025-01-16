@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
@@ -258,6 +259,7 @@ public class GameAPIController {
 
         HashMap<String, Object> validationResponse = new HashMap<>();
         HashMap<String, Object> response = new HashMap<>();
+        HashMap<String, Object> itemUpdateResponse = new HashMap<>();
         Game existingGame = gameService.getGameById(lobbyid);
 
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
@@ -266,7 +268,7 @@ public class GameAPIController {
         boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
                 position.getPosZ(), position.getAngle());
 
-        
+
         // logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),
         // VALID: {} ", position.getPlayerName(), position.getPosX(),
         // position.getPosY(), position.getAngle(), validMove);
@@ -295,6 +297,28 @@ public class GameAPIController {
         }
 
         if (validMove) {
+            for(Tile tile : gameService.getGameById(lobbyid).getPlaymap().getTilesList()){
+                if (tile.isItemWasRecentlyCollected()) {
+                    itemUpdateResponse.put("type", "itemCollected");
+                    itemUpdateResponse.put("positionX", position.getPosX());
+                    itemUpdateResponse.put("positionY", position.getPosY());
+                    itemUpdateResponse.put("status", "ok");
+                    itemUpdateResponse.put("time", LocalDateTime.now().toString());
+                    messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
+                    tile.setItemWasRecentlyCollected(false);
+                }
+            }
+
+            // Sende Item-Update an Frontend
+//            if(existingGame.isItemCollected(position.getPosX(),position.getPosY())){
+//                itemUpdateResponse.put("type", "itemCollected");
+//                logger.info("POSITION X: {} Y: {}", position.getPosX(), position.getPosY());
+//                itemUpdateResponse.put("positionX", position.getPosX());
+//                itemUpdateResponse.put("positionY", position.getPosY());
+//                itemUpdateResponse.put("status", "ok");
+//                itemUpdateResponse.put("time", LocalDateTime.now().toString());
+//                messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
+//            }
 
             // sende das die Validation in Ordnung war
             validationResponse.put("type", "playerMoveValidation");
@@ -311,19 +335,6 @@ public class GameAPIController {
             response.put("time", LocalDateTime.now().toString());
 
             messagingService.sendNewCharacterPosition(lobbyid, response);
-
-            // Sende Item-Update an Frontend
-            if(existingGame.isItemCollected(position.getPosX(),position.getPosY())){
-            HashMap<String, Object> itemUpdateResponse = new HashMap<>();
-            itemUpdateResponse.put("type", "itemCollected");
-            itemUpdateResponse.put("position", position);
-            response.put("status", "ok");
-            itemUpdateResponse.put("time", LocalDateTime.now().toString());
-            messagingService.sendPositionValidation(lobbyid, itemUpdateResponse);
-
-            messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
-            }
-            return;
         }
 
     }
@@ -347,7 +358,7 @@ public class GameAPIController {
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
     @SendTo("/topic/game/{lobbyid}")
     public ResponseEntity<?> kickUser(@PathVariable String gameId, @PathVariable String usernameKicker,
-            @PathVariable String usernameKicked) {
+                                      @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
         HashMap<String, Object> response = new HashMap<>();
 
