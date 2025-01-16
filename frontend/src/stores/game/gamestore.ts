@@ -401,7 +401,8 @@ export const useGameStore = defineStore('gameStore', () => {
     setPlayerRole,
     setPlayerRoleViaStomp,
     closeTab,
-    isGamePrivate
+    isGamePrivate,
+    resetGameState
   }
 })
 

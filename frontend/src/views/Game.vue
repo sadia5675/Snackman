@@ -22,10 +22,6 @@ const gameStore = useGameStore()
 
 const route = useRoute()
 const lobbyId = route.params.id.toString()
-const gameOver= ref(false);
-watch(gameOver, (newValue, oldValue) => {
-  console.log(`Game Over Zustand geändert: ${oldValue} → ${newValue}`);
-});
 
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
@@ -79,7 +75,7 @@ function showCollisionMessage(message: string) {
 }
 
 // Aktuelles Leben des Charakters
-const life = computed(() => currentCharacter.value?.life ?? 0);
+const snackmanLife = computed(() => currentCharacter.value?.life ?? 0);
 
 watch(
   () => currentCharacter.value?.life,
@@ -91,7 +87,7 @@ watch(
 );
 
 // Ghost-Touches aktualisieren
-const touch = computed(() => currentCharacter.value?.touchcount ?? 0);
+const ghostTouch = computed(() => currentCharacter.value?.touchcount ?? 0);
 
 watch(
   () => currentCharacter.value?.touchcount,
@@ -103,15 +99,15 @@ watch(
 );
 
 // Maximales Leben des Charakters
-const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
+const snackmanMaxLife = computed(() => gameStore.gameState.gamedata.snackmanMaxLife ?? 0);
 
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // Maximale Punkte
-const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
+const snackmanMaxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
 
 // Aktuelle Punkte
-const points = computed(() => currentCharacter.value?.currentPoints ?? 0);
+const snackmanPoints = computed(() => currentCharacter.value?.currentPoints ?? 0);
 
 watch(
   () => currentCharacter.value?.currentPoints,
@@ -122,6 +118,8 @@ watch(
     }
   }
 );
+// Role die gewonnen hat
+const winnerRole = computed(() => gameStore.gameState.gamedata.winnerRole ?? null);
 
 // Typ falsch?
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
@@ -672,89 +670,75 @@ onMounted(async () => {
   })
 
   subscribeTo(`/ingame/PlayerKollision/${lobbyId}`, async (message) => {
-    // Prüfe den Typ der Nachricht
-    console.log("message: ", message);
-
     switch (message.type) {
 
       case 'collisionValidation': {
-        const prevLife = currentCharacter.value?.life ?? 0;
-        const prevTouch = currentCharacter.value?.touchcount ?? 0;
-        gameStore.gameState.gamedata.characters = message.updateCharacters;
-        const currLife = currentCharacter.value?.life ?? 0;
-        const currTouch = currentCharacter.value?.touchcount ?? 0;
+       // tiefe Kopie
+        const previousValues = JSON.parse(JSON.stringify(gameStore.gameState.gamedata.characters));
+        // aktualiesieren
+        gameStore.gameState.gamedata.characters = message.updateCharacters
+        gameStore.gameState.gamedata.winnerRole = message.winnerRole
 
-        console.log("points sidn<: {} udnn maxpoint sind : {}", points.value, maxPoints.value)
-        if(currLife=== 0 || points.value=== maxPoints.value){
-          console.log(" in der schleife : points sidn<: {} udnn amxpoint sind : {}", points.value, maxPoints.value)
-              gameOver.value= true;
-              console.log("gameover", gameOver.value)_
-        }
-        if(gameOver.value= true){
-          console.log("gameover ja war true", gameOver.value)
-          router.push({ name: 'GameEnd', params: { id: lobbyId } }); 
-        }
-
-        console.log(" gameState.gamedata.characters: ", message.updateCharacters);
-
-        if(prevLife != currLife || prevTouch  != currTouch) {//Überprüft ob das Leben oder Touch geändert hat
-        for (const [name, character] of Object.entries(gameStore.gameState.gamedata.characters)) {
-          if (name !== currentPlayer.value?.name) {//Prüft ob aktuelle Charakter nicht der Spieler selbst ist
-            console.log(" currentPlayer.value?.name: ", currentPlayer.value?.name);
-            console.log(" cname: ", name);
-            if (character.life > 0) { //ob der nicht akt Chararcter Leben hat
-              showCollisionMessage(`Snackman ${name} has ${character.life} remaining Lifes.`);
-            } 
-            const ghosttouch= character.touchcount ?? 0;
-            if(ghosttouch > 0){
-              showCollisionMessage(`Ghost ${name} has ${character.touchcount} total Hits.`);
+        // für hit/life feed
+        for (const [name, characterDetails] of Object.entries(gameStore.gameState.gamedata.characters)) {
+          if (name !== currentPlayer.value?.name) {
+            // es soll nur ausgegeben werden wenn sich der wert vom alten unterscheidet und der wert nicht 0 ist
+            if ((characterDetails.life ?? 0) > 0 && (previousValues[name]?.life ?? null) !== characterDetails.life) {
+              showCollisionMessage(`Snackman ${name} has ${characterDetails.life} lifes.`);
+            }
+            if ((characterDetails.touchcount ?? 0) > 0 && (previousValues[name]?.touchcount ?? null) !== characterDetails.touchcount) {
+              showCollisionMessage(`Ghost ${name} has ${characterDetails.touchcount} hits.`);
             }
           }
         }
-      }
-
+        // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
+          if (winnerRole.value !== null) {
+            router.push({ name: 'GameEnd' });
+          }
         break;
       }
 
       default:
-        console.warn("Unerwarteter Nachrichtentyp:", message.type);
-        break;
-    }
+    console.warn("Unerwarteter Nachrichtentyp:", message.type);
+    break;
+  }
   });
 
-  if (threeContainer.value) {
-    threeContainer.value.appendChild(renderer.domElement)
-  }
-  const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
-  // const map = [
-  //   '********************',
-  //   '*    *     *       *',
-  //   '* ** * ***** * *** *',
-  //   '*    *     * *   * *',
-  //   '* ** ***** * *** * *',
-  //   '*    *   * *     * *',
-  //   '* ** * * * ******* *',
-  //   '*    * * *         *',
-  //   '****** * ***********',
-  //   '*      *           *',
-  //   '* **** * ********* *',
-  //   '* *    *         * *',
-  //   '* * ** ********* * *',
-  //   '* *              * *',
-  //   '* * **************  ',
-  //   '* *                *',
-  //   '* **************** *',
-  //   '*                * *',
-  //   '****************** *',
-  //   '********************',
-  // ]
-  if (map) {
-    loadMap(map)
-  } else {
-    console.error('No map found')
-  }
-  renderChicken(chickenPositions.value)
-  animate()
+
+
+if (threeContainer.value) {
+  threeContainer.value.appendChild(renderer.domElement)
+}
+const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
+// const map = [
+//   '********************',
+//   '*    *     *       *',
+//   '* ** * ***** * *** *',
+//   '*    *     * *   * *',
+//   '* ** ***** * *** * *',
+//   '*    *   * *     * *',
+//   '* ** * * * ******* *',
+//   '*    * * *         *',
+//   '****** * ***********',
+//   '*      *           *',
+//   '* **** * ********* *',
+//   '* *    *         * *',
+//   '* * ** ********* * *',
+//   '* *              * *',
+//   '* * **************  ',
+//   '* *                *',
+//   '* **************** *',
+//   '*                * *',
+//   '****************** *',
+//   '********************',
+// ]
+if (map) {
+  loadMap(map)
+} else {
+  console.error('No map found')
+}
+renderChicken(chickenPositions.value)
+animate()
 })
 
 </script>
@@ -771,18 +755,19 @@ onMounted(async () => {
     </div>
     <div id="hud" class="hud absoute text-white font-bold">
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="flex gap-2">
-        <div v-for="index in maxLife" :key="index">
-          <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40" />
+        <div v-for="index in snackmanMaxLife" :key="index">
+          <img v-if="index <= snackmanLife" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40"
+            height="40" />
           <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40" />
         </div>
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-        <p>Points: {{ points }} / {{ maxPoints }}</p>
+        <p>Points: {{ snackmanPoints }} / {{ snackmanMaxPoints }}</p>
       </div>
       <!-- TouchCountanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
-        <p>Hits: {{ touch }}</p>
+        <p>Hits: {{ ghostTouch }}</p>
       </div>
     </div>
     <div v-if="collisionMessage" class="fixed bottom-4 left-4 bg-red-400 text-white p-5 rounded-lg shadow-lg z-50">

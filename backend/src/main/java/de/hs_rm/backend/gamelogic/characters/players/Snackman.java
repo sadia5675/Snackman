@@ -112,11 +112,11 @@ public class Snackman extends Character {
             @Override
             public void run() {
                 recentlyCaught = false; 
-                logger.info("Snackman is no longer immune.");
+                //logger.info("Snackman is no longer immune.");
             }
         }, 5000); 
     } else {
-        logger.info("Snackman is immune and cannot lose a life right now.");
+        //logger.info("Snackman is immune and cannot lose a life right now.");
     }
     }
     }

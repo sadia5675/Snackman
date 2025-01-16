@@ -17,5 +17,6 @@ export const emptyGame: IGameState = {
     playmap: undefined,
     password: null,
      characters: {},
+     winnerRole: null,
   },
 }

@@ -13,6 +13,7 @@ import de.hs_rm.backend.gamelogic.characters.players.GhostObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -44,10 +45,9 @@ public class Game {
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
 
-    private List <FoodItems> placedSnacks = new ArrayList<>();
+    private List<FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
-
-
+    private PlayerRole winnerRole;
 
     public Map<String, Object> getCharacterDataWithNames() {
         Map<String, Object> characterData = new HashMap<>();
@@ -68,7 +68,6 @@ public class Game {
 
         return characterData;
     }
-
 
     public void setCharacters(Map<String, Character> characters) {
         this.characters = characters;
@@ -100,7 +99,6 @@ public class Game {
         this.characters = new HashMap<>();
         this.selectedMap = selectedMap;
 
-
         if (gamemaster.getPassword() != null && !gamemaster.getPassword().isEmpty()) {
             this.password = gamemaster.getPassword();
             this.privateLobby = true;
@@ -109,13 +107,43 @@ public class Game {
             this.privateLobby = false;
         }
 
-
         this.snackmanLife = snackmanLife;
         this.snackmanMaxLife = snackmanMaxLife;
         this.snackmanSpeed = snackmanSpeed;
         this.ghostSpeed = ghostSpeed;
         this.itemsPerSurfaceRatio = itemsPerSurfaceRatio;
         maxPointsSnackman = 0; // wird unten berechnet
+        winnerRole = null;
+    }
+
+    public void determineWinner() {
+        Snackman snackman = null; // Es gibt nur einen Snackman
+        for (Character character : characters.values()) {
+            if (character instanceof Snackman) {
+                snackman = (Snackman) character;
+            }
+        }
+        if (snackman == null) {
+            throw new IllegalStateException("No Snackman found in Game!");
+        }
+        for (Character character : characters.values()) {
+            if (character instanceof Snackman) {
+                snackman = (Snackman) character;
+                // ausreichend punkte und noch am leben
+                if (snackman.getCurrentPoints() >= maxPointsSnackman && snackman.getLife() > 0) { 
+                    winnerRole = PlayerRole.SNACKMAN;
+                    return;
+                }
+            } else if (character instanceof Ghost) {
+                Ghost ghost = (Ghost) character;
+                //ausreichend hits und snackman hat nicht seine max punkte erreicht
+                if (ghost.getTouchcount() >= snackmanMaxLife && snackman.getCurrentPoints() < maxPointsSnackman) {
+                    winnerRole = PlayerRole.GHOST;
+                    return;
+                }
+            }
+        }
+        winnerRole = null; 
     }
 
     // Generiert eindeutige ID
@@ -161,7 +189,8 @@ public class Game {
 
         Random random = new Random();
 
-        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro itemsPerSurfaceRatio
+        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro
+                                                                                       // itemsPerSurfaceRatio
 
         for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
@@ -189,7 +218,7 @@ public class Game {
                 playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(), newItem.getSymbol()); // für
                                                                                                                      // Food
                 // zur Liste der platzierten Snacks hinzufügen
-                placedSnacks.add(newItem);                                                                                                       
+                placedSnacks.add(newItem);
             } else {
 
                 // Zufälliges ObjectsItem aus der vordefinierten Liste
@@ -245,7 +274,8 @@ public class Game {
                 case SNACKMAN -> {
 
                     characters.put(player.getName(),
-                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(), snackmanLife, snackmanMaxLife));
+                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(),
+                                    snackmanLife, snackmanMaxLife));
                     randomTile.addCharacter(characters.get(player.getName()));
                 }
                 default -> {
@@ -272,9 +302,9 @@ public class Game {
         return started;
     }
 
-    public void calculateMaxPointsSnackman(){
+    public void calculateMaxPointsSnackman() {
         int total = 0;
-        for(int i = 0; i < placedSnacks.size(); i++) {
+        for (int i = 0; i < placedSnacks.size(); i++) {
             total += placedSnacks.get(i).getNutriScore().getCalorieBonus();
         }
         maxPointsSnackman = total;
@@ -346,11 +376,11 @@ public class Game {
 
     }
 
-    public boolean moveTest(String username, double posX, double posY, double angle){
+    public boolean moveTest(String username, double posX, double posY, double angle) {
         Character curCharacter = characters.get(username);
 
         curCharacter.move(posX, posY, angle);
-        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),curCharacter.getPosY());
+        LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(), curCharacter.getPosY());
         return true;
     }
 
@@ -359,56 +389,57 @@ public class Game {
 
         int roundedPosX = (int) Math.floor(posX);
         int roundedPosY = (int) Math.floor(posY);
-    
+
         // Berechnung des aktuellen Index
-        int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth() + (int) Math.floor(curCharacter.getPosX());
+        int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth()
+                + (int) Math.floor(curCharacter.getPosX());
         if (curIndex < 0 || curIndex >= playmap.getTilesList().size()) {
-            LOGGER.error("Ungültiger aktueller Index: curIndex={}, Größe der Tile-Liste={}", curIndex, playmap.getTilesList().size());
+            LOGGER.error("Ungültiger aktueller Index: curIndex={}, Größe der Tile-Liste={}", curIndex,
+                    playmap.getTilesList().size());
             return false;
         }
         Tile curTile = playmap.getTilesList().get(curIndex);
-    
+
         // Berechnung des Zielindex
         int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
         if (targetIndex < 0 || targetIndex >= playmap.getTilesList().size()) {
-            LOGGER.error("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex, playmap.getTilesList().size());
+            LOGGER.error("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex,
+                    playmap.getTilesList().size());
             return false;
         }
         Tile targetTile = playmap.getTilesList().get(targetIndex);
-    
+
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
         if (curIndex == targetIndex) {
             LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX, posY);
 
-            //posy und posx vertauscht 
+            // posy und posx vertauscht
             curCharacter.move(posY, posX, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
-    
+
         // Ziel-Tile prüfen
         if (targetTile.getType() == TileType.WALL) {
             LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
 
-        if(targetTile.hasItem()){
+        if (targetTile.hasItem()) {
             LOGGER.info("Item gefunden");
             targetTile.addCharacter(curCharacter);
         }
-    
+
         // Charakter bewegen
         curTile.removeCharacter(curCharacter);
 
-        //posy und posx vertauscht
+        // posy und posx vertauscht
         curCharacter.move(posY, posX, angle);
         targetTile.addCharacter(curCharacter);
-    
+
         LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
         LOGGER.debug("TargetTile has item: {}, Items: {}", targetTile.hasItem(), targetTile.getItemList());
         return true;
     }
-    
-
 
     public Player findPlayerByUsername(String username) {
         if (players == null || players.isEmpty()) {
@@ -501,7 +532,6 @@ public class Game {
         this.itemsNum = itemsNum;
     }
 
-    
     public int getSnackmanLife() {
         return snackmanLife;
     }
@@ -550,7 +580,7 @@ public class Game {
         this.maxPointsSnackman = maxPointsSnackman;
     }
 
-    public String getPassword(){
+    public String getPassword() {
         if (!privateLobby) {
             return null;
         }
@@ -565,12 +595,20 @@ public class Game {
         }
     }
 
-    public void setPrivateLobby(boolean privateLobby){
+    public void setPrivateLobby(boolean privateLobby) {
         this.privateLobby = privateLobby;
     }
 
-    public boolean getPrivateLobby(){
+    public boolean getPrivateLobby() {
         return privateLobby;
+    }
+
+    public PlayerRole getWinnerRole() {
+        return winnerRole;
+    }
+
+    public void setWinnerRole(PlayerRole winnerRole) {
+        this.winnerRole = winnerRole;
     }
 
 }
