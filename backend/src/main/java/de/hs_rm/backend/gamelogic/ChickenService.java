@@ -39,7 +39,7 @@ public class ChickenService {
         List<ChickenPosition> positions = new ArrayList<>();
         for (int i = 0; i < game.getChickens().size(); i++) {
             Chicken chicken = game.getChickens().get(i);
-            ChickenPosition newChicken = new ChickenPosition(chicken.getId(), chicken.getPosX(), chicken.getPosY(),chicken.getAngle(),chicken.getEggList());
+            ChickenPosition newChicken = new ChickenPosition(chicken.getId(), chicken.getPosX(), chicken.getPosY(),chicken.getAngle(),chicken.getEggList(),chicken.getCurrentCalorie());
             positions.add(newChicken);
         }
         return positions;

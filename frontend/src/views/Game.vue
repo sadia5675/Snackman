@@ -496,7 +496,8 @@ async function handleChickenPositions(data: IChickenDTD[]) {
       posX: chicken.posX,
       posY: chicken.posY,
       angle: chicken.angle,
-      eggList: chicken.eggList || [] 
+      eggList: chicken.eggList || [],
+      currentCalorie: chicken.currentCalorie
     });
     console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });
