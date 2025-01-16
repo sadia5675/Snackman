@@ -388,8 +388,31 @@ function cameraPositionBewegen(delta: number) {
   }
 }
 
+function checkCollision(nextPosition: THREE.Vector3): boolean {
+  const collisionDistance = 0.3; // Mindestabstand für Kollision
+  const myName = sessionStorage.getItem("myName");
+
+  for (const [name, character] of Object.entries(gameStore.gameState.gamedata.characters)) {
+    if (name !== myName) {
+      const characterPosition = new THREE.Vector3(character.posX, 1, character.posY);
+      const distance = nextPosition.distanceTo(characterPosition);
+
+      if (distance < collisionDistance) {
+        return true; // Bewegung blockiert
+      }
+    }
+  }
+  return false; // Keine Kollision
+}
+
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
+
+
+  if (checkCollision(nextPosition)) {
+    console.log("Movement blocked due to collision.");
+    return;
+  }
 
   if (currentTime - lastSend > 50) {
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
