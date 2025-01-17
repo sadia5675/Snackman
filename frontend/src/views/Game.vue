@@ -105,6 +105,7 @@ const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // Maximale Punkte
 const snackmanMaxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
+const requiredPointsToWin = computed(() => snackmanMaxPoints.value / 2);
 
 // Aktuelle Punkte
 const snackmanPoints = computed(() => currentCharacter.value?.currentPoints ?? 0);
@@ -786,7 +787,7 @@ animate()
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-        <p>Points: {{ snackmanPoints }} / {{ snackmanMaxPoints }}</p>
+        <p>Points: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
       </div>
       <!-- TouchCountanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">

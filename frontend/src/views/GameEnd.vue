@@ -7,7 +7,7 @@
           As the Ghost, you won! The Snackman has no lives left.
         </p>
         <p class="text-3xl text-zinc-300 mb-8">
-          Touchcount: <span class="font-bold">{{ ghostTouch }}</span>
+          Hits: <span class="font-bold">{{ ghostTouch }}</span>
         </p>
         <button class="bg-yellow-500 text-zinc-900 px-6 py-3 rounded-lg hover:bg-yellow-600 transition"
           @click="backToStart">
@@ -23,7 +23,7 @@
           As the Ghost, you lost!
         </p>
         <p class="text-3xl text-zinc-300 mb-8">
-          Touchcount: <span class="font-bold">{{ ghostTouch }}</span>
+          Hits: <span class="font-bold">{{ ghostTouch }}</span>
         </p>
         <button class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition" @click="backToStart">
           Back to start
@@ -38,10 +38,10 @@
       <div class="h-screen bg-green-800 flex flex-col items-center justify-center">
         <h1 class="text-4xl font-bold text-white mb-6">Victory!</h1>
         <p class="text-3xl text-zinc-300 mb-4">
-          As the Snackman, you won!
+          As the Snackman, you won! You reached enough points to win!
         </p>
         <p class="text-3xl text-zinc-300 mb-8">
-          Nutriscore: <span class="font-bold">{{ snackmanPoints }}</span>
+          Points: <span class="font-bold">{{ snackmanMaxPoints/2 }}</span>
         </p>
         <button class="bg-yellow-500 text-zinc-900 px-6 py-3 rounded-lg hover:bg-yellow-600 transition"
           @click="backToStart">
@@ -57,7 +57,7 @@
           As the Snackman, you lost! Your lives have dropped to 0.
         </p>
         <p class="text-3xl text-zinc-300 mb-8">
-          Nutriscore: <span class="font-bold">{{ snackmanPoints }}</span>
+          Points: <span class="font-bold">{{ snackmanPoints }}</span>
         </p>
         <button class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition" @click="backToStart">
           Back to start
@@ -95,6 +95,7 @@ const currentCharacter = computed(() => {
 const winner = computed(() => gameStore.gameState.gamedata.winnerRole); 
 const loser = winner.value === "SNACKMAN" ? "GHOST" : "SNACKMAN";
 const snackmanPoints = computed(() => currentCharacter.value?.currentPoints ?? 0); 
+const snackmanMaxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
 const ghostTouch = computed(() => currentCharacter.value?.touchcount ?? 0);
 
 

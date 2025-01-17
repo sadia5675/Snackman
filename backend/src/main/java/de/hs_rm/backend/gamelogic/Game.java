@@ -1,11 +1,18 @@
 
 package de.hs_rm.backend.gamelogic;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
@@ -16,7 +23,6 @@ import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
@@ -130,14 +136,14 @@ public class Game {
             if (character instanceof Snackman) {
                 snackman = (Snackman) character;
                 // ausreichend punkte und noch am leben
-                if (snackman.getCurrentPoints() >= maxPointsSnackman && snackman.getLife() > 0) { 
+                if (snackman.getCurrentPoints() >= maxPointsSnackman/2 && snackman.getLife() > 0) { // es soll die hälte der punkte sein laut PO
                     winnerRole = PlayerRole.SNACKMAN;
                     return;
                 }
             } else if (character instanceof Ghost) {
                 Ghost ghost = (Ghost) character;
-                //ausreichend hits und snackman hat nicht seine max punkte erreicht
-                if (ghost.getTouchcount() >= snackmanMaxLife && snackman.getCurrentPoints() < maxPointsSnackman) {
+                //snackman lebt nicht mehr und snackman hat nicht seine max punkte erreicht
+                if (snackman.getLife() <= 0 && snackman.getCurrentPoints() < maxPointsSnackman/2) {
                     winnerRole = PlayerRole.GHOST;
                     return;
                 }
