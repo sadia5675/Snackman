@@ -667,7 +667,7 @@ function getCachedTexture(url: string): THREE.Texture {
 
 function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
-  const wallGeometry = new THREE.BoxGeometry(1, 2, 1);
+  const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
   const groundTexture = getCachedTexture(selectedTheme.ground);
   const wallTexture = getCachedTexture(selectedTheme.wall);
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
@@ -706,7 +706,7 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
 
       switch (tile) {
         case '*': // Wall
-          const wallMatrix = new THREE.Matrix4().makeTranslation(x, 1.5, z);
+          const wallMatrix = new THREE.Matrix4().makeTranslation(x, 1, z);
           wallMesh.setMatrixAt(wallIndex++, wallMatrix);
           break;
 
