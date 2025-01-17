@@ -1,6 +1,7 @@
 package de.hs_rm.backend.gamelogic;
 
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -21,6 +22,7 @@ import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
+import org.springframework.core.io.ResourceLoader;
 
 public class Game {
     private static Set<String> existingIds = new HashSet<>(); // set --> verhindert Duplikate und static --> diese liste
@@ -262,17 +264,16 @@ public class Game {
             
             UUID uniqueID = UUID.randomUUID();
             Tile randomTile;
-            int index = -1;
-            Path testPathForScript = null;
 
             // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
-            URL url = getClass().getResource("/scripts/test_script_wrong_location.py");
-            if (url != null) {
-                testPathForScript = Paths.get(url.getPath());
+            Path testPathForScript = Paths.get("/scripts/test_script_wrong_location.py");
+            if (Files.exists(testPathForScript)) {
                 LOGGER.info("Path to test script: {}", testPathForScript.toString());
             } else {
                 LOGGER.error("Script not found");
             }
+
+            int index;
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
