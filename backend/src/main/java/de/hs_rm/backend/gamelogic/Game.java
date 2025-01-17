@@ -1,6 +1,5 @@
 package de.hs_rm.backend.gamelogic;
 
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,7 +21,6 @@ import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
-import org.springframework.core.io.ResourceLoader;
 
 public class Game {
     private static Set<String> existingIds = new HashSet<>(); // set --> verhindert Duplikate und static --> diese liste
