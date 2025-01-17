@@ -46,6 +46,8 @@ let movementSpeed = slowMovementSpeed
 const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
+let spawnX = ref(1);
+let spawnZ = ref(2);
 
 
 
@@ -893,6 +895,13 @@ async function handleCharacters(data: ICharacterDTD[]) {
   renderCharactersTest(playerPositions)
 }
 
+watch([spawnX, spawnZ], ([newX, newZ]) => {
+      if (camera) {
+        camera.position.z = newZ;
+        camera.position.x = newX;
+      }
+    });
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
@@ -905,6 +914,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
+  const spawnPoints = gameStore.gameState.gamedata.spawnPoints;
+  console.log("SPAWNS: ", spawnPoints)
 
   if (gameStore.gameState.gamedata.chickens === null) {
     chickenPositions.value = []
@@ -1002,8 +1013,15 @@ onMounted(async () => {
   ]
   renderChicken(chickenPositions.value)
   animate()
-  console.log(ground)
-  console.log (wall)
+
+  if(spawnPoints !== null){
+    spawnPoints.forEach(spawnPoint => {
+      if(sessionStorage.getItem('myName') == spawnPoint.playerName){
+        spawnX.value = Number(spawnPoint.posX);
+        spawnZ.value = Number(spawnPoint.posY);
+      }
+    })
+  }
 })
 watch(
   () => themeStore.selectedTheme,

@@ -375,6 +375,7 @@ export const useGameStore = defineStore('gameStore', () => {
             break
           case 'gameStart':
             gameState.gamedata = message.feedback as IGameDTD
+            console.log(gameState)
             break
             case 'themeUpdate':
               const themeStore = useThemeStore()
