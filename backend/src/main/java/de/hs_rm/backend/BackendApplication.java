@@ -4,14 +4,28 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 @SpringBootApplication(scanBasePackages = "de.hs_rm.backend")
 public class BackendApplication {
 
+	private static final Logger LOGGER = Logger.getLogger(BackendApplication.class.getName());
 	public static void main(String[] args) {
 
 		/* if base/maps not exist, create base/maps outside of java */
 		ensureDirectoriesExist("base/maps");
+
+		try {
+            // Extrahiere script.py aus resources/scripts/script.py
+            ResourceExtractor.extractScript("/scripts/test.py", "./test.py");
+			ResourceExtractor.extractScript("/maps/Trest.txt", "base/maps/Trest.txt");
+			ResourceExtractor.extractScript("/maps/1.txt", "base/maps/1.txt");
+
+            // Weitere Logik hier
+        } catch (IOException e) {
+            LOGGER.severe("Failed to extract script: " + e.getMessage());
+        }
 
 		SpringApplication.run(BackendApplication.class, args);
 	}
