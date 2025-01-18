@@ -59,7 +59,7 @@ public class Tile {
 
 
         this.characterList.add(character);
-
+        checkCharacterCollision(character);
         return true;
     }
 
@@ -93,6 +93,9 @@ public class Tile {
             logger.debug("Item removed. Remaining items: {}", itemList.size());
         }
 
+    }
+
+    private void checkCharacterCollision(Character character) {
         // TODO: Kollision zwischen Ghost und Snackman
         if(character instanceof Snackman ){
             Snackman snackman = (Snackman) character;
