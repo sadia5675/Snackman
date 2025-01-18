@@ -20,7 +20,7 @@ public class GameMessagingService {
     }
 
     public void sendPositionValidation(String lobbyid, Object position){
-        logger.info("Sending Validation");
+        //logger.info("Sending Validation");
         template.convertAndSend("/topic/ingame/"+ lobbyid, position);
     }
 
@@ -29,13 +29,19 @@ public class GameMessagingService {
     }
 
     public void sendNewCharacterPosition(String lobbyid, Object position){
-        logger.info("Sending playerPositions");
+        //logger.info("Sending playerPositions");
         template.convertAndSend("/topic/ingame/playerPositions/" + lobbyid, position);
     }
 
     public void sendGameStart(String lobbyid, Object gameState){
         template.convertAndSend("/topic/game/" + lobbyid, gameState);
     }
+
+    public void sendItemUpdate(String lobbyid, Object itemUpdate) {
+        //logger.info("Sending item update to lobby {}: {}", lobbyid, itemUpdate);
+        template.convertAndSend("/topic/ingame/" + lobbyid + "/itemUpdates", itemUpdate);
+    }
+
 
     // ToDo Aron
     // Chicken Daten ans Frontend schicken

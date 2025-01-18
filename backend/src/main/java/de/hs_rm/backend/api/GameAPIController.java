@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
@@ -81,7 +82,6 @@ public class GameAPIController {
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
     private static final Logger LOGGER = LoggerFactory.getLogger(GameAPIController.class);
 
-
     // private Game game;
 
     // TODO: Sicherheit für Spiel, keys in responsebody
@@ -106,17 +106,18 @@ public class GameAPIController {
         // try {
         //     String scriptPath = "ChickenBotMovement.py";
 
-        //     File scriptFile = new File(scriptsDirectory, scriptPath);
+        // File scriptFile = new File(scriptsDirectory, scriptPath);
 
-        //     if (scriptFile.exists()) {
-        //         LOGGER.info("Starte Python Skript...");
-        //         interpreter.execfile(scriptsDirectory + "/" + scriptPath);
-        //         LOGGER.info("Python Skript erfolgreich gestartet");
-        //     } else {
-        //         LOGGER.error("Python Skript konnte nicht gestartet werden: " + scriptFile.getAbsolutePath());
-        //     }
+        // if (scriptFile.exists()) {
+        // LOGGER.info("Starte Python Skript...");
+        // interpreter.execfile(scriptsDirectory + "/" + scriptPath);
+        // LOGGER.info("Python Skript erfolgreich gestartet");
+        // } else {
+        // LOGGER.error("Python Skript konnte nicht gestartet werden: " +
+        // scriptFile.getAbsolutePath());
+        // }
         // } catch (Exception e) {
-        //     e.printStackTrace();
+        // e.printStackTrace();
         // }
         // #63 NEW: gameservice now creates game
         Game newGame = gameService.createGame(gamemaster);
@@ -188,8 +189,7 @@ public class GameAPIController {
     public void startGameViaStomp(
             Player actingPlayer,
             @DestinationVariable String lobbyid,
-            @DestinationVariable String selectedMapName
-    ) {
+            @DestinationVariable String selectedMapName) {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
@@ -305,14 +305,23 @@ public class GameAPIController {
         HashMap<String, Object> validationResponse = new HashMap<>();
         HashMap<String, Object> response = new HashMap<>();
         HashMap<String, Object> collisionDetails = new HashMap<>();
+        HashMap<String, Object> itemUpdateResponse = new HashMap<>();
         Game existingGame = gameService.getGameById(lobbyid);
 
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-        //boolean validMove = existingGame.moveTest(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle());
-        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
-        logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),  VALID:  {} ", position.getPlayerName(), position.getPosX(), position.getPosY(), position.getAngle(), validMove);
+        // boolean validMove = existingGame.moveTest(position.getPlayerName(),
+        // position.getPosX(), position.getPosY(), position.getAngle());
+        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
+                position.getPosZ(), position.getAngle());
 
-        //Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle 4 Himmelsrichtungen)
+
+        // logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),
+        // VALID: {} ", position.getPlayerName(), position.getPosX(),
+        // position.getPosY(), position.getAngle(), validMove);
+
+        // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
+        // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
+        // 4 Himmelsrichtungen)
         if (!validMove) {
             if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
                 position.setPosX((float) (Math.round(position.getPosX()) + offset));
@@ -330,8 +339,30 @@ public class GameAPIController {
         }
 
         if (validMove) {
+            for(Tile tile : gameService.getGameById(lobbyid).getPlaymap().getTilesList()){
+                if (tile.isItemWasRecentlyCollected()) {
+                    itemUpdateResponse.put("type", "itemCollected");
+                    itemUpdateResponse.put("positionX", position.getPosX());
+                    itemUpdateResponse.put("positionY", position.getPosY());
+                    itemUpdateResponse.put("status", "ok");
+                    itemUpdateResponse.put("time", LocalDateTime.now().toString());
+                    messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
+                    tile.setItemWasRecentlyCollected(false);
+                }
+            }
 
-            //sende das die Validation in Ordnung war
+            // Sende Item-Update an Frontend
+//            if(existingGame.isItemCollected(position.getPosX(),position.getPosY())){
+//                itemUpdateResponse.put("type", "itemCollected");
+//                logger.info("POSITION X: {} Y: {}", position.getPosX(), position.getPosY());
+//                itemUpdateResponse.put("positionX", position.getPosX());
+//                itemUpdateResponse.put("positionY", position.getPosY());
+//                itemUpdateResponse.put("status", "ok");
+//                itemUpdateResponse.put("time", LocalDateTime.now().toString());
+//                messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
+//            }
+
+            // sende das die Validation in Ordnung war
             validationResponse.put("type", "playerMoveValidation");
             validationResponse.put("feedback", position);
             validationResponse.put("status", "ok");
@@ -357,15 +388,7 @@ public class GameAPIController {
             response.put("time", LocalDateTime.now().toString());
 
             messagingService.sendNewCharacterPosition(lobbyid, response);
-
-            return;
         }
-        response.put("type", "playerPosition");
-        response.put("feedback", currentCharacters.values());
-        response.put("status", "ok");
-        response.put("time", LocalDateTime.now().toString());
-
-        messagingService.sendNewCharacterPosition(lobbyid, response);
 
     }
 
@@ -404,7 +427,8 @@ public class GameAPIController {
 
     @PostMapping("/kick/{gameId}/{usernameKicker}/{usernameKicked}") // soll username
     @SendTo("/topic/game/{lobbyid}")
-    public ResponseEntity<?> kickUser(@PathVariable String gameId, @PathVariable String usernameKicker, @PathVariable String usernameKicked) {
+    public ResponseEntity<?> kickUser(@PathVariable String gameId, @PathVariable String usernameKicker,
+                                      @PathVariable String usernameKicked) {
         Game existingGame = gameService.getGameById(gameId);
         HashMap<String, Object> response = new HashMap<>();
 
@@ -433,7 +457,6 @@ public class GameAPIController {
         return createErrorResponse("can not kick " + usernameKicked + "!");
 
     }
-
 
     // Method to set the number of elements (e.g., chickens) in the game
     @PostMapping("/setChicken/{gameId}/{number}")
@@ -509,13 +532,13 @@ public class GameAPIController {
             Player actingPlayer,
             @DestinationVariable String lobbyId,
             @DestinationVariable String nameOfPlayerToSetRole,
-            @DestinationVariable String role
-    ) {
+            @DestinationVariable String role) {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
             Game existingGame = gameService.setRole(lobbyId, nameOfPlayerToSetRole, role);
-            logger.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role, nameOfPlayerToSetRole);
+            logger.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role,
+                    nameOfPlayerToSetRole);
 
             response.put("type", "playerRole");
             response.put("feedback", existingGame.getPlayers());
@@ -546,7 +569,6 @@ public class GameAPIController {
 
         return createErrorResponse("can not add " + player.getName() + "!");
 
-
     }
 
     @GetMapping("/games")
@@ -567,8 +589,7 @@ public class GameAPIController {
             @PathVariable String username,
             @PathVariable int coordinateX,
             @PathVariable int coordinateY,
-            @PathVariable int coordinateZ
-    ) {
+            @PathVariable int coordinateZ) {
         Game existingGame = gameService.getGameById(gameId);
 
         if (existingGame == null) {
