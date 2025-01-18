@@ -20,7 +20,8 @@ const gameStore = useGameStore()
 
 const route = useRoute()
 const lobbyId = route.params.id.toString()
-
+const chickens = new Map<string, number>(); // ChickenID als Key und Model-ID als Value
+const cameraOffset = new THREE.Vector3(0, 5, -10); // Offset der Kamera relativ zum Chicken
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
 let lastMoveValid = false;
@@ -472,6 +473,107 @@ function loadMap(map: String[]) {
     rowCounter++
   })
 }
+function renderChicken(chickenData:  IChickenDTD[]){
+  console.log("INSIDE RENDER: ", chickenData);
+  const loader =new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
+  //Überprüfung ob es eine chicken id gibt wenn nicht wird ein erstellt und wenn ja wir die position aktualsiert
+  chickenData.forEach((chicken)=>{
+    console.log(`Chicken-Daten: ID=${chicken.chickenID}, X=${chicken.posX}, Y=${chicken.posY}`);
+    if (!chicken.chickenID) {
+      console.warn("Chicken hat keine ID:", chicken.chickenID);
+      return; // Weiterverarbeitung abbrechen
+    }
+    if (!chickens.has(chicken.chickenID)) {
+      const chickenModelURL =new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
+      console.log("Chcieken url", chickenModelURL);
+      console.log("Neues Chicken wird erstellt:", chicken.chickenID);
+      loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
+        const model = gltf.scene;
+        model.scale.set(0.5, 0.5, 0.5);
+        players.set(chicken.chickenID, model.id);
+        scene.add(model);
+        model.position.set(chicken.posX, 1, chicken.posY);
+       
+        console.log(`Neues Chicken hinzugefügt: ID=${chicken.chickenID}, Position=${chicken.posX},${chicken.posY}`);
+        },
+        undefined,(error) => {
+            console.error("Fehler beim Laden des Chicken-Modells:", error);
+        }
+      );
+    }else{
+      console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.chickenID);
+      const  chickenId = chickens.get(chicken.chickenID);
+      if (chickenId){
+        const existingChickenModel = scene.getObjectById(chickenId); 
+        if(existingChickenModel ){
+          moveChicken(existingChickenModel , chicken);
+          console.log(`Position des Chickens aktualisiert: ID=${chicken.chickenID}, Position=${chicken.posX},${chicken.posY}`);
+        
+        }
+      }
+    }
+  })
+    
+}function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
+  const targetPosition = new THREE.Vector3(chickenData.posX,0,chickenData.posY); 
+  const currentPosition= modellChicken.position; 
+  
+  console.log("Aktuelle Position:", currentPosition);
+  console.log("Zielposition:", targetPosition);
+  // Bewegung in Richtung Zielpunkt
+
+  const direction = targetPosition.clone().sub(currentPosition).normalize();
+  const chickenSpeed = 1; // Geschwindigkeit des Chickens (Einheiten/Sekunde)
+  const delta= clock.getDelta(); 
+  const movement = direction.multiplyScalar(chickenSpeed * delta);
+  modellChicken.position.add(movement);
+
+  console.log('Richtung:', direction);
+  console.log('Bewegung:', movement);
+  console.log("Bewegungsrichtung:", direction);
+  console.log("Bewegungsvektor:", movement);
+  console.log("Neue Position des Chicken-Modells:", modellChicken.position);
+
+  const totalDistance = currentPosition.distanceTo(targetPosition);
+  const currentDistance = modellChicken.position.distanceTo(targetPosition);
+
+  if (currentPosition.distanceTo(targetPosition) < chickenSpeed * delta) {
+    modellChicken.position.set(targetPosition.x, 0, targetPosition.z);
+      console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
+  }
+
+ 
+  /*const targetRotation = THREE.MathUtils.degToRad(chickenData[nextIndex].angle);
+  const currentRotation = THREE.MathUtils.degToRad(chickenData[currentIndex].angle);
+
+  let lerpFactor = 0; // Standardmäßig keine Interpolation
+  if (currentDistance > totalDistance * 0.75) {
+    // Erste 1/4 der Strecke: Bleibt bei der aktuellen Rotation
+    lerpFactor = 0;
+  } else if (currentDistance < totalDistance * 0.25) {
+    // Letzte 1/4 der Strecke: Zielrotation erreicht
+    lerpFactor = 1;
+  } else {
+    // Zwischen 1/4 und 3/4 der Strecke: Interpolation
+    const progress = (totalDistance - currentDistance) / totalDistance; // Fortschritt zwischen 0 und 1
+    lerpFactor = (progress - 0.25) / 0.5; // Normierung auf den Bereich 0.25 bis 0.75
+  }
+
+  // Interpoliere die Rotation basierend auf lerpFactor
+  modellChicken.rotation.y = THREE.MathUtils.lerp(currentRotation, targetRotation, lerpFactor);*/
+
+  console.log("Aktuelle Rotation (in Grad):", THREE.MathUtils.radToDeg(modellChicken.rotation.y));
+}
+
+function followChicken(camera: THREE.Camera, chicken: THREE.Group, offset: THREE.Vector3) {
+  if (chicken) {
+    // Kamera-Position basierend auf Chicken-Position und Offset
+    const targetPosition = chicken.position.clone().add(offset);
+    camera.position.lerp(targetPosition, 0.1); // Sanfte Bewegung der Kamera
+    camera.lookAt(chicken.position); // Kamera auf das Chicken ausrichten
+    console.log("Kamera folgt Chicken:", chicken.position);
+  }
+}
 
 async function handleCharacters(data: ICharacterDTD[]) {
   let playerPositions: IPlayerPositionDTD[] = [];
@@ -501,6 +603,7 @@ async function handleChickenPositions(data: IChickenDTD[]) {
     });
     console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });
+  renderChicken(chickenPositions)
 }
 
 onMounted(async () => {

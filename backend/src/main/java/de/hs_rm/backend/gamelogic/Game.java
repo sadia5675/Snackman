@@ -277,8 +277,9 @@ public class Game {
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
+            String chickenId = "chickenId" + (i + 1);
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, uniqueID.toString());
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, chickenId);
 
 
             chickens.add(chicken);
