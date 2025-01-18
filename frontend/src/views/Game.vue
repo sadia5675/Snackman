@@ -16,7 +16,11 @@ import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 import router from '@/router';
 import { useThemeStore } from '@/stores/themes/themeStore';
-import { spritesheetUV } from 'three/webgpu'
+import {
+  getAppropriateScaleNumberThemeCharacter,
+  getAppropriateYoffsetForThemeCharacter,
+} from '@/stores/themes/themeModelHelper'
+
 
 const themeStore = useThemeStore();
 
@@ -696,20 +700,22 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   });
 
   playerPositions.forEach(async (playerPosition) => {
+    const playersList = gameStore.gameState.gamedata?.players;
+    let playerData = undefined;
+    if (playersList) {
+      for (const player of playersList) {
+        if (player.name == playerPosition.playerName) {
+          playerData = player;
+          break;
+        }
+      }
+    }
+
     if (!players.has(playerPosition.playerName) && !loadingPlayers.get(playerPosition.playerName)) {
       //const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       loadingPlayers.set(playerPosition.playerName, true);
       let modelPath;
-      const playersList = gameStore.gameState.gamedata?.players;
-      let playerData = undefined;
-      if (playersList) {
-        for (const player of playersList) {
-          if (player.name == playerPosition.playerName) {
-            playerData = player;
-            break;
-          }
-        }
-      } if (playerData?.playerrole == Playerrole.SNACKMAN) {
+      if (playerData?.playerrole == Playerrole.SNACKMAN) {
         modelPath = snackmanModel;
       } else {
         modelPath = ghostModel;
@@ -717,9 +723,12 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
       if (modelPath) {
         let loadingPath: string;
         let scaleNumber: number
-        if (typeof modelPath === "string") {
-          loadingPath = modelPath;
-          scaleNumber = 0.5;
+        if (typeof modelPath === 'string') {
+          loadingPath = modelPath
+          scaleNumber = getAppropriateScaleNumberThemeCharacter(
+            playerData?.playerrole,
+            themeStore.selectedTheme.toString(),
+          )
         } else {
           loadingPath = modelPath.path;
           scaleNumber = modelPath.scale;
@@ -735,7 +744,15 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
           playerNames.set(playerPosition.playerName, sprite);
           scene.add(sprite);
 
-          model.position.set(playerPosition.x, 1, playerPosition.y);
+          model.position.set(
+            playerPosition.x,
+            1 +
+            getAppropriateYoffsetForThemeCharacter(
+              playerData?.playerrole,
+              themeStore.selectedTheme.toString(),
+            ),
+            playerPosition.y,
+          )
           model.rotation.y = (playerPosition.angle * Math.PI * 2) + adjustAngle;
 
           loadingPlayers.delete(playerPosition.playerName);
@@ -754,7 +771,15 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
           const breite = new THREE.Vector3()
           messungsBox.getSize(breite)
           messungsBox.expandByObject(model)
-          model.position.set(playerPosition.x - breite.x / 2, playerPosition.z, playerPosition.y)
+          model.position.set(
+            playerPosition.x - breite.x / 2,
+            playerPosition.z +
+            getAppropriateYoffsetForThemeCharacter(
+              playerData?.playerrole,
+              themeStore.selectedTheme.toString(),
+            ),
+            playerPosition.y,
+          )
           sprite.position.set(playerPosition.x, 2.5, playerPosition.y);
           model.rotation.y = playerPosition.angle + adjustAngle
         }
