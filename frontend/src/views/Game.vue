@@ -83,7 +83,6 @@ const currentCharacter = computed(() => {
   if (!myName) return null;
 
   const character = gameStore.gameState.gamedata?.characters[myName] || null;
-  console.log("Current Character:", character);
   return character;
 });
 
@@ -134,6 +133,7 @@ function createSceneCameraRendererControlsClockListener() {
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.001, 1000)
   camera.position.set(1, 1, 2)
+  camera.rotation.order = "YXZ"
 
   const listener = new THREE.AudioListener();
   camera.add(listener);
@@ -171,7 +171,6 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     } else {
       showSettings.value = false;
     }
-    console.log(showSettings)
   })
 
   window.addEventListener('keydown', (e) => {
@@ -203,7 +202,6 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     }
   })
   window.addEventListener('keyup', (e) => {
-    console.log('Losgelasen: ' + e.code)
     switch (e.code) {
       case 'KeyW':
         movingForward = false
@@ -523,13 +521,15 @@ function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
 
   if (currentTime - lastSend > 10) {
+    const cameraAngle = camera.rotation.y
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
       posZ: nextPosition.y,
-      angle: camera.rotation.z,
+      angle: cameraAngle,
     })
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH"+cameraAngle)
     lastSend = currentTime
   }
 }
@@ -555,7 +555,6 @@ function removeModel(object: THREE.Object3D) {
 }
 
 function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
-  console.log('INSIDE RENDER: ', playerPositions)
 
   const modelLoader = new GLTFLoader();
   const adjustAngle = Math.PI;
@@ -593,10 +592,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         }
       }if (playerData?.playerrole == Playerrole.SNACKMAN) {
           modelPath = snackmanModel;
-          console.log(`Snackman-Modell wird geladen für ${playerPosition.playerName}`, modelPath);
       } else {
           modelPath = ghostModel;
-          console.log(`Ghost-Modell wird geladen für ${playerPosition.playerName}`, modelPath);
       }
       if (modelPath){
         let loadingPath: string;
@@ -615,7 +612,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         scene.add(model);
 
         model.position.set(playerPosition.x, 1, playerPosition.y);
-        model.rotation.y = playerPosition.angle + adjustAngle;
+        model.rotation.y = (playerPosition.angle * Math.PI * 2)+ adjustAngle;
 
         loadingPlayers.delete(playerPosition.playerName);
       });
@@ -921,20 +918,17 @@ onMounted(async () => {
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
       case 'playerPosition':
-        console.log('FROM PLAYER POSITON: ', message.feedback)
         await handleCharacters(message.feedback)
         break
     }
   })
 
   subscribeTo(`/ingame/${lobbyId}`, async (messageValidation: IMessageDTD) => {
-    console.log(messageValidation.type)
     switch (messageValidation.type) {
       case 'playerMoveValidation':
         const playerPosition: any = messageValidation.feedback
 
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
-          console.log(playerPosition)
           nextPosition.set(playerPosition.posX,playerPosition.posZ,playerPosition.posY)
           moveCamera();
         }
@@ -1002,8 +996,6 @@ onMounted(async () => {
   ]
   renderChicken(chickenPositions.value)
   animate()
-  console.log(ground)
-  console.log (wall)
 })
 watch(
   () => themeStore.selectedTheme,
