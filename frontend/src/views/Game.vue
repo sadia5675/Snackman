@@ -68,8 +68,8 @@ let isJumping = false // Verhindert doppeltes Springen
 let isValidatingChargeJump = false
 let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
 const gravity = -9.8 // Schwerkraft
-const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
-const maxJumpSpeed = 15 //Geschwindigkeit für großen Sprung
+const minJumpSpeed = 5 // Startgeschwindigkeit des kleinen Sprung
+const maxJumpSpeed = 8 //Geschwindigkeit für großen Sprung
 
 // Controller-Index (wenn ein Controller verbunden ist)
 let controllerIndex: number | null = null;
@@ -780,7 +780,7 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
             ),
             playerPosition.y,
           )
-          sprite.position.set(playerPosition.x, 2.5, playerPosition.y);
+          sprite.position.set(playerPosition.x, 1.5, playerPosition.y);
           model.rotation.y = playerPosition.angle + adjustAngle
         }
       }
