@@ -4,8 +4,6 @@ import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
 import { computed, onMounted, ref, watch } from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
-import ground from '@/assets/game/realistic/ground.png'
-import wall from '@/assets/game/realistic/wall.png'
 import { useGameStore } from '@/stores/game/gamestore'
 import type { IMessageDTD } from '@/stores/game/dtd/IMessageDTD'
 import { sendMessage, subscribeTo } from '@/config/stompWebsocket'
@@ -17,7 +15,6 @@ import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
 import { useThemeStore } from '@/stores/themes/themeStore';
-import type { GameResponse } from '@/stores/game/responses/GameResponse'
 
 const themeStore = useThemeStore();
 
@@ -46,8 +43,8 @@ let movementSpeed = slowMovementSpeed
 const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
-let spawnX = ref(1);
-let spawnZ = ref(2);
+const spawnX = ref(1);
+const spawnZ = ref(2);
 
 
 
@@ -1006,7 +1003,6 @@ onMounted(async () => {
   ]
   renderChicken(chickenPositions.value)
   animate()
-
   if(spawnPoints !== null){
     spawnPoints.forEach(spawnPoint => {
       if(sessionStorage.getItem('myName') == spawnPoint.playerName){
