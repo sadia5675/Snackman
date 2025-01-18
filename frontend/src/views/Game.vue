@@ -890,9 +890,7 @@ function removeItemFromSceneByPosition(posX: number, posY: number) {
 }
 
 watch([spawnX, spawnZ], ([newX, newZ]) => {
-  console.log("INSIDE WATCH")
       if (camera) {
-        console.log("INSIDE IF: ",newX, newZ)
         camera.position.set(newX,1,newZ);
       }
     });
@@ -1022,7 +1020,6 @@ onMounted(async () => {
       if(sessionStorage.getItem('myName') == spawnPoint.playerName){
         spawnX.value = Number(spawnPoint.posX);
         spawnZ.value = Number(spawnPoint.posY);
-        console.log("INSIDE SPAWNPOITN VALUE SET")
       }
     })
   }
