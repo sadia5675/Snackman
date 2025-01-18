@@ -693,7 +693,7 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
     }
     return modelCache.get(url)!;
   }
-
+  console.log(map)
   map.forEach((row, rowIndex) => {
     [...row].forEach((tile, colIndex) => {
       const x = rowIndex + mapOffset;
@@ -720,68 +720,49 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
 
           const itemPaths: { [key: string]: URL[] } = {
             E: [
-              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url),
-              new URL("@/assets/game/items/E/chocolate_bar/chocolate_bar.glb", import.meta.url)
+              new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url)
             ],
             D: [
-              new URL("@/assets/game/items/D/cotton_candy/cottoncandy.glb", import.meta.url),
-              new URL("@/assets/game/items/D/popcorn/popcorn.glb", import.meta.url)
+              new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url)
             ],
             C: [
-              new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url),
-              new URL("@/assets/game/items/C/chips/chips.glb", import.meta.url),
-            ],
-            B: [
-              new URL("@/assets/game/items/B/apple/apple.glb", import.meta.url),
-              new URL("@/assets/game/items/B/banana/banana.glb", import.meta.url),
+              new URL("@/assets/game/items/E/chocolate_bar/chocolatebar.glb", import.meta.url)
+              ],
+              B: [
+              new URL("@/assets/game/items/C/candy_cane/candycane.glb", import.meta.url)
             ],
             A: [
-              new URL("@/assets/game/items/A/ginger/ginger_fixed.glb", import.meta.url),
-              new URL("@/assets/game/items/A/lemon/lemon_remake.glb", import.meta.url)
+              new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url)
             ],
           };
 
           const randomModelPath = new URL(
-            itemPaths[tile][Math.random() > 0.5 ? 0 : 1],
+            itemPaths[tile][0],
             import.meta.url
           ).href;
-
+          // ITEMS SIND SPIEGELVERKEHRT
           loadCachedModel(randomModelPath).then((model) => {
             const item = model.clone(); // Clone to avoid modifying the cached model
+            console.log(randomModelPath)
 
-
-            if (randomModelPath.includes('chocolate_bar')) {
+            if (randomModelPath.includes('chocolatebar')) {
               item.position.set(x, 0.75, z);
-              item.scale.set(0.2, 0.2, 0.2);
+              item.scale.set(0.1, 0.1, 0.1);
             } else if (randomModelPath.includes('strawberry_shortcake')) {
               item.position.set(x, 0.5, z);
-              item.scale.set(0.5, 0.5, 0.5);
-            } else if (randomModelPath.includes('cotton_candy')) {
-              item.position.set(x, 0.5, z);
+              item.scale.set(0.25, 0.25, 0.25);
+            } else if (randomModelPath.includes('cottoncandy')) {
+              item.position.set(x, 0.75, z);
               item.scale.set(0.2, 0.2, 0.2);
             } else if (randomModelPath.includes('popcorn')) {
-              item.position.set(x, 0.5, z);
-              item.scale.set(0.5, 0.5, 0.5);
+              item.position.set(x, 0.75, z);
+              item.scale.set(0.09, 0.09, 0.09);
             } else if (randomModelPath.includes('candy_cane')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.07, 0.07, 0.07);
             } else if (randomModelPath.includes('chips')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.1, 0.1, 0.1);
-            } else if (randomModelPath.includes('apple')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.0015, 0.0015, 0.0015);
-            } else if (randomModelPath.includes('banana')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.07, 0.07, 0.07);
-            } else if (randomModelPath.includes('ginger_fixed')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.1, 0.1, 0.1);
-              item.rotateZ(Math.PI / 1.5);
-            } else if (randomModelPath.includes('lemon_remake')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.09, 0.09, 0.09);
-              item.rotateZ(Math.PI / 1.5);
             }
             scene.add(item);
 
@@ -797,7 +778,7 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
     });
   });
 
-  localStorage.setItem('gameMap-${lobbyId}',JSON.stringify(map));
+  localStorage.setItem('gameMap-${lobbyId}', JSON.stringify(map));
 
   // Add instanced meshes to the scene
   groundMesh.instanceMatrix.needsUpdate = true;
@@ -888,6 +869,26 @@ async function handleCharacters(data: ICharacterDTD[]) {
   renderCharactersTest(playerPositions)
 }
 
+function removeItemFromSceneByPosition(posX: number, posY: number) {
+  const itemToRemove = rotatingItems.find(
+    (item) =>
+      Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
+  );
+
+  if (itemToRemove) {
+    // Entferne das Item aus der Szene
+    scene.remove(itemToRemove);
+
+    // Entferne es aus der rotatingItems-Liste
+    const index = rotatingItems.indexOf(itemToRemove);
+    if (index > -1) {
+      rotatingItems.splice(index, 1);
+    }
+  } else {
+    console.warn(`Kein Item an Position {} {}`, posX, posY)
+  }
+}
+
 watch([spawnX, spawnZ], ([newX, newZ]) => {
       if (camera) {
         camera.position.z = newZ;
@@ -934,7 +935,7 @@ onMounted(async () => {
     switch (messageValidation.type) {
       case 'playerMoveValidation':
         const playerPosition: any = messageValidation.feedback
-
+        console.log(gameStore.gameState.gamedata.playmap)
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
           nextPosition.set(playerPosition.posX,playerPosition.posZ,playerPosition.posY)
           moveCamera();
@@ -943,6 +944,20 @@ onMounted(async () => {
         break
     }
   })
+
+  subscribeTo(`/ingame/${lobbyId}/itemUpdates`, async (message: any) => {
+    switch (message.type) {
+      case "itemCollected":
+        console.log(`collected at{} {}`, message.posX, message.positionY)
+        console.log('MESSAGE: ' + message.toString())
+        removeItemFromSceneByPosition(message.positionX, message.positionY);
+        break;
+
+      default:
+        console.warn("Unbekannter Nachrichtentyp:", message.type);
+    }
+  })
+
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
