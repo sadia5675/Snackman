@@ -37,6 +37,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.hs_rm.backend.exception.GameJoinException;
+import de.hs_rm.backend.exception.GameLeaveException;
+import de.hs_rm.backend.exception.SetRoleException;
+import de.hs_rm.backend.gamelogic.Game;
+import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.PlayMapService;
+import de.hs_rm.backend.messaging.GameMessagingService;
 
 /**
  * REST controller for managing game-related operations.
@@ -60,7 +79,7 @@ public class GameAPIController {
     PlayMapService playMapService;
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(PlayMap.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameAPIController.class);
 
 
     // private Game game;
@@ -163,7 +182,7 @@ public class GameAPIController {
             "feedback", map.get("mapName")
         );
     }
-    
+
     @MessageMapping("/topic/game/{lobbyid}/start/{selectedMapName}")
     @SendTo("/topic/game/{lobbyid}")
     public void startGameViaStomp(
@@ -285,6 +304,7 @@ public class GameAPIController {
 
         HashMap<String, Object> validationResponse = new HashMap<>();
         HashMap<String, Object> response = new HashMap<>();
+        HashMap<String, Object> collisionDetails = new HashMap<>();
         Game existingGame = gameService.getGameById(lobbyid);
 
         Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
@@ -319,6 +339,17 @@ public class GameAPIController {
 
             messagingService.sendPositionValidation(lobbyid, validationResponse);
 
+
+            existingGame.determineWinner();
+            // sendet all immer dieseer charackteren (mit oder ohne updates wie life oder ghosttouch)
+            Map<String, Character> updateCharacters = existingGame.getCharacters();
+            collisionDetails.put("type", "collisionValidation");
+            collisionDetails.put("updateCharacters", updateCharacters);
+            collisionDetails.put("winnerRole", existingGame.getWinnerRole());
+            collisionDetails.put("status", "ok");
+            collisionDetails.put("time", LocalDateTime.now().toString());
+            messagingService.sendPlayerCollision(lobbyid, collisionDetails);
+
             //senden der Liste von Charsd
             response.put("type", "playerPosition");
             response.put("feedback", currentCharacters.values());
@@ -346,14 +377,14 @@ public class GameAPIController {
         String playerName = requestBody.get("name");
         if (playerName == null || playerName.isEmpty()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("jumpAllowed", false)); 
+                    .body(Map.of("jumpAllowed", false));
         }
         boolean isJumpAllowed = gameService.isJumpAllowed(gameId, playerName);
 
         return ResponseEntity.ok(Map.of("jumpAllowed", isJumpAllowed));
     }
 
-    
+
 
     // Method to end the game
     @PostMapping("/end/{gameId}")

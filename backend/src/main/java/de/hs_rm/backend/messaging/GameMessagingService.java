@@ -1,5 +1,7 @@
 package de.hs_rm.backend.messaging;
 
+import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -48,5 +50,10 @@ public class GameMessagingService {
     public void sendMapUpdate (String lobbyid, Object mapData){
         logger.info("Sending map update");
         template.convertAndSend("/topic/game/" + lobbyid + "/map", mapData);
+    }
+
+    public void sendPlayerCollision(String lobbyid, Object collisionDetails) {
+        logger.info("Sending player collision details");
+        template.convertAndSend("/topic/ingame/PlayerKollision/" + lobbyid, collisionDetails);
     }
 }

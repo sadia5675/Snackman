@@ -16,7 +16,6 @@ public abstract class Character{
     // PlayerPosition playerposition;
     // Player player;
     private double posX, posY, posZ;
-    private int currentcalorie;
     private ObjectsItems currentObjectItem;
     private static final Logger logger = LoggerFactory.getLogger(Character.class);
 
@@ -108,13 +107,6 @@ public abstract class Character{
     }
     public abstract void useItem(ObjectsItems item);
 
-    //TODO: muss noch ausgearbietet werden
-    // Methode: Leben verloren
-    public void caught() {
-       // life--;
-    }
-
-
 
     public double getAngleInDegrees() {
         return angleInDegrees;
@@ -123,7 +115,6 @@ public abstract class Character{
     public void setAngleInDegrees(double angleInDegrees) {
         this.angleInDegrees = angleInDegrees;
     }
-
 
 
 }

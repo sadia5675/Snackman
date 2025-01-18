@@ -14,6 +14,7 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import router from '@/router';
 import { useThemeStore } from '@/stores/themes/themeStore';
 
 const themeStore = useThemeStore();
@@ -85,9 +86,17 @@ const currentCharacter = computed(() => {
   return character;
 });
 
+const collisionMessage = ref<string | null>(null);
+
+function showCollisionMessage(message: string) {
+  collisionMessage.value = message;
+  setTimeout(() => {
+    collisionMessage.value = null; // nach 5 Sekunden weg
+  }, 5000);
+}
 
 // Aktuelles Leben des Charakters
-const life = computed(() => currentCharacter.value?.life ?? 0);
+const snackmanLife = computed(() => currentCharacter.value?.life ?? 0);
 
 watch(
   () => currentCharacter.value?.life,
@@ -98,16 +107,29 @@ watch(
   }
 );
 
+// Ghost-Touches aktualisieren
+const ghostTouch = computed(() => currentCharacter.value?.touchcount ?? 0);
+
+watch(
+  () => currentCharacter.value?.touchcount,
+  (newTouches, oldTouches) => {
+    if (newTouches !== oldTouches) {
+      console.log(`Ghost-Touches changed from ${oldTouches} to ${newTouches}`);
+    }
+  }
+);
+
 // Maximales Leben des Charakters
-const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
+const snackmanMaxLife = computed(() => gameStore.gameState.gamedata.snackmanMaxLife ?? 0);
 
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // Maximale Punkte
-const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman);
+const snackmanMaxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
+const requiredPointsToWin = computed(() => snackmanMaxPoints.value / 2);
 
 // Aktuelle Punkte
-const points = computed(() => currentCharacter.value?.currentPoints ?? 0);
+const snackmanPoints = computed(() => currentCharacter.value?.currentPoints ?? 0);
 
 watch(
   () => currentCharacter.value?.currentPoints,
@@ -118,6 +140,8 @@ watch(
     }
   }
 );
+// Role die gewonnen hat
+const winnerRole = computed(() => gameStore.gameState.gamedata.winnerRole ?? null);
 
 // Typ falsch?
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
@@ -309,7 +333,7 @@ scene.add(pointLight)
 function animate() {
   setTimeout(function () {
     requestAnimationFrame(animate)
-  }, 1000 / 60)
+  }, 1000 / 60);
 
   rotatingItems.forEach((item) => {
     item.rotation.y += 0.01
@@ -516,8 +540,31 @@ function cameraPositionBewegen(delta: number) {
   }
 }
 
+function checkCollision(nextPosition: THREE.Vector3): boolean {
+  const collisionDistance = 0.3; // Mindestabstand für Kollision
+  const myName = sessionStorage.getItem("myName");
+
+  for (const [name, character] of Object.entries(gameStore.gameState.gamedata.characters)) {
+    if (name !== myName) {
+      const characterPosition = new THREE.Vector3(character.posX, 1, character.posY);
+      const distance = nextPosition.distanceTo(characterPosition);
+
+      if (distance < collisionDistance) {
+        return true; // Bewegung blockiert
+      }
+    }
+  }
+  return false; // Keine Kollision
+}
+
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
+
+
+  if (checkCollision(nextPosition)) {
+    console.log("Movement blocked due to collision.");
+    return;
+  }
 
   if (currentTime - lastSend > 10) {
     const cameraAngle = camera.rotation.y
@@ -944,6 +991,43 @@ onMounted(async () => {
     }
   })
 
+  subscribeTo(`/ingame/PlayerKollision/${lobbyId}`, async (message) => {
+    switch (message.type) {
+
+      case 'collisionValidation': {
+       // tiefe Kopie
+        const previousValues = JSON.parse(JSON.stringify(gameStore.gameState.gamedata.characters));
+        // aktualiesieren
+        gameStore.gameState.gamedata.characters = message.updateCharacters
+        gameStore.gameState.gamedata.winnerRole = message.winnerRole
+
+        // für hit/life feed
+        for (const [name, characterDetails] of Object.entries(gameStore.gameState.gamedata.characters)) {
+          if (name !== currentPlayer.value?.name) {
+            // es soll nur ausgegeben werden wenn sich der wert vom alten unterscheidet und der wert nicht 0 ist
+            if ((characterDetails.life ?? 0) > 0 && (previousValues[name]?.life ?? null) !== characterDetails.life) {
+              showCollisionMessage(`Snackman ${name} has ${characterDetails.life} lifes.`);
+            }
+            if ((characterDetails.touchcount ?? 0) > 0 && (previousValues[name]?.touchcount ?? null) !== characterDetails.touchcount) {
+              showCollisionMessage(`Ghost ${name} has ${characterDetails.touchcount} hits.`);
+            }
+          }
+        }
+        // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
+          if (winnerRole.value !== null) {
+            router.push({ name: 'GameEnd' });
+          }
+        break;
+      }
+
+      default:
+    console.warn("Unerwarteter Nachrichtentyp:", message.type);
+    break;
+  }
+  });
+
+
+
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
   }
@@ -1054,15 +1138,23 @@ watch(
     </div>
     <div id="hud" class="hud absoute text-white font-bold">
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="flex gap-2">
-        <div v-for="index in maxLife" :key="index">
-          <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40" />
+        <div v-for="index in snackmanMaxLife" :key="index">
+          <img v-if="index <= snackmanLife" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40"
+            height="40" />
           <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40" />
         </div>
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-        <p>Points: {{ points }} / {{ maxPoints }}</p>
+        <p>Points: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
       </div>
+      <!-- TouchCountanzeige -->
+      <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
+        <p>Hits: {{ ghostTouch }}</p>
+      </div>
+    </div>
+    <div v-if="collisionMessage" class="fixed bottom-4 left-4 bg-red-400 text-white p-5 rounded-lg shadow-lg z-50">
+      {{ collisionMessage }}
     </div>
   </div>
 
