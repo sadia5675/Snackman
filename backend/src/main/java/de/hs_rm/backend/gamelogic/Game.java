@@ -1,11 +1,18 @@
 
 package de.hs_rm.backend.gamelogic;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
@@ -14,6 +21,7 @@ import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -61,6 +69,7 @@ public class Game {
 
     private List<FoodItems> placedSnacks = new ArrayList<>();
     private int maxPointsSnackman;
+    private PlayerRole winnerRole;
 
     public String getSelectedTheme() {
         return this.selectedTheme;
@@ -137,6 +146,37 @@ public class Game {
         this.ghostSpeed = ghostSpeed;
         this.itemsPerSurfaceRatio = itemsPerSurfaceRatio;
         maxPointsSnackman = 0; // wird unten berechnet
+        winnerRole = null;
+    }
+
+    public void determineWinner() {
+        Snackman snackman = null; // Es gibt nur einen Snackman
+        for (Character character : characters.values()) {
+            if (character instanceof Snackman) {
+                snackman = (Snackman) character;
+            }
+        }
+        if (snackman == null) {
+            throw new IllegalStateException("No Snackman found in Game!");
+        }
+        for (Character character : characters.values()) {
+            if (character instanceof Snackman) {
+                snackman = (Snackman) character;
+                // ausreichend punkte und noch am leben
+                if (snackman.getCurrentPoints() >= maxPointsSnackman/2 && snackman.getLife() > 0) { // es soll die hälte der punkte sein laut PO
+                    winnerRole = PlayerRole.SNACKMAN;
+                    return;
+                }
+            } else if (character instanceof Ghost) {
+                Ghost ghost = (Ghost) character;
+                //snackman lebt nicht mehr und snackman hat nicht seine max punkte erreicht
+                if (snackman.getLife() <= 0 && snackman.getCurrentPoints() < maxPointsSnackman/2) {
+                    winnerRole = PlayerRole.GHOST;
+                    return;
+                }
+            }
+        }
+        winnerRole = null;
     }
 
     // Generiert eindeutige ID
@@ -158,7 +198,7 @@ public class Game {
         Random random = new Random();
 
         for (int i = 0; i < length; i++) {
-            int index = random.nextInt(alphaNumericString.length()); 
+            int index = random.nextInt(alphaNumericString.length());
             sb.append(alphaNumericString.charAt(index));
         }
         return sb.toString();
@@ -174,15 +214,15 @@ public class Game {
     public List<PlayerPosition> createSpawnPoints() {
         List<int[]> freePositions = new ArrayList<>();
         List<PlayerPosition> generatedSpawnPoints = new ArrayList<>();
-        
+
         int playerCount = players.size();
         int spawnPointsSet = 0;
-    
+
         Random random = new Random();
         int minDistance = 3; // Initialer Mindestabstand
         int maxAttempts = 10; // Maximale Anzahl der Versuche, bevor der Abstand verringert wird
         int attempts = 0; // Zähler für die Anzahl der Versuche
-    
+
         // Sammel alle freien Positionen
         for (int x = 0; x < playmap.getWidth(); x++) {
             for (int y = 0; y < playmap.getHeight(); y++) {
@@ -191,25 +231,25 @@ public class Game {
                 }
             }
         }
-    
+
         // Spawnpunkte generieren
         while (playerCount > spawnPointsSet && !freePositions.isEmpty()) {
-            
+
             // Zufällige Position auswählen
             int[] pos = freePositions.remove(random.nextInt(freePositions.size()));
-            
+
             if (!isTooClose(pos, generatedSpawnPoints, minDistance)) {
                 PlayerPosition newSpawnPoint = new PlayerPosition();
                 newSpawnPoint.setPosX(pos[0]);
                 newSpawnPoint.setPosY(pos[1]);
                 newSpawnPoint.setPlayerName(players.get(spawnPointsSet).getName());
-    
+
                 generatedSpawnPoints.add(newSpawnPoint);
                 spawnPointsSet++;
                 attempts = 0; // Zurücksetzen des Zählers nach erfolgreicher Platzierung
             } else {
                 attempts++; // Versuchszähler erhöhen
-    
+
                 // Mindestabstand verringern, wenn die maximale Anzahl der Versuche erreicht ist
                 if (attempts >= maxAttempts) {
                     minDistance = Math.max(0, minDistance - 1); // Abstand reduzieren, aber nicht unter 0
@@ -217,7 +257,7 @@ public class Game {
                 }
             }
         }
-    
+
         return generatedSpawnPoints;
     }
 
@@ -245,10 +285,10 @@ public class Game {
 
         Random random = new Random();
 
+        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro
+                                                                                       // itemsPerSurfaceRatio
         //Spawn Points erstellen
         this.spawnPoints = createSpawnPoints();
-
-        this.itemsNum = Math.max(1, playmap.getCountSurface() / itemsPerSurfaceRatio); // 1 Item pro itemsPerSurfaceRatio
 
         for (int i = 0; i < itemsNum; i++) {
             Tile randomTile;
@@ -306,7 +346,7 @@ public class Game {
                 playmap.updateMapState(index / playmap.getWidth(), index % playmap.getWidth(),
                         newObjectItem.getSymbol()); // für Object
             }
-            
+
 
         }
         // dynamische maxPoints
@@ -476,7 +516,7 @@ public class Game {
         }
         Tile curTile = playmap.getTilesList().get(curIndex);
 
-      
+
 
         // Berechnung des Zielindex
         int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
@@ -689,6 +729,14 @@ public class Game {
 
     public boolean getPrivateLobby() {
         return privateLobby;
+    }
+
+    public PlayerRole getWinnerRole() {
+        return winnerRole;
+    }
+
+    public void setWinnerRole(PlayerRole winnerRole) {
+        this.winnerRole = winnerRole;
     }
 
 }

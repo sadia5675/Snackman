@@ -443,6 +443,7 @@ export const useGameStore = defineStore('gameStore', () => {
     setPlayerRoleViaStomp,
     closeTab,
     isGamePrivate,
+    resetGameState,
     getJumpAllowed,
   }
 })

@@ -4,6 +4,7 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IPlayerPositionDTD } from './IPlayerPositionDTD'
 import type { ISpawnPointsDTD } from './ISpawnPointsDTD'
 
+import type { Playerrole } from '@/stores/game/dtd/EPlayerrole'
 
 export interface IGameDTD {
   id: string
@@ -19,5 +20,7 @@ export interface IGameDTD {
   }
   spawnPoints: ISpawnPointsDTD[];
   maxPointsSnackman?: number,
+  snackmanMaxLife?: number,
+  winnerRole: Playerrole | null,
   characters: Record<string, ICharacterDTD>,
 }

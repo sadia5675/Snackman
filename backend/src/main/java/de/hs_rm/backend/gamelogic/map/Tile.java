@@ -6,8 +6,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.hs_rm.backend.gamelogic.characters.players.*;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.Chicken;
+import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
+import de.hs_rm.backend.gamelogic.characters.players.Ghost;
+import de.hs_rm.backend.gamelogic.characters.players.Item;
+import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
+import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 
 public class Tile {
     private TileType type;
@@ -87,6 +93,35 @@ public class Tile {
             logger.debug("Item removed. Remaining items: {}", itemList.size());
         }
 
+        // TODO: Kollision zwischen Ghost und Snackman
+        if(character instanceof Snackman ){
+            Snackman snackman = (Snackman) character;
+        for (Character currentCharacter:characterList){
+            if (currentCharacter instanceof Ghost) {
+                Ghost ghost = (Ghost) currentCharacter;
+                if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
+                    snackman.caught();
+                    ghost.hit();
+                    logger.info("Collision: Snackman caught by Ghost! Now imun fo the next 5 sec");
+                }
+                }
+            }
+        }
+        else if(character instanceof Ghost ){
+            Ghost ghost = (Ghost) character;
+            for (Character currentCharacter:characterList){
+                if (currentCharacter instanceof Snackman) {
+                    Snackman snackman = (Snackman) currentCharacter;
+                    if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
+                        snackman.caught();
+                        ghost.hit();
+                        logger.info("Collision: Snackman caught by Ghost!");
+                    } else {
+                        logger.info("Collision ignored: Snackman is immune.");
+                    }
+                }
+            }
+         }
     }
 
     public boolean addChicken(Chicken chicken) {

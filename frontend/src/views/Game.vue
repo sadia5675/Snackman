@@ -14,7 +14,9 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import router from '@/router';
 import { useThemeStore } from '@/stores/themes/themeStore';
+import { spritesheetUV } from 'three/webgpu'
 
 const themeStore = useThemeStore();
 
@@ -46,7 +48,8 @@ const effectVolume = ref(50)
 const spawnX = ref(1);
 const spawnZ = ref(2);
 
-
+//für Ingame Spielernamen
+const playerNames = new Map<string, THREE.Sprite>();
 
 //für HuD
 //const life = ref(2) //startlife
@@ -85,9 +88,17 @@ const currentCharacter = computed(() => {
   return character;
 });
 
+const collisionMessage = ref<string | null>(null);
+
+function showCollisionMessage(message: string) {
+  collisionMessage.value = message;
+  setTimeout(() => {
+    collisionMessage.value = null; // nach 5 Sekunden weg
+  }, 5000);
+}
 
 // Aktuelles Leben des Charakters
-const life = computed(() => currentCharacter.value?.life ?? 0);
+const snackmanLife = computed(() => currentCharacter.value?.life ?? 0);
 
 watch(
   () => currentCharacter.value?.life,
@@ -98,16 +109,29 @@ watch(
   }
 );
 
+// Ghost-Touches aktualisieren
+const ghostTouch = computed(() => currentCharacter.value?.touchcount ?? 0);
+
+watch(
+  () => currentCharacter.value?.touchcount,
+  (newTouches, oldTouches) => {
+    if (newTouches !== oldTouches) {
+      console.log(`Ghost-Touches changed from ${oldTouches} to ${newTouches}`);
+    }
+  }
+);
+
 // Maximales Leben des Charakters
-const maxLife = computed(() => currentCharacter.value?.maxLife ?? 0);
+const snackmanMaxLife = computed(() => gameStore.gameState.gamedata.snackmanMaxLife ?? 0);
 
 const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // Maximale Punkte
-const maxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman);
+const snackmanMaxPoints = computed(() => gameStore.gameState.gamedata.maxPointsSnackman ?? 0);
+const requiredPointsToWin = computed(() => snackmanMaxPoints.value / 2);
 
 // Aktuelle Punkte
-const points = computed(() => currentCharacter.value?.currentPoints ?? 0);
+const snackmanPoints = computed(() => currentCharacter.value?.currentPoints ?? 0);
 
 watch(
   () => currentCharacter.value?.currentPoints,
@@ -118,6 +142,8 @@ watch(
     }
   }
 );
+// Role die gewonnen hat
+const winnerRole = computed(() => gameStore.gameState.gamedata.winnerRole ?? null);
 
 // Typ falsch?
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
@@ -194,9 +220,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         movingRight = true
         break
       case 'Space':
-          if(gameStore.jumpAllowed){
-              isChargingJump = true;
-          }
+        if (gameStore.jumpAllowed) {
+          isChargingJump = true;
+        }
         break;
     }
   })
@@ -309,7 +335,7 @@ scene.add(pointLight)
 function animate() {
   setTimeout(function () {
     requestAnimationFrame(animate)
-  }, 1000 / 60)
+  }, 1000 / 60);
 
   rotatingItems.forEach((item) => {
     item.rotation.y += 0.01
@@ -453,7 +479,7 @@ function updateJumpBar() {
   const jumpBar = document.getElementById("jumpBar");
   const progress = Math.min((jumpChargeTime / maxJumpChargeTime) * 100, 100); // Prozent
 
-  if (jumpBar){
+  if (jumpBar) {
 
     jumpBar.style.width = `${progress}%`; // Breite Balken setzen
 
@@ -516,8 +542,31 @@ function cameraPositionBewegen(delta: number) {
   }
 }
 
+function checkCollision(nextPosition: THREE.Vector3): boolean {
+  const collisionDistance = 0.3; // Mindestabstand für Kollision
+  const myName = sessionStorage.getItem("myName");
+
+  for (const [name, character] of Object.entries(gameStore.gameState.gamedata.characters)) {
+    if (name !== myName) {
+      const characterPosition = new THREE.Vector3(character.posX, 1, character.posY);
+      const distance = nextPosition.distanceTo(characterPosition);
+
+      if (distance < collisionDistance) {
+        return true; // Bewegung blockiert
+      }
+    }
+  }
+  return false; // Keine Kollision
+}
+
 function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
+
+
+  if (checkCollision(nextPosition)) {
+    console.log("Movement blocked due to collision.");
+    return;
+  }
 
   if (currentTime - lastSend > 10) {
     const cameraAngle = camera.rotation.y
@@ -560,8 +609,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     (playerName) =>
       !playerPositions.map((position) => position.playerName).includes(playerName)
   );
-  const snackmanModel= themeStore.currentTheme?.character.snackman;
-  const ghostModel= themeStore.currentTheme?.character.ghost;
+  const snackmanModel = themeStore.currentTheme?.character.snackman;
+  const ghostModel = themeStore.currentTheme?.character.ghost;
 
   missingPlayers.forEach((player) => {
     const objectId = players.get(player);
@@ -580,54 +629,61 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
       loadingPlayers.set(playerPosition.playerName, true);
       let modelPath;
       const playersList = gameStore.gameState.gamedata?.players;
-      let playerData= undefined;
-      if (playersList){
-        for (const player of playersList){
-          if (player.name == playerPosition.playerName){
-            playerData= player;
+      let playerData = undefined;
+      if (playersList) {
+        for (const player of playersList) {
+          if (player.name == playerPosition.playerName) {
+            playerData = player;
             break;
           }
         }
-      }if (playerData?.playerrole == Playerrole.SNACKMAN) {
-          modelPath = snackmanModel;
+      } if (playerData?.playerrole == Playerrole.SNACKMAN) {
+        modelPath = snackmanModel;
       } else {
-          modelPath = ghostModel;
+        modelPath = ghostModel;
       }
-      if (modelPath){
+      if (modelPath) {
         let loadingPath: string;
         let scaleNumber: number
-        if (typeof modelPath === "string"){
-          loadingPath= modelPath;
-          scaleNumber=0.5;
-        }else{
-          loadingPath=modelPath.path;
-          scaleNumber= modelPath.scale;
+        if (typeof modelPath === "string") {
+          loadingPath = modelPath;
+          scaleNumber = 0.5;
+        } else {
+          loadingPath = modelPath.path;
+          scaleNumber = modelPath.scale;
         }
-      modelLoader.load(loadingPath, (gltf) => {
-        const model = gltf.scene;
-        model.scale.set(scaleNumber, scaleNumber,scaleNumber);
-        players.set(playerPosition.playerName, model.id);
-        scene.add(model);
+        modelLoader.load(loadingPath, (gltf) => {
+          const model = gltf.scene;
+          model.scale.set(scaleNumber, scaleNumber, scaleNumber);
+          players.set(playerPosition.playerName, model.id);
+          scene.add(model);
 
-        model.position.set(playerPosition.x, 1, playerPosition.y);
-        model.rotation.y = (playerPosition.angle * Math.PI * 2)+ adjustAngle;
+          const sprite = createNameSprite(playerPosition.playerName);
+          sprite.position.set(playerPosition.x, scaleNumber + 0.3, playerPosition.y);
+          playerNames.set(playerPosition.playerName, sprite);
+          scene.add(sprite);
 
-        loadingPlayers.delete(playerPosition.playerName);
-      });
-    }else{
-      console.error("Kein Modell gefunden für", playerPosition.playerName);
-    }
+          model.position.set(playerPosition.x, 1, playerPosition.y);
+          model.rotation.y = (playerPosition.angle * Math.PI * 2) + adjustAngle;
+
+          loadingPlayers.delete(playerPosition.playerName);
+        });
+      } else {
+        console.error("Kein Modell gefunden für", playerPosition.playerName);
+      }
     } else {
       //Modell updaten
       const index: number | undefined = players.get(playerPosition.playerName)
       if (index) {
         const model = scene.getObjectById(index)
-        if (model) {
+        const sprite = playerNames.get(playerPosition.playerName)
+        if (model && sprite) {
           const messungsBox = new THREE.Box3()
           const breite = new THREE.Vector3()
           messungsBox.getSize(breite)
           messungsBox.expandByObject(model)
           model.position.set(playerPosition.x - breite.x / 2, playerPosition.z, playerPosition.y)
+          sprite.position.set(playerPosition.x, 2.5, playerPosition.y);
           model.rotation.y = playerPosition.angle + adjustAngle
         }
       }
@@ -650,6 +706,34 @@ function renderChicken(chickenPositions: IChickenPositionDTD[]) {
   })
 }
 
+function createNameSprite(playerName: string) {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  const fontSize = 24;
+
+  if (!context) return new THREE.Sprite();
+
+  context.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.font = `bold ${fontSize}px Arial`;
+  context.fillStyle = 'white';
+  context.textAlign = 'center';
+  context.strokeStyle = 'black';
+  context.lineWidth = 6;
+
+  canvas.width = 256;
+  canvas.height = 64;
+  context.fillText(playerName, canvas.width / 2, canvas.height /2);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+  const sprite = new THREE.Sprite(spriteMaterial);
+
+  sprite.scale.set(1.2, 0.5, 1);
+  return sprite;
+}
+
+
 const textureCache = new Map<string, THREE.Texture>();
 
 function getCachedTexture(url: string): THREE.Texture {
@@ -660,7 +744,7 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
-function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
+function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
   const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
   const groundTexture = getCachedTexture(selectedTheme.ground);
@@ -693,7 +777,7 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
     }
     return modelCache.get(url)!;
   }
-  console.log(map)
+
   map.forEach((row, rowIndex) => {
     [...row].forEach((tile, colIndex) => {
       const x = rowIndex + mapOffset;
@@ -743,7 +827,6 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
           // ITEMS SIND SPIEGELVERKEHRT
           loadCachedModel(randomModelPath).then((model) => {
             const item = model.clone(); // Clone to avoid modifying the cached model
-            console.log(randomModelPath)
 
             if (randomModelPath.includes('chocolatebar')) {
               item.position.set(x, 0.75, z);
@@ -787,7 +870,7 @@ function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
   scene.add(wallMesh);
 }
 
-function addSkybox(scene: THREE.Scene, skyBoxPath:string | {right: string; left: string; top: string; bottom: string; front: string; back: string }) {
+function addSkybox(scene: THREE.Scene, skyBoxPath: string | { right: string; left: string; top: string; bottom: string; front: string; back: string }) {
   /*const loader = new GLTFLoader();
   loader.load(
     skyBox,
@@ -805,26 +888,26 @@ function addSkybox(scene: THREE.Scene, skyBoxPath:string | {right: string; left:
   );*/
 
   const loader = new THREE.TextureLoader();
-  if (typeof skyBoxPath === 'string'){
+  if (typeof skyBoxPath === 'string') {
     loader.load(
       skyBoxPath,
-    (texture) => {
-      const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
-      const sphereMaterial = new THREE.MeshBasicMaterial({
-        map: texture,
-        side: THREE.BackSide,
-      });
+      (texture) => {
+        const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.BackSide,
+        });
 
-      const skySphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      scene.add(skySphere);
-      console.log("SkySphere erfolgreich hinzugefügt!");
-    },
-    undefined,
-    (error) => {
-      console.error("Fehler beim Laden der SkySphere-Textur:", error);
-    }
-  );
-  }else{
+        const skySphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(skySphere);
+        console.log("SkySphere erfolgreich hinzugefügt!");
+      },
+      undefined,
+      (error) => {
+        console.error("Fehler beim Laden der SkySphere-Textur:", error);
+      }
+    );
+  } else {
     const materials = [
       new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.right), side: THREE.BackSide }),
       new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.left), side: THREE.BackSide }),
@@ -899,10 +982,10 @@ onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
     const playerName = sessionStorage.getItem('myName');
-        if (playerName) {
-          console.log(playerName)
-          await gameStore.getJumpAllowed(playerName,lobbyId);
-        }
+    if (playerName) {
+      console.log(playerName)
+      await gameStore.getJumpAllowed(playerName, lobbyId);
+    }
 
   } catch (error) {
     console.error('Error fetching game status:', error)
@@ -934,15 +1017,52 @@ onMounted(async () => {
     switch (messageValidation.type) {
       case 'playerMoveValidation':
         const playerPosition: any = messageValidation.feedback
-        console.log(gameStore.gameState.gamedata.playmap)
+
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
-          nextPosition.set(playerPosition.posX,playerPosition.posZ,playerPosition.posY)
+          nextPosition.set(playerPosition.posX, playerPosition.posZ, playerPosition.posY)
           moveCamera();
         }
 
         break
     }
   })
+
+  subscribeTo(`/ingame/PlayerKollision/${lobbyId}`, async (message) => {
+    switch (message.type) {
+
+      case 'collisionValidation': {
+       // tiefe Kopie
+        const previousValues = JSON.parse(JSON.stringify(gameStore.gameState.gamedata.characters));
+        // aktualiesieren
+        gameStore.gameState.gamedata.characters = message.updateCharacters
+        gameStore.gameState.gamedata.winnerRole = message.winnerRole
+
+        // für hit/life feed
+        for (const [name, characterDetails] of Object.entries(gameStore.gameState.gamedata.characters)) {
+          if (name !== currentPlayer.value?.name) {
+            // es soll nur ausgegeben werden wenn sich der wert vom alten unterscheidet und der wert nicht 0 ist
+            if ((characterDetails.life ?? 0) > 0 && (previousValues[name]?.life ?? null) !== characterDetails.life) {
+              showCollisionMessage(`Snackman ${name} has ${characterDetails.life} lifes.`);
+            }
+            if ((characterDetails.touchcount ?? 0) > 0 && (previousValues[name]?.touchcount ?? null) !== characterDetails.touchcount) {
+              showCollisionMessage(`Ghost ${name} has ${characterDetails.touchcount} hits.`);
+            }
+          }
+        }
+        // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
+          if (winnerRole.value !== null) {
+            router.push({ name: 'GameEnd' });
+          }
+        break;
+      }
+
+      default:
+    console.warn("Unerwarteter Nachrichtentyp:", message.type);
+    break;
+  }
+  });
+
+
 
   subscribeTo(`/ingame/${lobbyId}/itemUpdates`, async (message: any) => {
     switch (message.type) {
@@ -961,7 +1081,7 @@ onMounted(async () => {
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
   }
-  map.value= gameStore.gameState.gamedata.playmap?.map;
+  map.value = gameStore.gameState.gamedata.playmap?.map;
   //const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
   // const map = [
   //   '********************',
@@ -986,7 +1106,7 @@ onMounted(async () => {
   //   '********************',
   // ]
   if (map.value && themeStore.currentTheme) {
-    loadMap(map.value,{
+    loadMap(map.value, {
       ground: themeStore.currentTheme.ground,
       wall: themeStore.currentTheme.wall,
     });
@@ -1045,9 +1165,9 @@ watch(
       } else {
         console.error('Keine Map oder kein aktuelles Theme gefunden');
       }
-      if (themeStore.currentTheme.skybox){
+      if (themeStore.currentTheme.skybox) {
         addSkybox(scene, themeStore.currentTheme.skybox);
-      }else{
+      } else {
         console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
       }
     }
@@ -1068,28 +1188,32 @@ watch(
     </div>
     <div id="hud" class="hud absoute text-white font-bold">
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="flex gap-2">
-        <div v-for="index in maxLife" :key="index">
-          <img v-if="index <= life" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40" height="40" />
+        <div v-for="index in snackmanMaxLife" :key="index">
+          <img v-if="index <= snackmanLife" src="../assets/game/realistic/herz.png" alt="Full Heart" width="40"
+            height="40" />
           <img v-else src="../assets/game/realistic/emptyHerz.png" alt="Empty Heart" width="40" height="40" />
         </div>
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-        <p>Points: {{ points }} / {{ maxPoints }}</p>
+        <p>Points: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
       </div>
+      <!-- TouchCountanzeige -->
+      <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
+        <p>Hits: {{ ghostTouch }}</p>
+      </div>
+    </div>
+    <div v-if="collisionMessage" class="fixed bottom-4 left-4 bg-red-400 text-white p-5 rounded-lg shadow-lg z-50">
+      {{ collisionMessage }}
     </div>
   </div>
 
   <!-- Sprung-Ladebalken -->
-  <div
-    id="jumpBarContainer"
+  <div id="jumpBarContainer"
     class="fixed z-50 bottom-10 left-1/2 transform -translate-x-1/2 flex justify-center items-center w-full max-w-[600px] hidden">
     <!-- Ladebalken -->
     <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
-      <div
-        id="jumpBar"
-        class="bg-red-500 h-full transition-all duration-100 ease-in-out"
-        style="width: 0%;">
+      <div id="jumpBar" class="bg-red-500 h-full transition-all duration-100 ease-in-out" style="width: 0%;">
       </div>
     </div>
   </div>
