@@ -58,7 +58,7 @@ onMounted(() => {
       <div class="flex flex-col gap-3">
         <input v-model="newPlayer.name" type="text" name="name" id="name"
           class="block w-full rounded-md mt-2 border-0 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-          placeholder="Passwort eingeben" />
+          placeholder="Username eingeben" />
         <div v-if="modal.inputErrorMessage" class="input-error-message">{{ modal.inputErrorMessage }}</div>
       </div>
       <!-- TODO: überprüfen ob name eingeben worden ist -->
