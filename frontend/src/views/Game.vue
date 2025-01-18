@@ -4,8 +4,6 @@ import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
 import { computed, onMounted, ref, watch } from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
-import ground from '@/assets/game/realistic/ground.png'
-import wall from '@/assets/game/realistic/wall.png'
 import { useGameStore } from '@/stores/game/gamestore'
 import type { IMessageDTD } from '@/stores/game/dtd/IMessageDTD'
 import { sendMessage, subscribeTo } from '@/config/stompWebsocket'
@@ -16,9 +14,11 @@ import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IChickenPositionDTD } from '@/stores/game/dtd/IChickenPositionDTD'
 import Modal from '@/components/Modal.vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole';
+import { useThemeStore } from '@/stores/themes/themeStore';
+
+const themeStore = useThemeStore();
 
 const gameStore = useGameStore()
-
 const route = useRoute()
 const lobbyId = route.params.id.toString()
 
@@ -28,7 +28,7 @@ let lastSend: number = 0
 const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
-
+const map = ref<string[] | undefined>(undefined);
 
 
 //Movement
@@ -43,6 +43,8 @@ let movementSpeed = slowMovementSpeed
 const showSettings = ref(false)
 const musicVolume = ref(50)
 const effectVolume = ref(50)
+const spawnX = ref(1);
+const spawnZ = ref(2);
 
 
 
@@ -56,6 +58,7 @@ let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
 const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
 let isChargingJump = false // Ob der Spieler einen Sprung auflädt
 let isJumping = false // Verhindert doppeltes Springen
+let isValidatingChargeJump = false
 let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
 const gravity = -9.8 // Schwerkraft
 const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
@@ -79,7 +82,6 @@ const currentCharacter = computed(() => {
   if (!myName) return null;
 
   const character = gameStore.gameState.gamedata?.characters[myName] || null;
-  console.log("Current Character:", character);
   return character;
 });
 
@@ -121,7 +123,6 @@ watch(
 const chickenPositions = ref<IChickenPositionDTD[]>([]);
 
 
-
 function addItem(itemName: string) {
   collectedItems.value.push(itemName)
 }
@@ -131,6 +132,7 @@ function createSceneCameraRendererControlsClockListener() {
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.001, 1000)
   camera.position.set(1, 1, 2)
+  camera.rotation.order = "YXZ"
 
   const listener = new THREE.AudioListener();
   camera.add(listener);
@@ -168,7 +170,6 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     } else {
       showSettings.value = false;
     }
-    console.log(showSettings)
   })
 
   window.addEventListener('keydown', (e) => {
@@ -193,12 +194,13 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         movingRight = true
         break
       case 'Space':
-        isChargingJump = true;
-        break
+          if(gameStore.jumpAllowed){
+              isChargingJump = true;
+          }
+        break;
     }
   })
   window.addEventListener('keyup', (e) => {
-    console.log('Losgelasen: ' + e.code)
     switch (e.code) {
       case 'KeyW':
         movingForward = false
@@ -318,129 +320,199 @@ function animate() {
   cameraPositionBewegen(delta)
 }
 
+async function isValidChargeJump(): Promise<boolean> {
+  const restUrl: string = '/api/game';
+  const playerId: string = currentPlayer.value?.name ?? "";
+
+  if (playerId === "") {
+    console.error('Error: Unable to validate charging jump, player ID is missing');
+    return false;
+  }
+
+  try {
+    // Perform the fetch request
+    const response: Response = await fetch(`${restUrl}/ingame/${lobbyId}/${playerId}/isValidChargeJump`);
+
+    // Check if the response is successful
+    if (!response.ok) {
+      console.error('Error: Unable to validate charging jump', response.statusText);
+      return false; // Return false if the backend call fails
+    }
+
+    // Parse the JSON response
+    const isValid: boolean = await response.json();
+    console.log('Charging jump backend validation:', isValid);
+
+    // Return the parsed value
+    return isValid;
+  } catch (error) {
+    console.error('Error while validating charging jump:', error);
+    return false; // Return false in case of an error
+  }
+}
+
 // Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
 function triggerJumpAfterChargeTime(delta: number) {
   if (isChargingJump) {
+    if (isValidatingChargeJump) return
     // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
+
     jumpChargeTime += delta; // Ladezeit hochzählen
 
-    if (jumpChargeTime >= maxJumpChargeTime) {
-      jumpChargeTime = 0; // Ladezeit zurücksetzen
-      // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
-      isChargingJump = false; // Leertaste kann losgelassen werden
-      jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
-      isJumping = true; // Der Spieler springt jetzt
-      console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+    // Der Ladebalken wird hiermit auf dem Bildschirm sichtbar geladen
+    const jumpBarContainer = document.getElementById('jumpBarContainer');
+    if (jumpBarContainer?.classList.contains('hidden')) {
+      jumpBarContainer?.classList.remove('hidden');
     }
 
-  }
-  else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
+
+    if (jumpChargeTime >= maxJumpChargeTime) {
+      isValidatingChargeJump = true;
+      isValidChargeJump().then((valid) => {
+        jumpChargeTime = 0; // Ladezeit zurücksetzen
+        isChargingJump = false; // Leertaste kann losgelassen werden
+        if (valid) {
+          // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
+          jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
+          isJumping = true; // Der Spieler springt jetzt
+          console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+        }
+        isValidatingChargeJump = false;
+      })
+    }
+  } else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
     jumpChargeTime = 0;
     jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
     isJumping = true; // Sprung aktivieren
     console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
-
   }
+  // Wichtig für den Sprung Ladebalken
+  updateJumpBar();
+
 
 }
 
-function cameraPositionBewegen(delta: number) {
-  const cameraViewDirection = new THREE.Vector3()
-  camera.getWorldDirection(cameraViewDirection)
+function calculateMovementDirection(
+  cameraViewDirection: THREE.Vector3,
+  yPlaneVector: THREE.Vector3,
+  delta: number
+): THREE.Vector3 {
+  const movementVector = new THREE.Vector3();
 
-  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
-  cameraViewDirection.y = 0
-  cameraViewDirection.normalize()
+  // Forward/backward movement
+  if (movingForward && !movingBackward) {
+    if (movingRight && !movingLeft) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
+        movementSpeed * delta
+      );
+    } else if (movingLeft && !movingRight) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 4),
+        movementSpeed * delta
+      );
+    } else {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, 2 * Math.PI),
+        movementSpeed * delta
+      );
+    }
+  } else if (movingBackward && !movingForward) {
+    if (movingRight && !movingLeft) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
+        movementSpeed * delta
+      );
+    } else if (movingLeft && !movingRight) {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
+        movementSpeed * delta
+      );
+    } else {
+      movementVector.addScaledVector(
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI),
+        movementSpeed * delta
+      );
+    }
+  } else if (movingRight && !movingLeft) {
+    movementVector.addScaledVector(
+      cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
+      movementSpeed * delta
+    );
+  } else if (movingLeft && !movingRight) {
+    movementVector.addScaledVector(
+      cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 2),
+      movementSpeed * delta
+    );
+  }
 
-  const yPlaneVector = new THREE.Vector3(0, 1, 0)
+  return movementVector;
+}
 
-  nextPosition = camera.position.clone()
-  // Sprungberechnung
+function updateJumpBar() {
+  const jumpBar = document.getElementById("jumpBar");
+  const progress = Math.min((jumpChargeTime / maxJumpChargeTime) * 100, 100); // Prozent
+
+  if (jumpBar){
+
+    jumpBar.style.width = `${progress}%`; // Breite Balken setzen
+
+  }
+  // Ladebalken soll nicht sichtbar sein, wenn man nicht springt
+  if (progress === 0) {
+    const jumpBarContainer = document.getElementById('jumpBarContainer');
+    if (!jumpBarContainer?.classList.contains('hidden')) {
+      jumpBarContainer?.classList.add('hidden');
+    }
+  }
+}
+
+function applyJumpLogic(delta: number, nextPosition: THREE.Vector3) {
   if (isJumping) {
-    jumpVelocity += gravity * delta // Beschleunigung durch Schwerkraft
-    nextPosition.y += jumpVelocity * delta
-    validatePosition(nextPosition)
-    camera.position.y = nextPosition.y;
+    jumpVelocity += gravity * delta; // Beschleunigung durch Schwerkraft
+    nextPosition.y += jumpVelocity * delta;
 
     // Bodenberührung
     if (nextPosition.y <= 1) {
-      nextPosition.y = 1
-      validatePosition(nextPosition)
-      camera.position.y = nextPosition.y;
-      jumpVelocity = 0
-      isJumping = false
-      jumpChargeTime = 0
+      nextPosition.y = 1;
+      jumpVelocity = 0;
+      isJumping = false;
+      jumpChargeTime = 0;
     }
-  }
-  // Setze die Y-Position unabhängig vom Rest
-  camera.position.y = nextPosition.y;
-
-  if (movingForward || movingBackward || movingLeft || movingRight) {
-    if (!walkingSound.isPlaying) {
-      walkingSound.play()
-    }
-    if (movingForward) {
-      if (movingRight) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingLeft) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingBackward) {
-        //foward und backward canceln sich
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, 2 * Math.PI),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingBackward) {
-      if (movingRight) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else if (movingLeft) {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
-          movementSpeed * delta,
-        )
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingRight) {
-      if (movingLeft) {
-        //right und left canceln sich
-      } else {
-        nextPosition.addScaledVector(
-          cameraViewDirection.applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
-          movementSpeed * delta,
-        )
-      }
-    } else if (movingLeft) {
-      nextPosition.addScaledVector(
-        cameraViewDirection.applyAxisAngle(yPlaneVector, Math.PI / 2),
-        movementSpeed * delta,
-      )
-    }
-    validatePosition(nextPosition)
-  }
-  else {
-    if (walkingSound.isPlaying) {
-      walkingSound.pause()
-    }
-  }
-
-  // Überprüfe und führe den Sprung aus, wenn nötig
-  if (!isJumping) {
+  } else {
     triggerJumpAfterChargeTime(delta);
+  }
+}
+
+function cameraPositionBewegen(delta: number) {
+  const cameraViewDirection = new THREE.Vector3();
+  camera.getWorldDirection(cameraViewDirection);
+
+  // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
+  cameraViewDirection.y = 0;
+  cameraViewDirection.normalize();
+
+  const yPlaneVector = new THREE.Vector3(0, 1, 0);
+  nextPosition = camera.position.clone();
+
+  // Apply jumping logic
+  applyJumpLogic(delta, nextPosition);
+
+  // Apply movement logic
+  const movementVector = calculateMovementDirection(cameraViewDirection, yPlaneVector, delta);
+  nextPosition.add(movementVector);
+
+  // Validate position
+  validatePosition(nextPosition);
+
+  // Update camera position
+  camera.position.copy(nextPosition);
+
+  // Handle walking sound
+  if (movementVector.length() > 0) {
+    if (!walkingSound.isPlaying) walkingSound.play();
+  } else {
+    if (walkingSound.isPlaying) walkingSound.pause();
   }
 }
 
@@ -448,12 +520,13 @@ function validatePosition(nextPosition: THREE.Vector3) {
   const currentTime: number = Date.now()
 
   if (currentTime - lastSend > 10) {
+    const cameraAngle = camera.rotation.y
     sendMessage(`/topic/ingame/${lobbyId}/playerPosition`, {
       playerName: sessionStorage.getItem('myName'),
       posX: nextPosition.x,
       posY: nextPosition.z,
       posZ: nextPosition.y,
-      angle: camera.rotation.z,
+      angle: cameraAngle,
     })
     lastSend = currentTime
   }
@@ -480,7 +553,6 @@ function removeModel(object: THREE.Object3D) {
 }
 
 function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
-  console.log('INSIDE RENDER: ', playerPositions)
 
   const modelLoader = new GLTFLoader();
   const adjustAngle = Math.PI;
@@ -488,6 +560,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
     (playerName) =>
       !playerPositions.map((position) => position.playerName).includes(playerName)
   );
+  const snackmanModel= themeStore.currentTheme?.character.snackman;
+  const ghostModel= themeStore.currentTheme?.character.ghost;
 
   missingPlayers.forEach((player) => {
     const objectId = players.get(player);
@@ -502,21 +576,47 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
 
   playerPositions.forEach(async (playerPosition) => {
     if (!players.has(playerPosition.playerName) && !loadingPlayers.get(playerPosition.playerName)) {
-      const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
-
+      //const snackmanModelURL = new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       loadingPlayers.set(playerPosition.playerName, true);
-
-      modelLoader.load(snackmanModelURL, (gltf) => {
+      let modelPath;
+      const playersList = gameStore.gameState.gamedata?.players;
+      let playerData= undefined;
+      if (playersList){
+        for (const player of playersList){
+          if (player.name == playerPosition.playerName){
+            playerData= player;
+            break;
+          }
+        }
+      }if (playerData?.playerrole == Playerrole.SNACKMAN) {
+          modelPath = snackmanModel;
+      } else {
+          modelPath = ghostModel;
+      }
+      if (modelPath){
+        let loadingPath: string;
+        let scaleNumber: number
+        if (typeof modelPath === "string"){
+          loadingPath= modelPath;
+          scaleNumber=0.5;
+        }else{
+          loadingPath=modelPath.path;
+          scaleNumber= modelPath.scale;
+        }
+      modelLoader.load(loadingPath, (gltf) => {
         const model = gltf.scene;
-        model.scale.set(0.5, 0.5, 0.5);
+        model.scale.set(scaleNumber, scaleNumber,scaleNumber);
         players.set(playerPosition.playerName, model.id);
         scene.add(model);
 
         model.position.set(playerPosition.x, 1, playerPosition.y);
-        model.rotation.y = playerPosition.angle + adjustAngle;
+        model.rotation.y = (playerPosition.angle * Math.PI * 2)+ adjustAngle;
 
         loadingPlayers.delete(playerPosition.playerName);
       });
+    }else{
+      console.error("Kein Modell gefunden für", playerPosition.playerName);
+    }
     } else {
       //Modell updaten
       const index: number | undefined = players.get(playerPosition.playerName)
@@ -560,11 +660,11 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
-function loadMap(map: string[]) {
+function loadMap(map: string[],selectedTheme :{ground: string; wall:string}) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
-  const wallGeometry = new THREE.BoxGeometry(1, 2, 1);
-  const groundTexture = getCachedTexture(ground);
-  const wallTexture = getCachedTexture(wall);
+  const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
+  const groundTexture = getCachedTexture(selectedTheme.ground);
+  const wallTexture = getCachedTexture(selectedTheme.wall);
   const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
   const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
 
@@ -601,7 +701,7 @@ function loadMap(map: string[]) {
 
       switch (tile) {
         case '*': // Wall
-          const wallMatrix = new THREE.Matrix4().makeTranslation(x, 1.5, z);
+          const wallMatrix = new THREE.Matrix4().makeTranslation(x, 1, z);
           wallMesh.setMatrixAt(wallIndex++, wallMatrix);
           break;
 
@@ -687,6 +787,60 @@ function loadMap(map: string[]) {
   scene.add(wallMesh);
 }
 
+function addSkybox(scene: THREE.Scene, skyBoxPath:string | {right: string; left: string; top: string; bottom: string; front: string; back: string }) {
+  /*const loader = new GLTFLoader();
+  loader.load(
+    skyBox,
+    (gltf) => {
+      console.log("Skybox GLB erfolgreich geladen:", skyBox);
+      const sky = gltf.scene;
+      sky.scale.set(100,100,100);
+      sky.position.set(0,0,0);
+      scene.add(sky);
+    },
+    undefined,
+    (error) => {
+      console.error("Fehler beim Laden der Skybox GLB:", error);
+    }
+  );*/
+
+  const loader = new THREE.TextureLoader();
+  if (typeof skyBoxPath === 'string'){
+    loader.load(
+      skyBoxPath,
+    (texture) => {
+      const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+      const sphereMaterial = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.BackSide,
+      });
+
+      const skySphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      scene.add(skySphere);
+      console.log("SkySphere erfolgreich hinzugefügt!");
+    },
+    undefined,
+    (error) => {
+      console.error("Fehler beim Laden der SkySphere-Textur:", error);
+    }
+  );
+  }else{
+    const materials = [
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.right), side: THREE.BackSide }),
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.left), side: THREE.BackSide }),
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.top), side: THREE.BackSide }),
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.bottom), side: THREE.BackSide }),
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.front), side: THREE.BackSide }),
+      new THREE.MeshBasicMaterial({ map: loader.load(skyBoxPath.back), side: THREE.BackSide }),
+    ];
+
+    const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500); // Größe des Skybox-Würfels
+    const skybox = new THREE.Mesh(skyboxGeometry, materials);
+    skybox.position.set(0, 0, 0);
+    scene.add(skybox);
+  }
+}
+
 function loadMapFromLocalStorage(): string[] | null {
   const savedMap = localStorage.getItem(`gameMap-${lobbyId}`);
   if (savedMap) {
@@ -735,12 +889,27 @@ function removeItemFromSceneByPosition(posX: number, posY: number) {
   }
 }
 
+watch([spawnX, spawnZ], ([newX, newZ]) => {
+      if (camera) {
+        camera.position.z = newZ;
+        camera.position.x = newX;
+      }
+    });
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
+    const playerName = sessionStorage.getItem('myName');
+        if (playerName) {
+          console.log(playerName)
+          await gameStore.getJumpAllowed(playerName,lobbyId);
+        }
+
   } catch (error) {
     console.error('Error fetching game status:', error)
   }
+  const spawnPoints = gameStore.gameState.gamedata.spawnPoints;
+  console.log("SPAWNS: ", spawnPoints)
 
   if (gameStore.gameState.gamedata.chickens === null) {
     chickenPositions.value = []
@@ -757,21 +926,18 @@ onMounted(async () => {
   subscribeTo(`/ingame/playerPositions/${lobbyId}`, async (message: any) => {
     switch (message.type) {
       case 'playerPosition':
-        console.log('FROM PLAYER POSITON: ', message.feedback)
         await handleCharacters(message.feedback)
         break
     }
   })
 
   subscribeTo(`/ingame/${lobbyId}`, async (messageValidation: IMessageDTD) => {
-    console.log(messageValidation.type)
     switch (messageValidation.type) {
       case 'playerMoveValidation':
         const playerPosition: any = messageValidation.feedback
         console.log(gameStore.gameState.gamedata.playmap)
         if (playerPosition.playerName === sessionStorage.getItem('myName')) {
-          console.log(playerPosition)
-          nextPosition.set(playerPosition.posX, playerPosition.posZ, playerPosition.posY)
+          nextPosition.set(playerPosition.posX,playerPosition.posZ,playerPosition.posY)
           moveCamera();
         }
 
@@ -796,7 +962,8 @@ onMounted(async () => {
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
   }
-  const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
+  map.value= gameStore.gameState.gamedata.playmap?.map;
+  //const map: string[] | undefined = gameStore.gameState.gamedata.playmap?.map
   // const map = [
   //   '********************',
   //   '*    *     *       *',
@@ -819,12 +986,20 @@ onMounted(async () => {
   //   '****************** *',
   //   '********************',
   // ]
-  if (map) {
-    loadMap(map)
+  if (map.value && themeStore.currentTheme) {
+    loadMap(map.value,{
+      ground: themeStore.currentTheme.ground,
+      wall: themeStore.currentTheme.wall,
+    });
   } else {
     console.error('No map found')
   }
-
+  if (themeStore.currentTheme.skybox) {
+    addSkybox(scene, themeStore.currentTheme.skybox);
+    console.log("Skybox-Pfade:", themeStore.currentTheme.skybox);
+  } else {
+    console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
+  }
   const mockPositions: IPlayerPositionDTD[] = [
     {
       playerName: 'test',
@@ -843,7 +1018,42 @@ onMounted(async () => {
   ]
   renderChicken(chickenPositions.value)
   animate()
+  if(spawnPoints !== null){
+    spawnPoints.forEach(spawnPoint => {
+      if(sessionStorage.getItem('myName') == spawnPoint.playerName){
+        spawnX.value = Number(spawnPoint.x);
+        spawnZ.value = Number(spawnPoint.y);
+      }
+    })
+  }
 })
+watch(
+  () => themeStore.selectedTheme,
+  (newTheme) => {
+    if (newTheme) {
+      console.log(`Theme geändert zu: ${newTheme}`);
+      const currentTheme = themeStore.currentTheme;
+      //console.log(`Ändere Skybox zu: ${themeStore.currentTheme.sky}`);
+      //addSkybox(scene, themeStore.currentTheme.sky); // Dynamisch Skybox ändern
+      //console.log("Skybox-Pfad:", themeStore.currentTheme.sky);
+
+      // Map neu laden, falls vorhanden
+      if (map.value && currentTheme) {
+        loadMap(map.value, {
+          ground: currentTheme.ground,
+          wall: currentTheme.wall,
+        });
+      } else {
+        console.error('Keine Map oder kein aktuelles Theme gefunden');
+      }
+      if (themeStore.currentTheme.skybox){
+        addSkybox(scene, themeStore.currentTheme.skybox);
+      }else{
+        console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
+      }
+    }
+  }
+);
 
 </script>
 
@@ -871,7 +1081,19 @@ onMounted(async () => {
     </div>
   </div>
 
-
+  <!-- Sprung-Ladebalken -->
+  <div
+    id="jumpBarContainer"
+    class="fixed z-50 bottom-10 left-1/2 transform -translate-x-1/2 flex justify-center items-center w-full max-w-[600px] hidden">
+    <!-- Ladebalken -->
+    <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
+      <div
+        id="jumpBar"
+        class="bg-red-500 h-full transition-all duration-100 ease-in-out"
+        style="width: 0%;">
+      </div>
+    </div>
+  </div>
 
   <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">

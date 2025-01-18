@@ -46,6 +46,24 @@ public class GameService {
         return gameList.get(gameId);
     }
 
+    public void setSelectedTheme(String lobbyid, String theme){
+        Game existingGame = gameList.get(lobbyid);
+
+        if(existingGame != null){
+            existingGame.setSelectedTheme(theme);
+        }
+    }
+
+    public String getSelectedTheme(String lobbyid){
+        Game existingGame = gameList.get(lobbyid);
+
+        if(existingGame != null){
+            return existingGame.getSelectedTheme();
+        }
+
+        return "realistic";
+    }
+
     public Game createGame(Player gamemaster){
         Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio);
         gameList.put(newGame.getId(), newGame);
@@ -87,7 +105,32 @@ public class GameService {
 
         game.leaveGame(player);
 
+        if(game.getPlayers().isEmpty()){
+            gameList.remove(gameId);
+            game = null;
+        }
+
         return game;
+    }
+
+    public Boolean isJumpAllowed(String gameId, String playerName){
+
+        Game curGame = gameList.get(gameId);
+        Player curPlayer = curGame.getPlayers().stream()
+                                                .filter(p -> p.getName().equals(playerName))
+                                                .findFirst()
+                                                .orElse(null);
+
+        if(curPlayer != null){
+            if(curPlayer.getPlayerrole() == PlayerRole.GHOST){
+                return false;
+            }else{
+                return true;
+            }
+        }
+
+        return false;
+
     }
 
     public Game joinGame(String gameId, Player player){

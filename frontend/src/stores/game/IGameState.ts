@@ -16,6 +16,7 @@ export const emptyGame: IGameState = {
     started: false,
     playmap: undefined,
     password: null,
-     characters: {},
+    characters: {},
+    spawnPoints: [],
   },
 }

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Campfire Santa
+* source:	https://sketchfab.com/3d-models/campfire-santa-500b80b83dd8443ba5ef1cd9900d5c77
+* author:	Kapao (https://sketchfab.com/supachailllpay)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Campfire Santa" (https://sketchfab.com/3d-models/campfire-santa-500b80b83dd8443ba5ef1cd9900d5c77) by Kapao (https://sketchfab.com/supachailllpay) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

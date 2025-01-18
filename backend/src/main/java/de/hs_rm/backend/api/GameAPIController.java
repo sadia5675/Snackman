@@ -2,7 +2,6 @@ package de.hs_rm.backend.api;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,7 +13,6 @@ import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
@@ -27,11 +25,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,9 +38,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.python.util.PythonInterpreter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * REST controller for managing game-related operations.
@@ -143,6 +136,35 @@ public class GameAPIController {
         return createOkResponse(existingGame);
     }
 
+    @PostMapping("/{lobbyId}/selectedTheme")
+    public ResponseEntity<Map<String, String>> checkSelectedTheme(@PathVariable String lobbyId){
+        return ResponseEntity.ok(Map.of("selectedTheme", gameService.getSelectedTheme(lobbyId)));
+    }
+    @MessageMapping("/topic/game/{lobbyId}/setTheme")
+    @SendTo("/topic/game/{lobbyId}")
+    public Map<String, Object> setTheme(@DestinationVariable String lobbyId, @RequestBody Map<String, String> theme) {
+        gameService.setSelectedTheme(lobbyId, theme.get("themeName"));
+        messagingService.sendThemeUpdate(lobbyId, theme.get("themeName"));
+        return Map.of(
+            "type", "themeUpdate",
+            "status", "ok",
+            "feedback", theme.get("themeName")
+        );
+    }
+
+    @MessageMapping("/topic/game/{lobbyId}/setMap")
+    @SendTo("/topic/game/{lobbyId}")
+    public Map<String, Object> setMap(
+            @DestinationVariable String lobbyId,
+            @RequestBody Map<String, String> map) {
+        messagingService.sendMapUpdate(lobbyId, map.get("mapName"));
+        return Map.of(
+            "type", "mapUpdate",
+            "status", "ok",
+            "feedback", map.get("mapName")
+        );
+    }
+    
     @MessageMapping("/topic/game/{lobbyid}/start/{selectedMapName}")
     @SendTo("/topic/game/{lobbyid}")
     public void startGameViaStomp(
@@ -234,12 +256,13 @@ public class GameAPIController {
 
             // Spieler aus dem Spiel entfernen
             existingGame = gameService.leaveGame(lobbyid, player);
-            logger.info("Player: {}, left game: {}", player.getName(), lobbyid);
+            if(existingGame == null){
+                return;
+            }
 
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
-
             messagingService.sendPlayerList(lobbyid, response);
 
         } catch (GameLeaveException e) {
@@ -255,7 +278,10 @@ public class GameAPIController {
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
 
-        // Zum Testen logik um Spieler zu bewegen fehlt noch
+        //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
+        float offset = 0.005f;
+
+        //Zum Testen logik um Spieler zu bewegen fehlt noch
 
         HashMap<String, Object> validationResponse = new HashMap<>();
         HashMap<String, Object> response = new HashMap<>();
@@ -277,21 +303,17 @@ public class GameAPIController {
         // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
         // 4 Himmelsrichtungen)
         if (!validMove) {
-            if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(),
-                    position.getPosZ(), position.getAngle())) {
-                position.setPosX((float) Math.round(position.getPosX()));
+            if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
+                position.setPosX((float) (Math.round(position.getPosX()) + offset));
                 validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()),
-                    position.getPosZ(), position.getAngle())) {
-                position.setPosY((float) Math.round(position.getPosY()));
+            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
+                position.setPosY((float) (Math.round(position.getPosY()) + offset));
                 validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - 0.0001,
-                    position.getPosY(), position.getPosZ(), position.getAngle())) {
-                position.setPosX((float) (Math.floor(position.getPosX()) - 0.0001));
+            } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
+                position.setPosX((float) (Math.floor(position.getPosX()) - offset));
                 validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), position.getPosX(),
-                    Math.floor(position.getPosY()) - 0.0001, position.getPosZ(), position.getAngle())) {
-                position.setPosY((float) (Math.floor(position.getPosY()) - 0.0001));
+            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
+                position.setPosY((float) (Math.floor(position.getPosY()) - offset));
                 validMove = true;
             }
         }
@@ -338,6 +360,23 @@ public class GameAPIController {
         }
 
     }
+
+    @PostMapping("/{gameId}/jumpAllowed")
+    public ResponseEntity<Map<String, Boolean>> checkJumpAllowed(
+            @PathVariable String gameId,
+            @RequestBody Map<String, String> requestBody) {
+
+        String playerName = requestBody.get("name");
+        if (playerName == null || playerName.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("jumpAllowed", false)); 
+        }
+        boolean isJumpAllowed = gameService.isJumpAllowed(gameId, playerName);
+
+        return ResponseEntity.ok(Map.of("jumpAllowed", isJumpAllowed));
+    }
+
+    
 
     // Method to end the game
     @PostMapping("/end/{gameId}")
@@ -399,6 +438,21 @@ public class GameAPIController {
         }
 
         return createOkResponse(existingGame);
+    }
+
+    @GetMapping("/ingame/{gameId}/{playerId}/isValidChargeJump")
+    public ResponseEntity<?> isValidChargeJump(
+            @PathVariable String gameId,
+            @PathVariable String playerId
+    ) {
+        Game existingGame = gameService.getGameById(gameId);
+        if (existingGame == null) {
+            return createErrorResponse("No game found.");
+        }
+
+        boolean isValid = existingGame.isValidChargeJump(playerId);
+
+        return ResponseEntity.ok(isValid);
     }
 
     // Retrieve the game status

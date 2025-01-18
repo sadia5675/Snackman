@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket';
-import { type Reactive, reactive } from "vue";
+import { type Reactive, reactive, ref } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
 import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
@@ -10,6 +10,8 @@ import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
 import type {Result} from "@/stores/game/responses/Result";
+import { useThemeStore } from "@/stores/themes/themeStore";
+import { useMapStore } from "@/stores/map/MapStore";
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -20,10 +22,26 @@ export const useGameStore = defineStore('gameStore', () => {
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore()
 
+  const jumpAllowed = ref(false);
+
   const router = useRouter();
 
   function handleGameStateError() {
     resetGameState()
+  }
+
+  async function getJumpAllowed(name: string, lobbyid: string) {
+    const playerName = sessionStorage.getItem('myName')
+    const response = await fetch(`${restUrl}/${lobbyid}/jumpAllowed`,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    })
+
+    const result: any = await response.json()
+    jumpAllowed.value = result.jumpAllowed;
   }
 
   function resetGameState() {
@@ -357,7 +375,29 @@ export const useGameStore = defineStore('gameStore', () => {
             break
           case 'gameStart':
             gameState.gamedata = message.feedback as IGameDTD
+            console.log(gameState)
             break
+            case 'themeUpdate':
+              const themeStore = useThemeStore()
+              const newTheme = message.feedback as string
+              if (themeStore.themes[newTheme]) {
+                themeStore.selectedTheme = newTheme
+                console.log(`Theme updated to: ${newTheme}`)
+              } else {
+                console.error('Received invalid theme:', newTheme)
+              }
+              break
+            case'mapUpdate':
+              const mapStore = useMapStore();
+              const newMapName = message.feedback;
+              const updatedMap = mapStore.mapsDTD.maps.find(map => map.name === newMapName);
+              if (updatedMap) {
+                mapStore.mapsDTD.selectedMap = updatedMap;
+                console.log(`Map updated to: ${updatedMap.name}`);
+              } else {
+                console.error('Received invalid map:', newMapName);
+              }
+              break;
           case 'playerMoveValidation':
             console.log("test")
           default:
@@ -389,6 +429,7 @@ export const useGameStore = defineStore('gameStore', () => {
 
   return {
     gameState,
+    jumpAllowed,
     createGame,
     startGameViaStomp,
     endGame,
@@ -401,7 +442,8 @@ export const useGameStore = defineStore('gameStore', () => {
     setPlayerRole,
     setPlayerRoleViaStomp,
     closeTab,
-    isGamePrivate
+    isGamePrivate,
+    getJumpAllowed,
   }
 })
 
