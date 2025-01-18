@@ -1017,8 +1017,8 @@ onMounted(async () => {
   if(spawnPoints !== null){
     spawnPoints.forEach(spawnPoint => {
       if(sessionStorage.getItem('myName') == spawnPoint.playerName){
-        spawnX.value = Number(spawnPoint.posX);
-        spawnZ.value = Number(spawnPoint.posY);
+        spawnX.value = Number(spawnPoint.x);
+        spawnZ.value = Number(spawnPoint.y);
       }
     })
   }
