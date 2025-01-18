@@ -2,6 +2,7 @@ import type { IPlayerDTD } from '@/stores/game/dtd/IPlayerDTD'
 import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
 import type { ICharacterDTD } from '@/stores/game/dtd/ICharacterDTD'
 import type { IPlayerPositionDTD } from './IPlayerPositionDTD'
+import type { ISpawnPointsDTD } from './ISpawnPointsDTD'
 
 
 export interface IGameDTD {
@@ -16,7 +17,7 @@ export interface IGameDTD {
     width: number
     height: number
   }
-  spawnPoints: IPlayerPositionDTD[];
+  spawnPoints: ISpawnPointsDTD[];
   maxPointsSnackman?: number,
   characters: Record<string, ICharacterDTD>,
 }

@@ -131,7 +131,7 @@ function createSceneCameraRendererControlsClockListener() {
   const scene = new THREE.Scene()
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.outerWidth, 0.001, 1000)
-  camera.position.set(1, 1, 2)
+  //camera.position.set(1, 1, 2)
   camera.rotation.order = "YXZ"
 
   const listener = new THREE.AudioListener();
@@ -890,9 +890,10 @@ function removeItemFromSceneByPosition(posX: number, posY: number) {
 }
 
 watch([spawnX, spawnZ], ([newX, newZ]) => {
+  console.log("INSIDE WATCH")
       if (camera) {
-        camera.position.z = newZ;
-        camera.position.x = newX;
+        console.log("INSIDE IF: ",newX, newZ)
+        camera.position.set(newX,1,newZ);
       }
     });
 
@@ -1016,16 +1017,17 @@ onMounted(async () => {
       angle: 2 * Math.PI,
     },
   ]
-  renderChicken(chickenPositions.value)
-  animate()
-  if(spawnPoints !== null){
+  if(spawnPoints != null){
     spawnPoints.forEach(spawnPoint => {
       if(sessionStorage.getItem('myName') == spawnPoint.playerName){
-        spawnX.value = Number(spawnPoint.x);
-        spawnZ.value = Number(spawnPoint.y);
+        spawnX.value = Number(spawnPoint.posX);
+        spawnZ.value = Number(spawnPoint.posY);
+        console.log("INSIDE SPAWNPOITN VALUE SET")
       }
     })
   }
+  renderChicken(chickenPositions.value)
+  animate()
 })
 watch(
   () => themeStore.selectedTheme,
