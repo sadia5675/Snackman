@@ -65,6 +65,26 @@ const gravity = -9.8 // Schwerkraft
 const minJumpSpeed = 6 // Startgeschwindigkeit des kleinen Sprung
 const maxJumpSpeed = 15 //Geschwindigkeit für großen Sprung
 
+// Controller-Index (wenn ein Controller verbunden ist)
+let controllerIndex: number | null = null;
+
+// Deadzone für die Achsen, um kleine Bewegungen zu ignorieren
+const deadzone = 0.2;
+
+// Event-Listener für Controller-Verbindung
+window.addEventListener("gamepadconnected", (event) => {
+  console.log("Controller verbunden:", event.gamepad.id);
+  controllerIndex = event.gamepad.index;
+});
+
+// Event-Listener für Controller-Trennung
+window.addEventListener("gamepaddisconnected", (event) => {
+  console.log("Controller getrennt:", event.gamepad.id);
+  if (controllerIndex === event.gamepad.index) {
+    controllerIndex = null;
+  }
+});
+
 function lockPointer() {
   pointerLockControls.lock();
   pointerLockControls.isLocked = true;
@@ -245,6 +265,52 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
   })
 }
 
+// Funktion zur Abfrage der Gamepad-Eingaben
+function handleGamepadInput(delta: number) {
+  if (controllerIndex !== null) {
+    const gamepad = navigator.getGamepads()[controllerIndex];
+    if (gamepad) {
+      // Rechter Joystick (Axes 2 und 3)
+      const rightStickX = gamepad.axes[2]; // Horizontal (Rotation Y)
+      const rightStickY = gamepad.axes[3]; // Vertikal (Rotation X oder Zoom)
+
+      // Rotation der Kamera (Y-Achse, Horizontal)
+      camera.rotation.y -= rightStickX * delta * 2.5; // Empfindlichkeit anpassen
+
+      // Optional: Vertikale Kamera-Rotation
+      const maxVerticalAngle = Math.PI / 4; // Begrenze vertikale Rotation (z.B. +/- 45°)
+      camera.rotation.x = Math.max(
+        -maxVerticalAngle,
+        Math.min(maxVerticalAngle, camera.rotation.x - rightStickY * delta * 2.5)
+      );
+    }
+  }
+}
+
+
+function updateGamepadInput() {
+  if (controllerIndex === null) return;
+
+  const gamepad = navigator.getGamepads()[controllerIndex];
+  if (!gamepad) return;
+
+  // Bewegungen (linker Stick)
+  const deadzone = 0.2;
+  const leftStickX = gamepad.axes[0]; // Linker Stick X
+  const leftStickY = gamepad.axes[1]; // Linker Stick Y
+
+  movingForward = leftStickY < -deadzone;
+  movingBackward = leftStickY > deadzone;
+  movingLeft = leftStickX < -deadzone;
+  movingRight = leftStickX > deadzone;
+
+  // Springen (X-Taste)
+  isChargingJump = gamepad.buttons[0].pressed; // Button 0 = Kreuz (X auf PS5)
+
+  console.log(`Bewegen: Vor:${movingForward}, Zurück:${movingBackward}, Links:${movingLeft}, Rechts:${movingRight}`);
+  console.log(`Springen: ${isChargingJump}`);
+}
+
 //Diese Funktion lädt die Hintergrundmusik
 function loadMusic() {
   const audioLoader = new THREE.AudioLoader();
@@ -339,9 +405,12 @@ function animate() {
     item.rotation.y += 0.01
   })
 
+
   renderer.render(scene, camera)
   const delta = clock.getDelta()
   cameraPositionBewegen(delta)
+      // Gamepad-Eingaben verarbeiten
+      handleGamepadInput(delta);
 }
 
 async function isValidChargeJump(): Promise<boolean> {
@@ -374,6 +443,9 @@ async function isValidChargeJump(): Promise<boolean> {
     return false; // Return false in case of an error
   }
 }
+
+
+
 
 // Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
 function triggerJumpAfterChargeTime(delta: number) {
@@ -511,7 +583,7 @@ function applyJumpLogic(delta: number, nextPosition: THREE.Vector3) {
 function cameraPositionBewegen(delta: number) {
   const cameraViewDirection = new THREE.Vector3();
   camera.getWorldDirection(cameraViewDirection);
-
+  updateGamepadInput()
   // Ignoriere die Y-Komponente, um nur die X-Z-Ebene zu berücksichtigen
   cameraViewDirection.y = 0;
   cameraViewDirection.normalize();
