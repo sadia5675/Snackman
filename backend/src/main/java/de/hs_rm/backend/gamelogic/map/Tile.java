@@ -2,6 +2,7 @@ package de.hs_rm.backend.gamelogic.map;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 public class Tile {
     private TileType type;
     List<Item> itemList;
-    List<Character> characterList;
+    ConcurrentHashMap<String, Character> characterList;
     List<Chicken> chickenList;
 
     boolean itemWasRecentlyCollected = false;
@@ -27,7 +28,7 @@ public class Tile {
     public Tile(TileType type) {
         this.type = type;
         itemList = new ArrayList<>();
-        characterList = new ArrayList<>();
+        characterList = new ConcurrentHashMap<>();
     }
 
     public boolean hasItem() {
@@ -50,7 +51,7 @@ public class Tile {
      * @param character
      * @return true wenn Charakter erfolgreich rein kommt und ggfs. Item nehmen
      */
-    public boolean addCharacter(Character character) {
+    public boolean addCharacter(String username, Character character) {
         for (int i = 0; i < itemList.size(); i++) {
             Item item = itemList.get(i);
             logger.info("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
@@ -58,7 +59,12 @@ public class Tile {
         }
 
 
-        this.characterList.add(character);
+        if(!this.characterList.containsKey(username)){
+            this.characterList.put(username, character);
+            logger.info("ADDED CHAR: {} {}, LIST : {}", username, character, this.characterList);
+        }
+
+
         checkCharacterCollision(character);
         return true;
     }
@@ -99,7 +105,7 @@ public class Tile {
         // TODO: Kollision zwischen Ghost und Snackman
         if(character instanceof Snackman ){
             Snackman snackman = (Snackman) character;
-        for (Character currentCharacter:characterList){
+        for (Character currentCharacter:characterList.values()){
             if (currentCharacter instanceof Ghost) {
                 Ghost ghost = (Ghost) currentCharacter;
                 if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
@@ -112,7 +118,7 @@ public class Tile {
         }
         else if(character instanceof Ghost ){
             Ghost ghost = (Ghost) character;
-            for (Character currentCharacter:characterList){
+            for (Character currentCharacter:characterList.values()){
                 if (currentCharacter instanceof Snackman) {
                     Snackman snackman = (Snackman) currentCharacter;
                     if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
@@ -140,12 +146,10 @@ public class Tile {
         return true;
     }
 
-    public boolean removeCharacter(Character character) {
-        if (characterList != null && characterList.contains(character)) {
-            characterList.remove(character);
-            return true;
-        }
-        return false;
+    public boolean removeCharacter(String username) {
+        characterList.remove(username);
+        return true;
+
     }
 
     public List<Item> getItemList() {
@@ -164,11 +168,11 @@ public class Tile {
         this.type = type;
     }
 
-    public List<Character> getCharacterList() {
-        return characterList;
+    public ConcurrentHashMap<String, Character> getCharacterList() {
+        return this.characterList;
     }
 
-    public void setCharacterList(List<Character> characterList) {
+    public void setCharacterList(ConcurrentHashMap<String,Character> characterList) {
         this.characterList = characterList;
     }
 

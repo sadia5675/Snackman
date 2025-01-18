@@ -50,16 +50,16 @@ public class GameMessagingService {
     //     template.convertAndSend("/topic/ingame/chickenPosition/{gameId}");
     // }
     public void sendThemeUpdate(String lobbyid, Object themeData) {
-        logger.info("Sending theme update");
+        //logger.info("Sending theme update");
         template.convertAndSend("/topic/game/" + lobbyid + "/theme", themeData);
     }
     public void sendMapUpdate (String lobbyid, Object mapData){
-        logger.info("Sending map update");
+        //logger.info("Sending map update");
         template.convertAndSend("/topic/game/" + lobbyid + "/map", mapData);
     }
 
     public void sendPlayerCollision(String lobbyid, Object collisionDetails) {
-        logger.info("Sending player collision details");
+        //logger.info("Sending player collision details");
         template.convertAndSend("/topic/ingame/PlayerKollision/" + lobbyid, collisionDetails);
     }
 }
