@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import de.hs_rm.backend.api.GameAPIController;
 import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.ChickenPosition;
 import de.hs_rm.backend.messaging.GameMessagingService;
@@ -21,7 +22,7 @@ public class ChickenService {
     
     private GameService gameService;
     private final GameMessagingService gameMessagingService;
-    
+     Logger logger = LoggerFactory.getLogger(ChickenService.class);
         public ChickenService(GameService gameService, GameMessagingService gameMessagingService) {
             this.gameService = gameService;
             this.gameMessagingService = gameMessagingService;
@@ -40,8 +41,12 @@ public class ChickenService {
         for (int i = 0; i < game.getChickens().size(); i++) {
             Chicken chicken = game.getChickens().get(i);
             ChickenPosition newChicken = new ChickenPosition(chicken.getId(), chicken.getPosX(), chicken.getPosY(),chicken.getAngle(),chicken.getEggList(),chicken.getCurrentCalorie());
+            System.out.println("chciekne id ist --> "+newChicken.getId());
+            logger.info("chciekne id ist --> "+newChicken.getId()); 
             positions.add(newChicken);
+           
         }
+        
         return positions;
     }
 

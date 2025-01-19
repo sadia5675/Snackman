@@ -286,6 +286,7 @@ public class GameAPIController {
         response.put("chickens", chickens);
         response.put("status", "ok");
         response.put("time", LocalDateTime.now().toString());
+        logger.info("Sending Chicken Data: {}", chickens);
 
         return response;
     }

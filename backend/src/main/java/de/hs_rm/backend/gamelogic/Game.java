@@ -260,7 +260,7 @@ public class Game {
         // DONE: random position von hühnchen
         for (int i = 0; i < this.chickenNum; i++) {
             
-            UUID uniqueID = UUID.randomUUID();
+            //UUID uniqueID = UUID.randomUUID();
             Tile randomTile;
 
             // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!

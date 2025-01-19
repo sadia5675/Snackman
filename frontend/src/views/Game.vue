@@ -20,7 +20,8 @@ const gameStore = useGameStore()
 
 const route = useRoute()
 const lobbyId = route.params.id.toString()
-const chickens = new Map<string, number>(); // ChickenID als Key und Model-ID als Value
+const loadingChickens = new Set<string>(); // Tracke laufende Ladevorgänge
+const chickens = new Map<string, THREE.Object3D>(); // ChickenID als Key und Model-ID als Value
 const cameraOffset = new THREE.Vector3(0, 5, -10); // Offset der Kamera relativ zum Chicken
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
@@ -478,39 +479,40 @@ function renderChicken(chickenData:  IChickenDTD[]){
   const loader =new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
   //Überprüfung ob es eine chicken id gibt wenn nicht wird ein erstellt und wenn ja wir die position aktualsiert
   chickenData.forEach((chicken)=>{
-    console.log(`Chicken-Daten: ID=${chicken.chickenID}, X=${chicken.posX}, Y=${chicken.posY}`);
-    if (!chicken.chickenID) {
-      console.warn("Chicken hat keine ID:", chicken.chickenID);
+    console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
+    if (!chicken.id) {
+      console.warn("Chicken hat keine ID:", chicken.id);
       return; // Weiterverarbeitung abbrechen
     }
-    if (!chickens.has(chicken.chickenID)) {
+    if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
+      loadingChickens .add(chicken.id);
+      console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
       const chickenModelURL =new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
       console.log("Chcieken url", chickenModelURL);
-      console.log("Neues Chicken wird erstellt:", chicken.chickenID);
+      console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
         const model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
-        players.set(chicken.chickenID, model.id);
+        model.name = chicken.id;
+        chickens.set(chicken.id, model);
         scene.add(model);
         model.position.set(chicken.posX, 1, chicken.posY);
-       
-        console.log(`Neues Chicken hinzugefügt: ID=${chicken.chickenID}, Position=${chicken.posX},${chicken.posY}`);
-        },
+        console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+        loadingChickens .delete(chicken.id);  
+      },
         undefined,(error) => {
             console.error("Fehler beim Laden des Chicken-Modells:", error);
         }
+
       );
     }else{
-      console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.chickenID);
-      const  chickenId = chickens.get(chicken.chickenID);
-      if (chickenId){
-        const existingChickenModel = scene.getObjectById(chickenId); 
+      console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
+        const existingChickenModel = chickens.get(chicken.id) 
         if(existingChickenModel ){
           moveChicken(existingChickenModel , chicken);
-          console.log(`Position des Chickens aktualisiert: ID=${chicken.chickenID}, Position=${chicken.posX},${chicken.posY}`);
+          console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
         
         }
-      }
     }
   })
     
@@ -591,10 +593,13 @@ async function handleCharacters(data: ICharacterDTD[]) {
 }
 
 async function handleChickenPositions(data: IChickenDTD[]) {
+  console.log("Processing Chicken Positions:", data);
   let chickenPositions: IChickenDTD[]= [];
   data.forEach(chicken => {
+    console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
+        
     chickenPositions.push({
-      chickenID: chicken.chickenID,
+      id: chicken.id,
       posX: chicken.posX,
       posY: chicken.posY,
       angle: chicken.angle,

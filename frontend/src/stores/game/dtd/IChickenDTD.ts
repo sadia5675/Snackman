@@ -1,7 +1,7 @@
 import type { IItemDTD } from '@/stores/game/dtd/IItemDTD'
 
 export interface IChickenDTD {
-  chickenID: string;
+  id: string;
   //gameId: string;
   posX: number;
   posY: number;
