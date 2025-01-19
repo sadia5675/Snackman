@@ -527,21 +527,20 @@ function renderChicken(chickenData:  IChickenDTD[]){
   const direction = targetPosition.clone().sub(currentPosition).normalize();
   const chickenSpeed = 1; // Geschwindigkeit des Chickens (Einheiten/Sekunde)
   const delta= clock.getDelta(); 
-  const movement = direction.multiplyScalar(chickenSpeed * delta);
-  modellChicken.position.add(movement);
+
 
   console.log('Richtung:', direction);
-  console.log('Bewegung:', movement);
-  console.log("Bewegungsrichtung:", direction);
-  console.log("Bewegungsvektor:", movement);
+
   console.log("Neue Position des Chicken-Modells:", modellChicken.position);
 
-  const totalDistance = currentPosition.distanceTo(targetPosition);
-  const currentDistance = modellChicken.position.distanceTo(targetPosition);
-
   if (currentPosition.distanceTo(targetPosition) < chickenSpeed * delta) {
+    const movement = direction.multiplyScalar(chickenSpeed * delta);
+  modellChicken.position.add(movement);
+  console.log('Bewegung:', movement);
+  console.log('Bewegt zu:', modellChicken.position);
+  }else{
     modellChicken.position.set(targetPosition.x, 0, targetPosition.z);
-      console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
+    console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
   }
 
  
@@ -734,3 +733,4 @@ onMounted(async () => {
 </template>
 
 <style scoped></style>
+
