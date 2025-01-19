@@ -109,7 +109,7 @@ public class GameAPIController {
         // Nur zu Testzwecken hier
         // PythonInterpreter interpreter = new PythonInterpreter();
         // try {
-        //     String scriptPath = "ChickenBotMovement.py";
+        //     String scriptPath = "chicken_bot_movement.py";
 
         // File scriptFile = new File(scriptsDirectory, scriptPath);
 

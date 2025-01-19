@@ -22,7 +22,7 @@ public class BackendApplication {
 		try {
             // Extrahiere script.py aus resources/scripts/script.py
 			ResourceExtractor.extractScript("/maps/Hallo.txt", "base/maps/Hallo.txt");
-			ResourceExtractor.extractScript("/skripte/ChickenBotMovement.py", "base/skripte/ChickenBotMovement.py");
+			ResourceExtractor.extractScript("/skripte/chicken_bot_movement.py", "base/skripte/chicken_bot_movement.py");
 
             // Weitere Logik hier
         } catch (IOException e) {
