@@ -231,13 +231,6 @@ public class Game {
         return sb.toString();
     }
 
-    public boolean start() {
-        if (this.playmap == null) {
-            return false;
-        }
-        return start(this.playmap, this.chickenNum);
-    }
-
     public List<PlayerPosition> createSpawnPoints() {
         List<int[]> freePositions = new ArrayList<>();
         List<PlayerPosition> generatedSpawnPoints = new ArrayList<>();
@@ -301,7 +294,7 @@ public class Game {
         return Math.sqrt(Math.pow(pos[0]-pp.getPosX(), 2) + Math.pow(pos[1]-pp.getPosY(), 2));
     }
 
-    public boolean start(PlayMap playMap, int chickenNum) {
+    public boolean start(PlayMap playMap, int chickenNum, String pathToChickenBot) {
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
         this.chickenNum = chickenNum;
         this.playmap = playMap;
@@ -421,30 +414,24 @@ public class Game {
             Tile randomTile;
             int index = -1;
 
-            Path testPathForScript = Paths.get("src","main","resources", "scripts", "test_script_wrong_location.py");
-            LOGGER.info("currentPath = {}", testPathForScript);
-            //Path testPathForScript = Paths.get("/Users/erina/Documents/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py");
+            Path pathToChickenBotPath = Paths.get(pathToChickenBot);
+            LOGGER.info("currentPath = {}", pathToChickenBotPath);
+            //Path pathToChickenBotPath = Paths.get("/Users/erina/Documents/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py");
 
             // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
-            if (Files.exists(testPathForScript)){
-                LOGGER.info("Path to test scripts:{}" , testPathForScript.toString());
+            if (Files.exists(pathToChickenBotPath)){
+                LOGGER.info("Path to test scripts:{}" , pathToChickenBotPath);
             }else{
                 LOGGER.error("Script not found");
             }
-            /*URL url = getClass().getResource("/scripts/test_script_wrong_location.py");
-            if (url != null) {
-                testPathForScript = Paths.get(url.getPath());
-                LOGGER.info("Path to test script: {}", testPathForScript.toString());
-            } else {
-                LOGGER.error("Script not found");
-            } */
+
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, uniqueID.toString());
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), pathToChickenBotPath, this, uniqueID.toString());
 
 
             chickens.add(chicken);

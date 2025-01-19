@@ -81,7 +81,7 @@ public class GameService {
             return null;
         }
 
-        game.start(playMap, chickenNum);
+        game.start(playMap, chickenNum, pathToChickenBot);
 
         return game;
     }
