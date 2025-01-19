@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
-import { WebGLRenderer } from 'three'
+import {PointLight, PointLightHelper, WebGLRenderer} from 'three'
 import { computed, onMounted, ref, watch } from 'vue'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import { useGameStore } from '@/stores/game/gamestore'
@@ -398,8 +398,10 @@ scene.add(sphere)
 const ambientLight = new THREE.AmbientLight(0x404040, 10)
 scene.add(ambientLight)
 
-const pointLight = new THREE.PointLight(0xffffff, 1000, 10)
-pointLight.position.set(10, 20, 10) //extra Lightning for the ball
+const pointLight = new THREE.PointLight(0xffffff, 500, 10000)
+pointLight.position.set(25, 20, 5) //extra Lightning for the ball
+pointLight.lookAt(sphere.position)
+pointLight.castShadow = true;
 scene.add(pointLight)
 
 function animate() {
@@ -853,7 +855,9 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
 
   // Instanced meshes for ground and walls
   const groundMesh = new THREE.InstancedMesh(groundGeometry, groundMaterial, map.length * map[0].length);
+  groundMesh.receiveShadow = true;
   const wallMesh = new THREE.InstancedMesh(wallGeometry, wallMaterial, map.length * map[0].length);
+  wallMesh.castShadow = true;
 
   let groundIndex = 0;
   let wallIndex = 0;
@@ -882,12 +886,14 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
 
       switch (tile) {
         case '*': // Wall
+          wallMesh.receiveShadow = true;
           const wallMatrix = new THREE.Matrix4().makeTranslation(x, 1, z);
           wallMesh.setMatrixAt(wallIndex++, wallMatrix);
           break;
 
         case ' ': // Ground
           const groundMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
+          groundMesh.castShadow = true;
           groundMesh.setMatrixAt(groundIndex++, groundMatrix);
           break;
 
