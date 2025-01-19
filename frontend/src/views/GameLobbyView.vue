@@ -78,8 +78,8 @@
     </div>
         
      </div>
-     <div class="flex gap-2">
-      <button
+     <div  class="flex gap-2">
+      <button  v-if="isGamemaster"
         :class="{
           'bg-green-700 hover:bg-green-800 text-zinc-200': isHost,
           'bg-gray-600': !isHost,
