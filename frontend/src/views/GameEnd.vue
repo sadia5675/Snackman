@@ -118,9 +118,7 @@ function backToStart() {
     router.push({ name: 'index' }).then(() => {
       console.log("Navigated to start. Forcing reload...");
       // Reload 
-      setTimeout(() => {
-        window.location.reload();
-      }, 50);
+      window.location.reload();
     }).catch((error) => {
       console.error("Error during navigation to index:", error);
     });
@@ -128,11 +126,9 @@ function backToStart() {
     console.error("Error returning to start:", error);
   }
 }
+
 onMounted(() => {
-  console.log("Performing initial setup on start page...");
-  gameStore.resetGameState();
-  gameStore.disconnectWebSocket();
-  sessionStorage.clear();
+  console.log("Setting up WebSocket cleanup...");
 });
 
 </script>
