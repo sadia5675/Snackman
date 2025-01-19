@@ -2,6 +2,7 @@ package de.hs_rm.backend.gamelogic.characters.chicken;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.List;
 
 import org.python.util.PythonInterpreter;
@@ -43,7 +44,11 @@ public class Chicken {
         this.eggList = new ArrayList<>();
         this.currentCalorie =0;
 
+        Properties p = new Properties();
+        p.setProperty("python.import.site", "false");
+        PythonInterpreter.initialize(System.getProperties(), p, new String[] {});
         this.pyInterpreter = new PythonInterpreter();
+
         this.environmentApi = new ChickenEnvironmentApi(game);
     }
 
