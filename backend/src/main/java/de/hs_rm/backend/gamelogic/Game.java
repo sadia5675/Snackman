@@ -275,7 +275,6 @@ public class Game {
     }
 
     public boolean start(PlayMap playMap) {
-        this.started = true;
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
 
         // TODO: hier sollte random name als param übergeben werden
@@ -355,27 +354,26 @@ public class Game {
         // DONE: hier sollte Charakter liste erstellen und player zu jedem charater
         // zuweisen
         for (Player player : players) {
-            Tile randomTile = null;
-            // Wiederholen, bis ein Surface-Tile gefunden wird
-            int index = -1;
-            do {
-                index = random.nextInt(playmap.getTilesList().size());
-                randomTile = playmap.getTilesList().get(index);
-            } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter());
+            Character newCharacter;
+            Tile spawnTile;
+            PlayerPosition playerSpawn = spawnPoints.stream().filter(p -> p.getPlayerName().equals(player.getName())).findFirst().get();
+            int spawnTileIndex = (int) Math.floor(playerSpawn.getPosX()) * playmap.getWidth()
+                + (int) Math.floor(playerSpawn.getPosY());
+                
+            spawnTile = playMap.getTilesList().get(spawnTileIndex);
 
             switch (player.getPlayerrole()) {
                 // DONE: random position von Charakter
                 case GHOST -> {
-                    characters.put(player.getName(),
-                            new Ghost(ghostSpeed, index % playmap.getWidth(), index / playmap.getWidth()));
-                    randomTile.addCharacter(characters.get(player.getName()));
+                    newCharacter = new Ghost(ghostSpeed, (int) Math.floor(playerSpawn.getPosX()), (int) Math.floor(playerSpawn.getPosY()));
+                    characters.put(player.getName(), newCharacter);
+                    spawnTile.addCharacter(player.getName(),newCharacter);
+                    
                 }
                 case SNACKMAN -> {
-
-                    characters.put(player.getName(),
-                            new Snackman(snackmanSpeed, index % playmap.getWidth(), index / playmap.getWidth(),
-                                    snackmanLife, snackmanMaxLife));
-                    randomTile.addCharacter(characters.get(player.getName()));
+                    newCharacter = new Snackman(snackmanSpeed, (int) Math.floor(playerSpawn.getPosX()), (int) Math.floor(playerSpawn.getPosY()), snackmanLife, snackmanMaxLife);
+                    characters.put(player.getName(), newCharacter);
+                    spawnTile.addCharacter(player.getName(),newCharacter);
                 }
                 default -> {
                     LOGGER.warn("Unknown player role for player: {}", player.getName());
@@ -397,7 +395,7 @@ public class Game {
             // DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
         }
-
+        this.started = true;
         return started;
     }
 
@@ -500,15 +498,15 @@ public class Game {
         return playmap.getTilesList().get(index);
     }
 
-    public boolean move(String username, double posY, double posX, double posZ, double angle) {
+    public synchronized boolean move(String username, double posX, double posY, double posZ, double angle) {
         Character curCharacter = characters.get(username);
 
         int roundedPosX = (int) Math.floor(posX);
         int roundedPosY = (int) Math.floor(posY);
 
         // Berechnung des aktuellen Index
-        int curIndex = (int) Math.floor(curCharacter.getPosY()) * playmap.getWidth()
-                + (int) Math.floor(curCharacter.getPosX());
+        int curIndex = (int) Math.floor(curCharacter.getPosX()) * playmap.getWidth()
+                + (int) Math.floor(curCharacter.getPosY());
         if (curIndex < 0 || curIndex >= playmap.getTilesList().size()) {
             LOGGER.error("Ungültiger aktueller Index: curIndex={}, Größe der Tile-Liste={}", curIndex,
                     playmap.getTilesList().size());
@@ -516,12 +514,10 @@ public class Game {
         }
         Tile curTile = playmap.getTilesList().get(curIndex);
 
-
-
         // Berechnung des Zielindex
-        int targetIndex = roundedPosY * playmap.getWidth() + roundedPosX;
+        int targetIndex = (roundedPosX * playmap.getWidth()) + roundedPosY;
         if (targetIndex < 0 || targetIndex >= playmap.getTilesList().size()) {
-            LOGGER.error("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex,
+            LOGGER.info("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex,
                     playmap.getTilesList().size());
             return false;
         }
@@ -532,28 +528,23 @@ public class Game {
             LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
-
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?
         if (curIndex == targetIndex) {
             // LOGGER.info("Charakter bleibt im gleichen Tile: posX={}, posY={}", posX,
             // posY);
 
             // posy und posx vertauscht
-            curCharacter.move(posY, posX, posZ, angle); // Aktualisiere nur die Position des Charakters
+            curCharacter.move(posX, posY, posZ, angle); // Aktualisiere nur die Position des Charakters
             return true; // Bewegung erfolgreich, keine weiteren Änderungen notwendig
         }
-
-
         // Charakter bewegen
-        curTile.removeCharacter(curCharacter);
+        if(curTile.removeCharacter(username)){
+            curCharacter.move(posX, posY, posZ, angle);
+            targetTile.addCharacter(username,curCharacter);
+            return true;
+        }
 
-        // posy und posx vertauscht
-        curCharacter.move(posY, posX, posZ, angle);
-        targetTile.addCharacter(curCharacter);
-
-        // LOGGER.info("{} moved to posX={}, posY={}", username, posX, posY);
-
-        return true;
+        return false;
     }
 
     public boolean isValidChargeJump(String playerId) {
@@ -627,6 +618,7 @@ public class Game {
     public boolean isStarted() {
         return started;
     }
+
 
     public void setStarted(boolean started) {
         this.started = started;

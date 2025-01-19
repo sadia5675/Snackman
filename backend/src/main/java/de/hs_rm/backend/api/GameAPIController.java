@@ -293,7 +293,6 @@ public class GameAPIController {
             messagingService.sendPlayerList(lobbyid, response);
         }
     }
-
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
 
@@ -308,88 +307,78 @@ public class GameAPIController {
         HashMap<String, Object> itemUpdateResponse = new HashMap<>();
         Game existingGame = gameService.getGameById(lobbyid);
 
-        Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-        // boolean validMove = existingGame.moveTest(position.getPlayerName(),
-        // position.getPosX(), position.getPosY(), position.getAngle());
-        boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
-                position.getPosZ(), position.getAngle());
+        if(existingGame.isStarted()){
+            Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
+            // boolean validMove = existingGame.moveTest(position.getPlayerName(),
+            // position.getPosX(), position.getPosY(), position.getAngle());
+            boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
+                    position.getPosZ(), position.getAngle());
 
 
-        // logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),
-        // VALID: {} ", position.getPlayerName(), position.getPosX(),
-        // position.getPosY(), position.getAngle(), validMove);
+            // logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),
+            // VALID: {} ", position.getPlayerName(), position.getPosX(),
+            // position.getPosY(), position.getAngle(), validMove);
 
-        // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
-        // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
-        // 4 Himmelsrichtungen)
-        if (!validMove) {
-            if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
-                position.setPosX((float) (Math.round(position.getPosX()) + offset));
-                validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
-                position.setPosY((float) (Math.round(position.getPosY()) + offset));
-                validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
-                position.setPosX((float) (Math.floor(position.getPosX()) - offset));
-                validMove = true;
-            } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
-                position.setPosY((float) (Math.floor(position.getPosY()) - offset));
-                validMove = true;
-            }
-        }
-
-        if (validMove) {
-            for(Tile tile : gameService.getGameById(lobbyid).getPlaymap().getTilesList()){
-                if (tile.isItemWasRecentlyCollected()) {
-                    itemUpdateResponse.put("type", "itemCollected");
-                    itemUpdateResponse.put("positionX", position.getPosX());
-                    itemUpdateResponse.put("positionY", position.getPosY());
-                    itemUpdateResponse.put("status", "ok");
-                    itemUpdateResponse.put("time", LocalDateTime.now().toString());
-                    messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
-                    tile.setItemWasRecentlyCollected(false);
+            // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
+            // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
+            // 4 Himmelsrichtungen)
+            if (!validMove) {
+                if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
+                    position.setPosX((float) (Math.round(position.getPosX()) + offset));
+                    validMove = true;
+                } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
+                    position.setPosY((float) (Math.round(position.getPosY()) + offset));
+                    validMove = true;
+                } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
+                    position.setPosX((float) (Math.floor(position.getPosX()) - offset));
+                    validMove = true;
+                } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
+                    position.setPosY((float) (Math.floor(position.getPosY()) - offset));
+                    validMove = true;
                 }
             }
 
-            // Sende Item-Update an Frontend
-//            if(existingGame.isItemCollected(position.getPosX(),position.getPosY())){
-//                itemUpdateResponse.put("type", "itemCollected");
-//                logger.info("POSITION X: {} Y: {}", position.getPosX(), position.getPosY());
-//                itemUpdateResponse.put("positionX", position.getPosX());
-//                itemUpdateResponse.put("positionY", position.getPosY());
-//                itemUpdateResponse.put("status", "ok");
-//                itemUpdateResponse.put("time", LocalDateTime.now().toString());
-//                messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
-//            }
+            if (validMove) {
+                for(Tile tile : gameService.getGameById(lobbyid).getPlaymap().getTilesList()){
+                    if (tile.isItemWasRecentlyCollected()) {
+                        itemUpdateResponse.put("type", "itemCollected");
+                        itemUpdateResponse.put("positionX", position.getPosX());
+                        itemUpdateResponse.put("positionY", position.getPosY());
+                        itemUpdateResponse.put("status", "ok");
+                        itemUpdateResponse.put("time", LocalDateTime.now().toString());
+                        messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
+                        tile.setItemWasRecentlyCollected(false);
+                    }
+                }
 
-            // sende das die Validation in Ordnung war
-            validationResponse.put("type", "playerMoveValidation");
-            validationResponse.put("feedback", position);
-            validationResponse.put("status", "ok");
-            validationResponse.put("time", LocalDateTime.now().toString());
+                // sende das die Validation in Ordnung war
+                validationResponse.put("type", "playerMoveValidation");
+                validationResponse.put("feedback", position);
+                validationResponse.put("status", "ok");
+                validationResponse.put("time", LocalDateTime.now().toString());
 
-            messagingService.sendPositionValidation(lobbyid, validationResponse);
+                messagingService.sendPositionValidation(lobbyid, validationResponse);
 
 
-            existingGame.determineWinner();
-            // sendet all immer dieseer charackteren (mit oder ohne updates wie life oder ghosttouch)
-            Map<String, Character> updateCharacters = existingGame.getCharacters();
-            collisionDetails.put("type", "collisionValidation");
-            collisionDetails.put("updateCharacters", updateCharacters);
-            collisionDetails.put("winnerRole", existingGame.getWinnerRole());
-            collisionDetails.put("status", "ok");
-            collisionDetails.put("time", LocalDateTime.now().toString());
-            messagingService.sendPlayerCollision(lobbyid, collisionDetails);
+                existingGame.determineWinner();
+                // sendet all immer dieseer charackteren (mit oder ohne updates wie life oder ghosttouch)
+                Map<String, Character> updateCharacters = existingGame.getCharacters();
+                collisionDetails.put("type", "collisionValidation");
+                collisionDetails.put("updateCharacters", updateCharacters);
+                collisionDetails.put("winnerRole", existingGame.getWinnerRole());
+                collisionDetails.put("status", "ok");
+                collisionDetails.put("time", LocalDateTime.now().toString());
+                messagingService.sendPlayerCollision(lobbyid, collisionDetails);
 
-            //senden der Liste von Charsd
-            response.put("type", "playerPosition");
-            response.put("feedback", currentCharacters.values());
-            response.put("status", "ok");
-            response.put("time", LocalDateTime.now().toString());
+                //senden der Liste von Charsd
+                response.put("type", "playerPosition");
+                response.put("feedback", currentCharacters.values());
+                response.put("status", "ok");
+                response.put("time", LocalDateTime.now().toString());
 
-            messagingService.sendNewCharacterPosition(lobbyid, response);
+                messagingService.sendNewCharacterPosition(lobbyid, response);
+            }
         }
-
     }
 
     @PostMapping("/{gameId}/jumpAllowed")

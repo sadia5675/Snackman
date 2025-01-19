@@ -1071,7 +1071,7 @@ function removeItemFromSceneByPosition(posX: number, posY: number) {
 
 watch([spawnX, spawnZ], ([newX, newZ]) => {
       if (camera) {
-        camera.position.set(newX,1,newZ);
+        camera.position.set(newX + 0.5 ,1,newZ + 0.5);
       }
     });
 
