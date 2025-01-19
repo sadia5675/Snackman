@@ -177,7 +177,7 @@ export const useGameStore = defineStore('gameStore', () => {
           data: null,
         })
       } else {
-        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}/1`, actingPlayer) //${chickenCount}
+        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}/${chickenCount}`, actingPlayer) //${chickenCount}
         resolve({
           ok: true,
           message: 'Game started',

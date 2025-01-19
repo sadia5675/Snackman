@@ -208,7 +208,7 @@ public class GameAPIController {
 
             } else {
                 PlayMap playMap = playMapService.createPlayMap(selectedMapName);
-                Game existingGame = gameService.startGame(lobbyid, playMap, 1);
+                Game existingGame = gameService.startGame(lobbyid, playMap, chickenNum);
 
                 logger.info("Received chickenNum: {}", existingGame.getChickenNum());
                 logger.info("Chickens before initialization: {}", existingGame.getChickens());

@@ -1031,7 +1031,7 @@ function renderChicken(chickenData:  IChickenDTD[]){
     if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
       loadingChickens .add(chicken.id);
       console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
-      const chickenModelURL =new URL('@/assets/game/realistic/snackman/snackman.glb', import.meta.url).href;
+      const chickenModelURL =new URL('@/assets/chicken/chicken.glb', import.meta.url).href;
       console.log("Chcieken url", chickenModelURL);
       console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
@@ -1061,7 +1061,7 @@ function renderChicken(chickenData:  IChickenDTD[]){
   })
 
 }function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
-  const targetPosition = new THREE.Vector3(chickenData.posX,0,chickenData.posY);
+  const targetPosition = new THREE.Vector3(chickenData.posY + 0.5,.5,chickenData.posX + 0.5);
   const currentPosition= modellChicken.position;
 
   console.log("Aktuelle Position:", currentPosition);
@@ -1083,7 +1083,7 @@ function renderChicken(chickenData:  IChickenDTD[]){
   console.log('Bewegung:', movement);
   console.log('Bewegt zu:', modellChicken.position);
   }else{
-    modellChicken.position.set(targetPosition.x, 0, targetPosition.z);
+    modellChicken.position.set(targetPosition.x, .5, targetPosition.z);
     console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
   }
 

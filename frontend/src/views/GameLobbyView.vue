@@ -73,7 +73,7 @@
         </button>
         <div class="flex flex-col flex-1">
       <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-      <input type="number" v-model="chickenCount" class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
+      <input type="number" v-model="chickenCount"  class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
 
     </div>
 
@@ -215,14 +215,16 @@ const placeholderCount = computed(() => maxPlayers - players.value.length);
 // Hole Passwort aus gamestore
 const gamePassword = computed(() => gameStore.gameState.gamedata?.password || null);
 
+const chickenCount = ref(1);
 
 // Anzahl der festgelegten Chickens im Game
+/*
 const chickenCount = computed({
   get: () => gameStore.gameState.gamedata?.chickens.length || 0,
   set: async (value: number) => {
     await gameStore.setChickenCount(value)
   },
-})
+}) */
 
 // Überprüfung, ob aktueller Spieler Gamemaster ist
 const isGamemaster = computed(() => {
@@ -263,10 +265,10 @@ async function startGame() {
     if (!mapStore.mapsDTD.selectedMap?.map) {
       throw new Error("No map selected!");
     }
-    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
+    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name, chickenCount.value); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
     // Log zum Testen
     console.log(gameStore.gameState);
-    console.log("ChickenCount: ", chickenCount.value)
+    //console.log("ChickenCount: ", chickenCount.value)
     console.log("playMap: ", gameStore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map
   } catch (error) {
     console.log(error);
