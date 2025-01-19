@@ -68,6 +68,17 @@ public class ChickenPosition {
         this.currentCalorie = currentCalorie;
     }
 
+    @Override
+    public String toString() {
+        return "ChickenPosition{" +
+                "id=" + id +
+                ", posX=" + posX +
+                ", posY=" + posY +
+                ", angle=" + angle +
+                ", eggList=" + eggList +
+                ", currentCalorie=" + currentCalorie +
+                '}';
+    }
 
     
 }

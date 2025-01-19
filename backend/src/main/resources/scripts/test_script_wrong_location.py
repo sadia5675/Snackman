@@ -7,80 +7,72 @@ chickenObj = chicken
 environmentObj = environment
 
 
+chickenObj.setAngle(0)
+
+
+chicken_index_environment_list = 4
+
 
 print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
 
-def move_logic():
+def right_hand_algo():
 
-    # map_width = environment.getMapWidth()
-    # map_height = environment.getMapHeight()
+   
     actuell_environment = environmentObj.getEnvironment(chickenObj.getPosX(), chickenObj.getPosY())
-    chicken_index_environment_list = 4
-
-    # print("Acteull Environment: ", actuell_environment)
-    # print("Chicken bekommt zum Start im script das Tile: ", actuell_environment[chicken_index_environment_list])
-
-
-    # print("Map Width: ", map_width)
-    # print("Map Height: ", map_height)
-    # print("Chicken Index on Tile evironment List: ", chicken_index_environment_list)
+    # print("ENV: ")
+    # print(actuell_environment)
 
     print_environment(actuell_environment)
   
-    richtung = {
-        "Norden": -3,
-        "Osten": 1,
-        "Süden": +3,
-        "Westen": -1
+
+    movements = {
+        0: {"delta_x": 0, "delta_y": -1, "check_index": -3},
+        90: {"delta_x": 1, "delta_y": 0, "check_index": 1},
+        180: {"delta_x": 0, "delta_y": 1, "check_index": 3},
+        270: {"delta_x": -1, "delta_y": 0, "check_index": -1}
     }
 
-   
-    # Wenn das Tile im Osten ein SURFACE ist, bewege das Chicken nach Osten    
-    if (actuell_environment[chicken_index_environment_list + richtung["Osten"]].getType().name() == "SURFACE"):
-        actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
-        new_pos_x = chickenObj.getPosX() + 1
-        new_pos_y = chickenObj.getPosY()
-        new_angle = chickenObj.getAngle()
-        chickenObj.move(new_pos_x, new_pos_y, new_angle)
-        print("Chicken bewegt sich nach Osten") 
-        # print("Index Wert für richtung Osten: ", chicken_index_environment_list + richtung["Osten"])
-        actuell_environment[chicken_index_environment_list + richtung["Osten"]].addChicken(chickenObj)
-        print("Bewegungsschritt abgeschlossen")
-    elif (actuell_environment[chicken_index_environment_list + richtung["Norden"]].getType().name() == "SURFACE"):
-        actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
-        new_pos_x = chickenObj.getPosX()
-        new_pos_y = chickenObj.getPosY() + 1
-        new_angle = chickenObj.getAngle() - 90
-        print("Chicken bewegt sich nach Norden")
-        actuell_environment[chicken_index_environment_list + richtung["Norden"]].addChicken(chickenObj)
-    elif (actuell_environment[chicken_index_environment_list] + richtung["Süden"].getType().name() == "SURFACE"):
-        actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
-        new_pos_x = chickenObj.getPosX()
-        new_pos_y = chickenObj.getPosY() - 1
-        new_angle = chickenObj.getAngle() + 90
-        print("Chicken bewegt sich nach Süden")
-        actuell_environment[chicken_index_environment_list + richtung["Süden"]].addChicken(chickenObj)
-        print("Bewegungsschritt abgeschlossen")
-    else:
-        actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
-        new_pos_x = chickenObj.getPosX() - 1
-        new_pos_y = chickenObj.getPosY()
-        new_angle = chickenObj.getAngle() - 180
-        chickenObj.move(new_pos_x, new_pos_y, new_angle)
-        print("Chicken bewegt sich nach Westen")
-        actuell_environment[chicken_index_environment_list + richtung["Westen"]].addChicken(chickenObj)
-        print("Bewegungsschritt abgeschlossen")
+    current_angle = chickenObj.getAngle()
 
-
-
-
+    movement_priority = [
+        current_angle % 360,         # Geradeaus
+        (current_angle + 90) % 360,  # Rechts
+        (current_angle - 90) % 360,  # Links
         
+        
+        (current_angle + 180) % 360  # Hinter mir
+    ]
+
+    for angle in movement_priority:
+        move = movements[angle]
+        chicken_new_position = chicken_index_environment_list + move["check_index"]
+
+        if (actuell_environment[chicken_new_position].getType().name() == "SURFACE"):
+            move_to(move["delta_x"], move["delta_y"], angle, chicken_new_position, actuell_environment)
+            return
+
+ 
+
+
+def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_environment):
+
+    actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
+
+    new_pos_x = chickenObj.getPosX() + delta_x
+    new_pos_y = chickenObj.getPosY() + delta_y
+    # new_angle = chickenObj.getAngle() + change_angle
+    # new_angle = (chickenObj.getAngle() + change_angle) % 360
+    new_angle = change_angle 
+    print("Change Angel: ", change_angle)
+    print("Neuer Angle: ", new_angle)
+    chickenObj.move(new_pos_x, new_pos_y, new_angle)
     
 
+    actuell_environment[chicken_new_position].addChicken(chickenObj)
 
+    print("chicken bewegt sich nach : ",  new_angle)
     print("Neue Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY(), chickenObj.getAngle())
-    
-       
+    print("Bewegungsschritt abgeschlossen") 
  
     
 
@@ -115,7 +107,7 @@ def print_environment(actuell_environment):
 def run_auto():
     print("run_auto ausgeführt")
     while True:
-        move_logic()
+        right_hand_algo()
         time.sleep(1)
    
 

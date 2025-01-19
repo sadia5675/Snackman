@@ -22,16 +22,20 @@ public class ChickenService {
     
     private GameService gameService;
     private final GameMessagingService gameMessagingService;
-     Logger logger = LoggerFactory.getLogger(ChickenService.class);
-        public ChickenService(GameService gameService, GameMessagingService gameMessagingService) {
+    Logger logger = LoggerFactory.getLogger(ChickenService.class);
+    
+    public ChickenService(GameService gameService, GameMessagingService gameMessagingService) {
             this.gameService = gameService;
             this.gameMessagingService = gameMessagingService;
     }
 
-    @Scheduled(fixedRate = 50)
+    @Scheduled(fixedRate = 500)
     public void sendChickenPositions() {
         for (Game game : gameService.getGameList()) {
             List<ChickenPosition> chickenPositions = getChickenPositions(game);
+            for (ChickenPosition position : chickenPositions) {
+                logger.info("Chicken Position Detail: {}", position);
+            }
             gameMessagingService.sendNewChickenPosition(game.getId(), chickenPositions);
         }
     }
@@ -44,7 +48,6 @@ public class ChickenService {
             System.out.println("chciekne id ist --> "+newChicken.getId());
             logger.info("chciekne id ist --> "+newChicken.getId()); 
             positions.add(newChicken);
-           
         }
         
         return positions;
