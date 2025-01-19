@@ -1,5 +1,6 @@
 package de.hs_rm.backend.gamelogic;
 
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -260,26 +261,26 @@ public class Game {
         // DONE: random position von hühnchen
         for (int i = 0; i < this.chickenNum; i++) {
             
-            //UUID uniqueID = UUID.randomUUID();
+            UUID uniqueID = UUID.randomUUID();
             Tile randomTile;
+            int index = -1;
+            Path testPathForScript = null;
 
             // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
-            Path testPathForScript = Paths.get("/scripts/test_script_wrong_location.py");
-            if (Files.exists(testPathForScript)) {
+            URL url = getClass().getResource("/scripts/test_script_wrong_location.py");
+            if (url != null) {
+                testPathForScript = Paths.get(url.getPath());
                 LOGGER.info("Path to test script: {}", testPathForScript.toString());
             } else {
                 LOGGER.error("Script not found");
             }
-
-            int index;
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
-            String chickenId = "chickenId" + (i + 1);
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, chickenId);
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), testPathForScript, this, uniqueID.toString());
 
 
             chickens.add(chicken);
