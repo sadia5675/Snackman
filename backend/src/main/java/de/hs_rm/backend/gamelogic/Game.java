@@ -420,7 +420,10 @@ public class Game {
             UUID uniqueID = UUID.randomUUID();
             Tile randomTile;
             int index = -1;
-            Path testPathForScript = Paths.get("/Users/erina/Documents/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py");
+
+            Path testPathForScript = Paths.get("src","main","resources", "scripts", "test_script_wrong_location.py");
+            LOGGER.info("currentPath = {}", testPathForScript);
+            //Path testPathForScript = Paths.get("/Users/erina/Documents/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py");
 
             // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
             if (Files.exists(testPathForScript)){
