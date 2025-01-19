@@ -40,7 +40,7 @@ const router = createRouter({
       component: MapCreator,
     }, // Hier wird die Lobby Liste angezeigt
     {
-      path: '/:id/GameEnd',
+      path: '/GameEnd',
       name: 'GameEnd',
       component: GameEnd,
     },

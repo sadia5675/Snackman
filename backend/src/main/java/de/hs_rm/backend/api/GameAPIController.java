@@ -374,12 +374,19 @@ public class GameAPIController {
             existingGame.determineWinner();
             // sendet all immer dieseer charackteren (mit oder ohne updates wie life oder ghosttouch)
             Map<String, Character> updateCharacters = existingGame.getCharacters();
+  
             collisionDetails.put("type", "collisionValidation");
             collisionDetails.put("updateCharacters", updateCharacters);
             collisionDetails.put("winnerRole", existingGame.getWinnerRole());
+            collisionDetails.put("started", existingGame.isStarted());
             collisionDetails.put("status", "ok");
             collisionDetails.put("time", LocalDateTime.now().toString());
             messagingService.sendPlayerCollision(lobbyid, collisionDetails);
+
+            if(!existingGame.isStarted()){
+                LOGGER.info("started{}",existingGame.isStarted());
+                gameService.endGame(lobbyid);
+           }
 
             //senden der Liste von Charsd
             response.put("type", "playerPosition");
