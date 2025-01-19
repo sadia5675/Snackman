@@ -2,7 +2,6 @@ package de.hs_rm.backend.gamelogic;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import de.hs_rm.backend.exception.GameJoinException;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 
 @Service
@@ -37,9 +35,6 @@ public class GameService {
     @Value("${game.itemsPerSurfaceRatio}")
     private int itemsPerSurfaceRatio;
 
-    @Value("${snackman.nutriscore}")
-    private int nutriscore;
-
     @Value("${chicken.path}")
     private String pathToChickenBot;
 
@@ -54,23 +49,41 @@ public class GameService {
         return gameList.get(gameId);
     }
 
+    public void setSelectedTheme(String lobbyid, String theme){
+        Game existingGame = gameList.get(lobbyid);
+
+        if(existingGame != null){
+            existingGame.setSelectedTheme(theme);
+        }
+    }
+
+    public String getSelectedTheme(String lobbyid){
+        Game existingGame = gameList.get(lobbyid);
+
+        if(existingGame != null){
+            return existingGame.getSelectedTheme();
+        }
+
+        return "realistic";
+    }
+
     public Game createGame(Player gamemaster){
-        Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio, nutriscore, pathToChickenBot);
+        Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio, pathToChickenBot);
         gameList.put(newGame.getId(), newGame);
 
         return newGame;
     }
 
-    public boolean startGame(String gameId, PlayMap playMap, int chickenNum) {
+    public Game startGame(String gameId, PlayMap playMap, int chickenNum) {
         Game game = gameList.get(gameId);
 
-        boolean success = game.start(playMap, chickenNum);
-        if (!success) {
-            logger.info("Success: {}",success);
-            return false; // z. B. wegen zu vieler Hühner
+        if(game == null){
+            return null;
         }
 
-        return true;
+        game.start(playMap, chickenNum);
+
+        return game;
     }
 
     public Game endGame(String gameId){
@@ -95,7 +108,32 @@ public class GameService {
 
         game.leaveGame(player);
 
+        if(game.getPlayers().isEmpty()){
+            gameList.remove(gameId);
+            game = null;
+        }
+
         return game;
+    }
+
+    public Boolean isJumpAllowed(String gameId, String playerName){
+
+        Game curGame = gameList.get(gameId);
+        Player curPlayer = curGame.getPlayers().stream()
+                                                .filter(p -> p.getName().equals(playerName))
+                                                .findFirst()
+                                                .orElse(null);
+
+        if(curPlayer != null){
+            if(curPlayer.getPlayerrole() == PlayerRole.GHOST){
+                return false;
+            }else{
+                return true;
+            }
+        }
+
+        return false;
+
     }
 
     public Game joinGame(String gameId, Player player){
@@ -147,7 +185,7 @@ public class GameService {
         return game;
     }
 
-    public boolean move(String username, int targetX, int targetY) {
+    public boolean move(String username, int targetX, int targetY, int targetZ, double angle) {
         // Um den Spieler zu finden
         for (Game game : gameList.values()) {
             Player player = game.findPlayerByUsername(username);
@@ -159,7 +197,7 @@ public class GameService {
                             "Target position (" + targetX + ", " + targetY + ") is out of bounds.");
                 }
                 //Bewegung
-                boolean success = game.move(username, targetX, targetY, (double)0);
+                boolean success = game.move(username, targetX, targetY, targetZ,angle);
                 if (!success) {
                     throw new IllegalArgumentException(
                             "Failed to move Player '" + username + "'. Tile is a wall");

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { MapsDTD } from "@/stores/game/dtd/MapsDTD";
-
+import { sendMessage, subscribeTo, stompClient } from '@/config/stompWebsocket'
 export const useMapStore = defineStore("map", ()=> {
 //onMounted? nachschauen
 //ref = reagitives Objekt dass direkt auf Änderungenss reagiert und an die UI automatisch aktualisiert
@@ -9,6 +9,8 @@ const rows = ref<number>(0); // Anzahl Reihen
 const cols = ref<number>(0); // Anzahl Spalten
 const grid = ref<string[][]>([]); // 2D-Array für das Raster
 const mapName = ref<string>(""); // Map-Name
+const  minGridSize = ref<number>(0);
+const  maxGridSize = ref<number>(0);
 const mapsDTD = ref<MapsDTD>({
   maps: [],
   selectedMap: null
@@ -38,6 +40,17 @@ async function fetchMaps(){
   }
 }
 
+async function fetchGridLimits() {
+  try {
+      const response = await fetch("/api/maps/grid-limits");
+      const data = await response.json();
+      minGridSize.value = data.min;
+      maxGridSize.value = data.max;
+  } catch (error) {
+      console.error("Error fetching grid limits:", error);
+  }
+}
+
 //funktion um Raster zu erstellen
 function createGrid() {
     // Sicherstellung, dass die Eingaben valide sind spricht nicht unter 0
@@ -47,7 +60,7 @@ function createGrid() {
     }
     // Raster als 2D-Array erstellen
     grid.value = Array.from({ length: rows.value }, () => //Array mit der Länge rows.value wird erstellt(jede Zeile ein neues Array)
-      Array.from({ length: cols.value }, () => "null")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
+      Array.from({ length: cols.value }, () => "weg")//jedes dieser Zeilen also spalten wird mit 0 aufgefüllt
     );
     for (let rowIndex = 0; rowIndex < rows.value; rowIndex++) {
       for (let colIndex = 0; colIndex < cols.value; colIndex++) {
@@ -146,9 +159,48 @@ async function saveMap(){
       alert("Somethink went Wrong :( ");
     }
 }
+function sendMapUpdateToBackend(mapName: string, lobbyId: string) {
+  if (lobbyId) {
+      sendMessage(`/topic/game/${lobbyId}/setMap`, { mapName });
+      console.log(`Map update sent for lobbyId: ${lobbyId}, Map: ${mapName}`);
+  } else {
+      console.error("Lobby ID not provided.");
+  }
+}
+function subscribeToMapUpdates(lobbyId: string): Promise<boolean> {
+  return new Promise((resolve) => {
+      if (!stompClient.connected) {
+          stompClient.activate();
+          stompClient.onConnect = () => {
+              subscribeToMapUpdatesHandler(lobbyId);
+              resolve(true);
+          };
+      } else {
+          subscribeToMapUpdatesHandler(lobbyId);
+          resolve(true);
+      }
+  });
+}
 
+function subscribeToMapUpdatesHandler(lobbyId: string) {
+  subscribeTo(`/game/${lobbyId}`, (message: any) => {
+      if (message.type === 'mapUpdate' && message.status === 'ok') {
+          const newMap = message.feedback;
+          const foundMap = mapsDTD.value.maps.find((map) => map.name === newMap);
+          if (foundMap) {
+              mapsDTD.value.selectedMap = foundMap;
+              console.log(`Map updated to: ${newMap}`);
+          } else {
+              console.error("Received invalid map:", newMap);
+          }
+      }
+  });
+}
 // Rückgabe der Funktionen und Variablen, die im Store verfügbar sind
   return{
-    mapName, rows, cols, grid, mapsDTD,fetchMaps,saveMap,createGrid,updateCell,
+    mapName, rows, cols, grid,minGridSize,maxGridSize, mapsDTD,
+    fetchMaps,saveMap,fetchGridLimits,createGrid,updateCell,
+    sendMapUpdateToBackend,
+    subscribeToMapUpdates,subscribeToMapUpdatesHandler
   };
 });

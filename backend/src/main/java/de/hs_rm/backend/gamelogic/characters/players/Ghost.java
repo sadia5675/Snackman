@@ -1,9 +1,4 @@
 package de.hs_rm.backend.gamelogic.characters.players;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +34,9 @@ public class Ghost extends Character {
     //}
 
     //Reglung bei Kontakt mit Snackman--> Logik fehlt noch
-    public void hit(String playerId){
-        logger.info("Player " + playerId + " has been hit by the ghost.");
-        touchcount++; 
+    public void hit(){
+        this.touchcount++; 
+        logger.info("Ghosttouch  wurde addiert: {} ", this.touchcount);
     }
 
     @Override

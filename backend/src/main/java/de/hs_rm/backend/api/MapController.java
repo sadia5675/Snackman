@@ -11,8 +11,12 @@ import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
+import jakarta.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +40,15 @@ public class MapController {
     @Autowired
     PlayMapService playMapService;
 
+    @Value("${maps.dir}")
+    private String mapsDirectory;
+
+    @Value("${map.grid.min}")
+    private int minGridSize;
+
+    @Value("${map.grid.max}")
+    private int maxGridSize;
+
     @PostMapping
     public ResponseEntity<String> saveMap(@RequestBody Map<String,Object> requestMap) {
         //TODO: process POST request
@@ -53,7 +66,10 @@ public class MapController {
         //Map speichern 
         try{
             // die Map speichert sich in dem gegebenen Ordner verzeichnis
-            File mapFile= new File("src/main/resources/maps");
+
+            //if folder not exists create new folder
+
+            File mapFile= new File(mapsDirectory);
             // wenn dieser nicht existieren sollte wird dieser ertsllt
             if(!mapFile.exists()){
                 mapFile.mkdirs();
@@ -77,6 +93,15 @@ public class MapController {
             return ResponseEntity.status(500).body("Somethink went Wrong :( " + e.getMessage());
         }
     }
+
+    @GetMapping("/grid-limits")
+    public ResponseEntity<Map<String, Integer>> getGridLimits() {
+        Map<String, Integer> limits = new HashMap<>();
+        limits.put("min", minGridSize);
+        limits.put("max", maxGridSize);
+        return ResponseEntity.ok(limits);
+    }
+
 
     @GetMapping// name und array mit symbolen
     public ResponseEntity<Map<String, Object>> getAllMaps() {

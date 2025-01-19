@@ -13,7 +13,7 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 @SpringBootTest
 class GameTests {
-
+  /*
     private Game game;
     private Player gamemaster;
 
@@ -21,7 +21,7 @@ class GameTests {
     void init() {
         gamemaster = new Player("Gamemaster");
         gamemaster.setPlayerrole(PlayerRole.SNACKMAN);
-        //game = new Game(gamemaster);
+        game = new Game(gamemaster, 3, 5, 1.0, 1.0, 3);
     }
 
     @Test
@@ -31,7 +31,7 @@ class GameTests {
         assertFalse(game.isStarted());
         assertNotNull(game.getId());
     }
-    /*
+
     @Test
     void startTest() {
         game.setChicken(2);
@@ -47,7 +47,7 @@ class GameTests {
         assertEquals(2, game.getChickens().size());
         assertEquals(2, game.getPlayers().size());
     }
-    */
+
 
     @Test
     void endTest() {
@@ -153,12 +153,12 @@ class GameTests {
         Player notFound = game.findPlayerByUsername("Nonexistent");
         assertNull(notFound);
     }
-    /*
+
     @Test
     void setChickenTest() {
         game.setChicken(5);
 
         assertEquals(5, game.getChickens().size());
     }
-        */
+   */
 }

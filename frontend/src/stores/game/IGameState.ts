@@ -1,5 +1,4 @@
 import type {IGameDTD} from "@/stores/game/dtd/IGameDTD";
-import { PlayerType } from "./dtd/PlayerType";
 
 export interface IGameState {
   ok: boolean,
@@ -15,6 +14,9 @@ export const emptyGame: IGameState = {
     gamemaster: null,
     started: false,
     playmap: undefined,
-    password: null 
+    password: null,
+    characters: {},
+    spawnPoints: [],
+     winnerRole: null,
   },
 }

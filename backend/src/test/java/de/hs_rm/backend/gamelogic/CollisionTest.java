@@ -1,6 +1,8 @@
 package de.hs_rm.backend.gamelogic;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -33,6 +36,7 @@ public class CollisionTest {
     private List<Item> itemList;
 
     //private ObjectsItems objectItem;
+    private ObjectsItems objectItem;
 
     @BeforeEach
     void setUp() {
@@ -41,12 +45,14 @@ public class CollisionTest {
         snackman = new Snackman(1.0, 0, 0, 3, 3);
         ghost = new Ghost(1.0, 0, 0);
         foodItem = new FoodItems("Banana", 0, 0, NutriScore.A);
-        //objectItem = new ObjectsItems("Key", 0, 0,"description");
         chicken = new Chicken(5, 5, null);
         itemList = new ArrayList<>();
         surfaceTile.setItemList(itemList);
+        objectItem = mock(ObjectsItems.class);
 
-
+        when(objectItem.getName()).thenReturn("Speed Boost");
+        when(objectItem.getEffectDescription()).thenReturn("Increases speed for 5 seconds");
+        when(objectItem.getSymbol()).thenReturn('1');
 
     }
 
@@ -58,21 +64,18 @@ public class CollisionTest {
         assertTrue(surfaceTile.hasCharacter(), "Tile should have a character.");
         assertTrue(surfaceTile.getCharacterList().contains(snackman), "Tile should contain the Snackman.");
     }
-
     /*
-
     @Test
     void testAddSnackmanWithMatchingItem() {
         surfaceTile.addItem(foodItem);
-        //surfaceTile.addItem(objectItem);
+        surfaceTile.addItem(objectItem);
 
         boolean result = surfaceTile.addCharacter(snackman);
 
         assertTrue(result, "Snackman should be added successfully.");
-        //assertTrue(snackman.getCurrentObjectItem() ==objectItem, "Snackman should collect object item.");
+        assertEquals(objectItem, snackman.getCurrentObjectItem(), "Snackman should collect the object item.");
         assertEquals(NutriScore.A.getCalorieBonus(), snackman.getCurrentCalorie(), "Snackman should eat the food item.");
-    }
-        */
+    }*/
 
     // @Test
     // void testAddGhostWithMatchingItem() {
@@ -145,5 +148,5 @@ public class CollisionTest {
     //     assertTrue(surfaceTile.getItemList().contains(nonFoodItem), "Non-food items should remain in the itemList.");
     // }
 
-    
+
 }

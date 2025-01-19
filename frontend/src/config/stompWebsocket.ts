@@ -16,8 +16,7 @@ const stompClient = new Client({
   onDisconnect: () => {
     console.log('Disconnected from STOMP');
   },
-  debug: (str: string) => console.log(str), // Debugging zum testen
-});
+  });
 
 // Funktion zum Abonnieren einer Lobby
 function subscribeTo(path: string, callback: (message: any) => void) {
@@ -30,7 +29,7 @@ function subscribeTo(path: string, callback: (message: any) => void) {
     const response: IMessage = JSON.parse(message.body);
 
     switch(response.type){
-      
+
       default:
         callback(response);
     }

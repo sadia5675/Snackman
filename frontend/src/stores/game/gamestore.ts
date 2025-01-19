@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket';
-import { type Reactive, reactive } from "vue";
+import { type Reactive, reactive, ref } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
 import type { IChickenDTD } from "./dtd/IChickenDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
@@ -10,7 +10,9 @@ import type { IMessageDTD } from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
-import type { Result } from "@/stores/game/responses/Result";
+import type {Result} from "@/stores/game/responses/Result";
+import { useThemeStore } from "@/stores/themes/themeStore";
+import { useMapStore } from "@/stores/map/MapStore";
 
 
 export const useGameStore = defineStore('gameStore', () => {
@@ -22,10 +24,26 @@ export const useGameStore = defineStore('gameStore', () => {
   const gameState: Reactive<IGameState> = reactive(emptyGame)
   const modal = useModalStore()
 
+  const jumpAllowed = ref(false);
+
   const router = useRouter();
 
   function handleGameStateError() {
     resetGameState()
+  }
+
+  async function getJumpAllowed(name: string, lobbyid: string) {
+    const playerName = sessionStorage.getItem('myName')
+    const response = await fetch(`${restUrl}/${lobbyid}/jumpAllowed`,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    })
+
+    const result: any = await response.json()
+    jumpAllowed.value = result.jumpAllowed;
   }
 
   function resetGameState() {
@@ -55,7 +73,7 @@ export const useGameStore = defineStore('gameStore', () => {
   async function createGame(gamemaster: IPlayerDTD) {
     try {
       gamemaster.playerrole = Playerrole.SNACKMAN
-      console.log("Erstelle Spiel mit: ", gamemaster);
+      console.log("Erstelle Spiel mit: ",gamemaster);
 
       const response: Response = await fetch(`${restUrl}/create`, {
         method: 'POST',
@@ -68,7 +86,7 @@ export const useGameStore = defineStore('gameStore', () => {
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
 
-      if (gamemaster.password) {
+      if(gamemaster.password){
         gameState.gamedata.password = gamemaster.password;
       }
 
@@ -139,7 +157,7 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-  async function startGameViaStomp(selectedMapName: string, chickenCount: number, lobbyId: string): Promise<Result> {
+  async function startGameViaStomp(selectedMapName: string, chickenCount: number): Promise<Result> {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>
@@ -159,7 +177,7 @@ export const useGameStore = defineStore('gameStore', () => {
           data: null,
         })
       } else {
-        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}/${chickenCount}`, actingPlayer)
+        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}/1`, actingPlayer) //${chickenCount}
         resolve({
           ok: true,
           message: 'Game started',
@@ -346,57 +364,81 @@ export const useGameStore = defineStore('gameStore', () => {
     })
   }
 
-  function handleStompMessage(
-    message: IMessageDTD,
-    resolve: (value: boolean) => void,
-  ) {
-    console.log(message.feedback)
-    if (message.status === 'ok') {
-      modal.setErrorMessage('')
-      switch (message.type) {
-        case 'playerJoin':
-          gameState.gamedata.players = message.feedback as IPlayerDTD[]
-          break
-        case 'playerRole':
-          gameState.gamedata.players = message.feedback as IPlayerDTD[]
-          break
-        case 'gameStart':
-          gameState.gamedata = message.feedback as IGameDTD
-          break
-        case 'chickenPositions':
-          gameState.gamedata.chickens = message.feedback as IChickenDTD[]
-          break
-        case 'playerMoveValidation':
-          console.log("test")
-        default:
-          console.error('Unknown message type:', message.type)
-      }
-      resolve(true)
-    } else {
-      modal.setErrorMessage(message.feedback as string)
-      stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
-      resolve(false)
-    }
-  }
-
-  async function isGamePrivate(gameId: string): Promise<boolean> {
-    try {
-      const response = await fetch(`${restUrl}/${gameId}/isPrivate`);
-      const result = await response.json();
-
-      if (result.status === "ok") {
-        return result.isPrivate;
+    function handleStompMessage(
+      message: IMessageDTD,
+      resolve: (value: boolean) => void,
+    ) {
+      console.log(message.feedback)
+      if (message.status === 'ok') {
+        modal.setErrorMessage('')
+        switch (message.type) {
+          case 'playerJoin':
+            gameState.gamedata.players = message.feedback as IPlayerDTD[]
+            break
+          case 'playerRole':
+            gameState.gamedata.players = message.feedback as IPlayerDTD[]
+            break
+          case 'gameStart':
+            gameState.gamedata = message.feedback as IGameDTD
+            console.log(gameState)
+            break
+          case 'themeUpdate':
+            const themeStore = useThemeStore()
+            const newTheme = message.feedback as string
+            if (themeStore.themes[newTheme]) {
+              themeStore.selectedTheme = newTheme
+              console.log(`Theme updated to: ${newTheme}`)
+            } else {
+              console.error('Received invalid theme:', newTheme)
+            }
+            break
+          case'mapUpdate':
+            const mapStore = useMapStore();
+            const newMapName = message.feedback;
+            const updatedMap = mapStore.mapsDTD.maps.find(map => map.name === newMapName);
+            if (updatedMap) {
+              mapStore.mapsDTD.selectedMap = updatedMap;
+              console.log(`Map updated to: ${updatedMap.name}`);
+            } else {
+              console.error('Received invalid map:', newMapName);
+            }
+            break;
+          case 'playerMoveValidation':
+            console.log("test")
+            break;
+          case 'chickenPositions':
+            gameState.gamedata.chickens = message.feedback as IChickenDTD[]
+            break;
+          default:
+            console.error('Unknown message type:', message.type)
+        }
+        resolve(true)
       } else {
-        throw new Error(result.message);
+        modal.setErrorMessage(message.feedback as string)
+        stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
+        resolve(false)
       }
-    } catch (error) {
-      console.error("Fehler beim Überprüfen, ob das Spiel privat ist:", error);
-      return false;
     }
-  }
+
+    async function isGamePrivate(gameId: string): Promise<boolean> {
+      try {
+        const response = await fetch(`${restUrl}/${gameId}/isPrivate`);
+        const result = await response.json();
+
+        if (result.status === "ok") {
+          return result.isPrivate;
+        } else {
+          throw new Error(result.message);
+        }
+      } catch (error) {
+        console.error("Fehler beim Überprüfen, ob das Spiel privat ist:", error);
+        return false;
+      }
+    }
 
   return {
     gameState,
+    jumpAllowed,
     createGame,
     startGameViaStomp,
     endGame,
@@ -410,6 +452,8 @@ export const useGameStore = defineStore('gameStore', () => {
     setPlayerRoleViaStomp,
     closeTab,
     isGamePrivate,
+    resetGameState,
+    getJumpAllowed,
     subscribeToChickenPositions
   }
 })

@@ -1,16 +1,19 @@
 package de.hs_rm.backend.gamelogic;
 
 import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.players.Item;
+import de.hs_rm.backend.gamelogic.characters.players.NutriScore;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,6 +32,8 @@ class GameTest{
     /*
     private Game game;
     private Player mockGamemaster;
+    @TempDir
+    Path tempDir;
 
     @BeforeEach
     void setUp() {
@@ -38,7 +43,7 @@ class GameTest{
         when(mockGamemaster.getPlayerrole()).thenReturn(PlayerRole.GHOST);
 
         // Initialisierung des Spiels
-        game = new Game(mockGamemaster);
+        game = new Game(mockGamemaster, 3, 5, 1,1, 10);
     }
     /*
 
@@ -107,7 +112,7 @@ class GameTest{
     */
 
     /*
-    
+
     @Test
     void testMoveCharacter() {
         // Mock PlayMap and Tiles
@@ -135,7 +140,7 @@ class GameTest{
         when(newPlayer.getPlayerrole()).thenReturn(PlayerRole.SNACKMAN);
     
         // Füge einen Charakter hinzu
-        Character character = new Snackman(1.0, 0, 0,3, 3); // Charakter startet bei (0, 0)
+        Character character = new Snackman(5.0,10,20,3, 3,25); // Charakter startet bei (0, 0)
         game.addPlayer(newPlayer);
         game.addCharacter("Player1", character);
     
@@ -157,7 +162,7 @@ class GameTest{
         assertEquals(2, character.getPosY(), "Character's Y position should be updated to 2.");
     }
     */
-    
+
     /*
     @Test
     void testCannotKickGamemaster() {
@@ -166,7 +171,7 @@ class GameTest{
         assertFalse(result, "Der Gamemaster sollte nicht entfernt werden können.");
     }
     */
-    /* 
+    /*
     private List<Tile> createMockTilesList(int size) {
         List<Tile> tiles = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -205,7 +210,7 @@ class GameTest{
         Set<String> ids = new HashSet<>();
 
         for (int i = 0; i < numGames; i++) {
-            Game game = new Game(new Player("TestPlayer" + i));
+            Game game = new Game(new Player("TestPlayer" + i),3, 5, 1,1, 10);
             String gameId = game.getId();
 
             // Überprüfen, ob die Länge der ID der erwarteten Länge entsprich
@@ -229,7 +234,7 @@ class GameTest{
             executor.submit(() -> { // Startet einen neuen Thread
                 try {
                     for (int j = 0; j < numIdsPerThread; j++) {
-                        Game game = new Game(new Player("ThreadPlayer"));
+                        Game game = new Game(new Player("ThreadPlayer"), 3, 5, 1,1, 10);
                         ids.add(game.getId());
                     }
                 } finally {
@@ -249,7 +254,7 @@ class GameTest{
     @Test // Spielende wird überprüft
     void testEnd() {
         Player gamemaster = new Player("TestMaster");
-        Game game = new Game(gamemaster);
+        Game game = new Game(gamemaster, 3, 5, 1,1, 10);
 
         boolean isEnded = game.end();
 
@@ -260,7 +265,7 @@ class GameTest{
     @Test // Spieler kann erfolgreich entfernt werden
     void testKickPlayerSuccessful() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         Player player1 = new Player("Player1");
         Player player2 = new Player("Player2");
@@ -277,7 +282,7 @@ class GameTest{
     @Test // Gamemaster kann nicht entfernt werden
     void testKickFailsIfKickedIsGamemaster() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         boolean wasKicked = game.kick("Master", "Master");
 
@@ -287,7 +292,7 @@ class GameTest{
     @Test // Nur Gamemaster darf kicken
     void testKickFailsIfNotKickedByGamemaster() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         Player player1 = new Player("Player1");
         Player player2 = new Player("Player2");
@@ -305,7 +310,7 @@ class GameTest{
     @Test /// Nicht vorhandene Spieler können nicht entfernt werden
     void testKickFailsIfPlayerNotFound() {
         Player gamemaster = new Player("Master");
-        Game game = new Game(gamemaster);
+        Game game = new Game(gamemaster,  3, 5, 1,1, 10);
 
         Player player1 = new Player("Player1");
         game.addPlayer(player1);
@@ -317,11 +322,26 @@ class GameTest{
         assertEquals(2, game.getPlayers().size());
     }
 
-    /* 
+    @Test // Überprüft, die berechung von MaxPointsSnackman
+    void testCalculateMaxPointsSnackman() {
+        List<FoodItems> placedSnacks = List.of(
+            new FoodItems("Apple", 0, 0,  NutriScore.A),
+            new FoodItems("Apple", 1, 1,  NutriScore.A),
+            new FoodItems("Apple", 2, 2,  NutriScore.A)
+        );
+
+        game.setPlacedSnacks(placedSnacks);
+        game.calculateMaxPointsSnackman();
+
+        assertEquals(30, game.getMaxPointsSnackman());
+    }
+
+    /*
+    /*
     @Test // Auf den Spielfeld bewegen
     void testMove() throws IOException {
         // Pfad zur temporären Test-Datei
-        Path resourcePath = Path.of("src/main/resources/maps/tempMap.txt");
+        Path resourcePath = tempDir.resolve("tempMap.txt");
         // Test-Datei
         Files.write(resourcePath, """
                 ****
@@ -332,11 +352,11 @@ class GameTest{
                 """.stripIndent().getBytes());
 
         // Lade Karte und erstelle Spiel
-        PlayMap playmap = new PlayMap("tempMap");
+        PlayMap playmap = new PlayMap("tempMap", tempDir.toString() + "/");
         playmap.createTiles();
         Player player = new Player("testPlayer");
         player.setPlayerrole(PlayerRole.SNACKMAN);
-        Game game = new Game(player);
+        Game game = new Game(player,  3, 5, 1,1, 10, 25);
         game.setPlaymap(playmap);
 
         // Positioniere Snackman auf einem zufälligen gültigen Tile
@@ -348,7 +368,7 @@ class GameTest{
             randomTile = playmap.getTilesList().get(index);
         } while (randomTile.getType() != TileType.SURFACE || randomTile.hasCharacter());
 
-        Snackman snackman = new Snackman(1.0, index % playmap.getWidth(), index / playmap.getWidth(), 3, 3);
+        Snackman snackman = new Snackman(1.0, index % playmap.getWidth(), index / playmap.getWidth(), 3, 3,25);
         game.getCharacters().put(player.getName(), snackman);
         randomTile.addCharacter(snackman);
         game.setCharacters(game.getCharacters());
@@ -358,13 +378,13 @@ class GameTest{
         assertEquals(snackman.getPosY(), index / playmap.getWidth());
 
         // Bewegung testen
-        boolean surface = game.move("testPlayer", 2, 1); // gültig
-        boolean wall = game.move("testPlayer", 0, 1); // Wand
-        boolean edge = game.move("testPlayer", 0, 0); // Ecke
+        boolean surface = game.move("testPlayer", 2, 1, 1); // gültig
+        boolean wall = game.move("testPlayer", 0, 1, 1); // Wand
+        boolean edge = game.move("testPlayer", 0, 0, 1); // Ecke
 
         // Out-of-Bounds testen
         assertThrows(IndexOutOfBoundsException.class, () -> {
-            game.move("testPlayer", -1, -1); // ungültig
+            game.move("testPlayer", -1, -1, 1); // ungültig
         });
 
         // Validierung der Ergebnisse
@@ -374,8 +394,6 @@ class GameTest{
         assertEquals(2, snackman.getPosX());
         assertEquals(1, snackman.getPosY());
 
-        // Entferne Testdatei
-        Files.delete(resourcePath);
     }
     */
 }
