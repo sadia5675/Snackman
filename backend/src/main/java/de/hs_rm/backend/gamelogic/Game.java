@@ -125,7 +125,7 @@ public class Game {
     // vordefinierten ObjectsItems --> Pos muss geändert werden
     private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
             new GhostObjectItem("Speed Boost", -1, -1, "Increases movement speed temporarily"),
-            new GhostObjectItem("Shield", -1, -1, "Provides temporary invincibility"),
+            new SnackmanObjectItem("Shield", -1, -1, "Provides temporary invincibility"),
             new SnackmanObjectItem("Double Points", -1, -1, "Doubles points gained for a limited time"),
             new SnackmanObjectItem("Extra Life", -1, -1, "Grants an extra life"));
 

@@ -98,12 +98,7 @@ public abstract class Character{
 
 
     public void collectObjectItem(ObjectsItems item) {
-        if (currentObjectItem == null) {
             currentObjectItem = item;
-            logger.info("ObjectItem '{}' collected.", item.getName());
-        } else {
-            logger.warn("Cannot collect '{}': Character already has an ObjectItem '{}'.", item.getName(), currentObjectItem.getName());
-        }
     }
     public abstract void useItem(ObjectsItems item);
 

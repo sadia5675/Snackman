@@ -10,12 +10,6 @@ import org.slf4j.LoggerFactory;
 import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.*;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
-import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
-import de.hs_rm.backend.gamelogic.characters.players.Ghost;
-import de.hs_rm.backend.gamelogic.characters.players.Item;
-import de.hs_rm.backend.gamelogic.characters.players.ObjectsItems;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
-import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 
 public class Tile {
     private TileType type;
@@ -85,6 +79,7 @@ public class Tile {
                         itemWasRecentlyCollected = true;
                     } else if (item instanceof ObjectsItems) {
                         snackman.collectObjectItem((ObjectsItems) item);
+                        snackman.useItem((ObjectsItems) item);
                         itemWasRecentlyCollected = true;
                     }
                     itemsToRemove.add(item);
@@ -92,6 +87,7 @@ public class Tile {
                         && item instanceof ObjectsItems) {
                     Ghost ghost = (Ghost) character;
                     ghost.collectObjectItem((ObjectsItems) item);
+                    ghost.useItem((ObjectsItems) item);
                     itemWasRecentlyCollected = true;
                     itemsToRemove.add(item);
                 }
