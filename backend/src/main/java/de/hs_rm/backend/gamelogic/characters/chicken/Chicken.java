@@ -74,6 +74,7 @@ public class Chicken {
                 pyInterpreter.set("chicken", this);
                 // pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
                 pyInterpreter.set("environment", environmentApi);
+                pyInterpreter.set("CALORIESBONUS", CALORIESBONUS_EGG);
 
                 pyInterpreter.execfile(scriptFile.getAbsolutePath());
                 LOGGER.info("Python Skript erfolgreich gestartet");

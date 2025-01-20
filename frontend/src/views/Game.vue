@@ -1089,28 +1089,22 @@ function renderChicken(chickenData: IChickenDTD[]) {
       if (existingChickenModel) {
         if(chicken.currentCalorie !== undefined && chicken.currentCalorie >= 0 && chicken.currentCalorie < 100) {
           existingChickenModel.scale.set(0.5, 0.5, 0.5);
-          moveChicken(existingChickenModel, chicken);
         } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 100 && chicken.currentCalorie < 200) {
           existingChickenModel.scale.set(0.7, 0.6, 0.6);
-          moveChicken(existingChickenModel, chicken);
         } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 200  && chicken.currentCalorie < 300) {
           existingChickenModel.scale.set(1.0, 0.8 , 0.8);
-          moveChicken(existingChickenModel, chicken);
         } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 300  && chicken.currentCalorie < 400) {
           existingChickenModel.scale.set(1.2, 1.0 , 1.0);
-          moveChicken(existingChickenModel, chicken);
         } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 400  && chicken.currentCalorie < 500) {
           existingChickenModel.scale.set(1.5, 1.2 , 1.2);
-          moveChicken(existingChickenModel, chicken);
         } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 500  && chicken.currentCalorie < 600) {
           existingChickenModel.scale.set(1.8, 1.4 , 1.4);
-          moveChicken(existingChickenModel, chicken);
         } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 600) {
           existingChickenModel.scale.set(2.0, 1.5, 1.5);
           renderEgg();
         }
 
-        // moveChicken(existingChickenModel, chicken);
+        moveChicken(existingChickenModel, chicken);
         console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
 
       }
