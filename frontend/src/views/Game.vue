@@ -1173,7 +1173,7 @@ function renderChicken(chickenData:  IChickenDTD[]){
     if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
       loadingChickens .add(chicken.id);
       console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
-      const chickenModelURL =new URL('@/assets/chicken/chicken.glb', import.meta.url).href;
+      const chickenModelURL =new URL('@/assets/chicken/newerchicken.glb', import.meta.url).href;
       console.log("Chcieken url", chickenModelURL);
       console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
