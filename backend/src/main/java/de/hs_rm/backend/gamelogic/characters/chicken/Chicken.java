@@ -55,6 +55,7 @@ public class Chicken {
     public Egg eatSnack(FoodItems item, int posX, int posY){
         this.currentCalorie += item.getNutriScore().getCalorieBonus();
         if(this.currentCalorie>= this.CALORIESBONUS_EGG){
+            System.out.println("Egg created");
             this.currentCalorie = this.currentCalorie - this.CALORIESBONUS_EGG;
             Egg newEgg = new Egg(posX,posY);
             this.eggList.add(newEgg);

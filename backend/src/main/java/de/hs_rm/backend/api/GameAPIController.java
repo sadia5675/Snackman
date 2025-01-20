@@ -20,6 +20,7 @@ import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.messaging.response.CollisionValidationResponse;
+import de.hs_rm.backend.messaging.response.EggcreatedResponse;
 import de.hs_rm.backend.messaging.response.ItemCollectedResponse;
 import de.hs_rm.backend.messaging.response.PlayerMoveValidationResponse;
 import de.hs_rm.backend.messaging.response.PlayerPositionResponse;
@@ -298,6 +299,12 @@ public class GameAPIController {
                 if(itemCollected){
                     ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
                     messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
+                }
+
+                boolean eggLayed = gameService.checkEggLayed(lobbyid);
+                if(eggLayed){
+                    EggcreatedResponse eggcreatedResponse = new EggcreatedResponse(position.getPosX(), position.getPosY());
+                    messagingService.sendEggUpdate(lobbyid, eggcreatedResponse);
                 }
                 
                 // sende das die Validation in Ordnung war

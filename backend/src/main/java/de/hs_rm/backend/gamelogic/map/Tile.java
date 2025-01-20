@@ -18,6 +18,8 @@ public class Tile {
     List<Chicken> chickenList;
 
     boolean itemWasRecentlyCollected = false;
+
+    boolean eggRecentlyLayed = false;
     Logger logger = LoggerFactory.getLogger(Tile.class);
 
     public Tile(TileType type) {
@@ -144,6 +146,7 @@ public class Tile {
                     this.itemWasRecentlyCollected = true;
 
                     if(egg != null){
+                        this.eggRecentlyLayed = true;
                         itemList.remove(item);
                         logger.info("Item '{}' removed from tile", item.getName());
                         //Ei wird hier zum Tile hinzugefügt
@@ -226,6 +229,11 @@ public class Tile {
         this.chickenList = chickenList;
     }
 
+    public boolean isEggRecentlyLayed() {
+        return eggRecentlyLayed;
+    }
 
-
+    public void setEggRecentlyLayed(boolean eggRecentlyLayed) {
+        this.eggRecentlyLayed = eggRecentlyLayed;
+    }
 }
