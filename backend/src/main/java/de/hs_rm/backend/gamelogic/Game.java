@@ -15,6 +15,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
@@ -65,6 +67,9 @@ public class Game {
     private Map<String, Character> characters; // for game (after game start), strinng for username
     private List<PlayerPosition> spawnPoints;
 
+    @Value("${egg.caloriesbonus}")
+    private int CALORIESBONUS_EGG;
+
     public List<PlayerPosition> getSpawnPoints() {
         return spawnPoints;
     }
@@ -85,6 +90,7 @@ public class Game {
     public void setSelectedTheme(String selectedTheme) {
         this.selectedTheme = selectedTheme;
     }
+
 
     public Map<String, Object> getCharacterDataWithNames() {
         Map<String, Object> characterData = new HashMap<>();
@@ -551,6 +557,10 @@ public class Game {
     public synchronized boolean move(String username, double posX, double posY, double posZ, double angle) {
         Character curCharacter = characters.get(username);
 
+        if(CALORIESBONUS_EGG == 0){
+            CALORIESBONUS_EGG = 400;
+        }
+
         int roundedPosX = (int) Math.floor(posX);
         int roundedPosY = (int) Math.floor(posY);
 
@@ -572,6 +582,15 @@ public class Game {
             return false;
         }
         Tile targetTile = playmap.getTilesList().get(targetIndex);
+
+        for(Chicken chicken: targetTile.getChickenList()){
+            LOGGER.info("Chicken aktuelle CAL {}", chicken.getCurrentCalorie());
+            if(chicken.getCurrentCalorie() >= CALORIESBONUS_EGG){
+                LOGGER.info("Kollision mit einem fetten Chicken: Zielkoordinaten posX={}, posY={}", posX, posY);
+                LOGGER.info("Chicken aktuelle Cal {} maxCal {}", chicken.getCurrentCalorie(), CALORIESBONUS_EGG);
+                return false;
+            }
+        }
 
         // Ziel-Tile prüfen
         if (targetTile.getType() == TileType.WALL && curCharacter.getPosZ() < 3) {
