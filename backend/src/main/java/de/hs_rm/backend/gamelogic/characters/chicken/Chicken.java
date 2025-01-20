@@ -94,7 +94,7 @@ public class Chicken {
     public void stopBehaviour(){
         LOGGER.info("Stoppe run_auto()");
         if(pyInterpreter != null) {
-            pyInterpreter.exec("stop_auto");
+            pyInterpreter.exec("stop_auto()");
         }
     }
 
