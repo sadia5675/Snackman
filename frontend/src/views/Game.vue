@@ -1300,6 +1300,7 @@ async function handleChickenPositions(data: IChickenDTD[]) {
       eggList: chicken.eggList || [],
       currentCalorie: chicken.currentCalorie
     });
+    removeItemFromSceneByPosition(chicken.posY,chicken.posX);
     console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });
   renderChicken(chickenPositions)

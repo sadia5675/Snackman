@@ -132,6 +132,7 @@ public class Tile {
     }
 
     public boolean addChicken(Chicken chicken) {
+        List<Item> itemsToRemove = new ArrayList<>();
         this.chickenList.add(chicken);
         if (!itemList.isEmpty()) {
             // TODO: Item hier nehmen
@@ -139,6 +140,9 @@ public class Tile {
                 if(item instanceof FoodItems){
                     FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
                     Egg egg = chicken.eatSnack(foodItem, chicken.getPosX(), chicken.getPosY());
+                    itemsToRemove.add(foodItem);
+                    this.itemWasRecentlyCollected = true;
+
                     if(egg != null){
                         itemList.remove(item);
                         logger.info("Item '{}' removed from tile", item.getName());
@@ -150,6 +154,8 @@ public class Tile {
 
                 }
             }
+            itemsToRemove.forEach(item -> itemList.remove(item));
+            itemsToRemove.clear();
         }
         return true;
     }
