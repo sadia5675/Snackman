@@ -19,9 +19,11 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
+import de.hs_rm.backend.messaging.errorResponse.LeaveErrorResponse;
 import de.hs_rm.backend.messaging.response.CollisionValidationResponse;
 import de.hs_rm.backend.messaging.response.EggcreatedResponse;
 import de.hs_rm.backend.messaging.response.ItemCollectedResponse;
+import de.hs_rm.backend.messaging.response.LeaveResponse;
 import de.hs_rm.backend.messaging.response.PlayerMoveValidationResponse;
 import de.hs_rm.backend.messaging.response.PlayerPositionResponse;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
@@ -253,39 +255,16 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/leave")
     @SendTo("/topic/game/{lobbyid}")
     public void leaveLobby(Player player, @DestinationVariable String lobbyid) {
-        HashMap<String, Object> response = new HashMap<>();
 
         try {
-            Game existingGame = gameService.getGameById(lobbyid);
-
-            if (existingGame == null) {
-                logger.error("No game found with ID: {}", lobbyid);
-                response.put("type", "playerLeave");
-                response.put("feedback", "Game with ID " + lobbyid + " not found.");
-                response.put("status", "error");
-                response.put("time", LocalDateTime.now().toString());
-                messagingService.sendPlayerList(lobbyid, response);
-                return;
-            }
-
             // Spieler aus dem Spiel entfernen
-            existingGame = gameService.leaveGame(lobbyid, player);
-            if(existingGame == null){
-                return;
-            }
-
-            response.put("feedback", existingGame.getPlayers());
-            response.put("status", "ok");
-            response.put("time", LocalDateTime.now().toString());
-            messagingService.sendPlayerList(lobbyid, response);
+            List<Player> players = gameService.leaveGame(lobbyid, player);
+            LeaveResponse leaveResponse = new LeaveResponse("playerLeave", "ok", players);
+            messagingService.sendPlayerLeave(lobbyid, leaveResponse);
 
         } catch (GameLeaveException e) {
-            response.put("type", "playerLeave");
-            response.put("feedback", e.getMessage());
-            response.put("status", "error");
-            response.put("time", LocalDateTime.now().toString());
-
-            messagingService.sendPlayerList(lobbyid, response);
+            LeaveErrorResponse leaveErrorResponse = new LeaveErrorResponse("playerLeave", "error", e.getMessage());
+            messagingService.sendPlayerLeave(lobbyid, leaveErrorResponse);
         }
     }
 

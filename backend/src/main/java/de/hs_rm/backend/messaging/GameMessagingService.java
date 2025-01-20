@@ -28,6 +28,10 @@ public class GameMessagingService {
         template.convertAndSend("/topic/game/" + lobbyid, ev);
     }
 
+    public void sendPlayerLeave(String lobbyid, Object res){
+        template.convertAndSend("/topic/game/" + lobbyid, res);
+    }
+
     public void sendNewCharacterPosition(String lobbyid, Object position){
         //logger.info("Sending playerPositions");
         template.convertAndSend("/topic/ingame/playerPositions/" + lobbyid, position);
@@ -46,6 +50,7 @@ public class GameMessagingService {
         logger.info("Sending egg update to lobby {}: {}", lobbyid, eggUpdate);
         template.convertAndSend("/topic/ingame/" + lobbyid + "/chicken/eggUpdate", eggUpdate);
     }
+
 
     // ToDo Aron
     // Chicken Daten ans Frontend schicken
