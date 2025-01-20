@@ -14,13 +14,17 @@ chickenObj.setAngle(0)
 chicken_index_environment_list = 4
 
 
-print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
+
 
 def right_hand_algo():
+    print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
 
     print("CHICKEN KALORIE: ", chickenObj.getCurrentCalorie())
-    if ((chickenObj.getCurrentCalorie()) > 50):
-        time.sleep(20)
+    # print("KALORIES BONUS EGG: ", CALORIESBONUS_EGG)
+    # if (chickenObj.getCurrentCalorie() >= CALORIESBONUS_EGG):
+    #     time.sleep(5)
+    if (chickenObj.getCurrentCalorie() >= 600):
+        time.sleep(5)
 
    
     actuell_environment = environmentObj.getEnvironment(chickenObj.getPosX(), chickenObj.getPosY())
