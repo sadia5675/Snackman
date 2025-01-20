@@ -1371,7 +1371,10 @@ onMounted(async () => {
         }
         // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
           if (winnerRole.value !== null) {
-            setTimeout(() => router.push({ name: 'GameEnd' }), 500);
+            setTimeout(() => {
+              stompClient.deactivate(),
+              router.push({ name: 'GameEnd' });
+            }, 500);
           }
         break;
       }

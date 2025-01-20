@@ -415,7 +415,7 @@ export const useGameStore = defineStore('gameStore', () => {
         resolve(true)
       } else {
         modal.setErrorMessage(message.feedback as string)
-        stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
+        //stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
         resolve(false)
       }
     }
