@@ -382,7 +382,7 @@ const threeContainer = ref<null | HTMLElement>(null)
 
 
 //Ball
-const sphereGeometry = new THREE.SphereGeometry(1, 30, 30)
+const sphereGeometry = new THREE.SphereGeometry(0.5, 30, 30)
 const sphereMaterial = new THREE.MeshStandardMaterial({
   color: 0xffff00,
   metalness: 0,
