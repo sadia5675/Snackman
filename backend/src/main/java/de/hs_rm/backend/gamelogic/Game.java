@@ -62,6 +62,7 @@ public class Game {
     private String password;
 
     private static final int CHARGE_JUMP_COST = 100;
+    private static final int NORMAL_JUMP_COST = 10;
 
     private Map<String, Character> characters; // for game (after game start), strinng for username
     private List<PlayerPosition> spawnPoints;
@@ -598,14 +599,21 @@ public class Game {
         return false;
     }
 
-    public boolean isValidChargeJump(String playerId) {
+    public boolean isValidJump(String playerId, String jumpType) {
         boolean isValid = false;
         Character potentialJumper = characters.get(playerId);
         if (potentialJumper instanceof Snackman player) {
             int nutriScore = player.getCurrentPoints();
-            if (nutriScore >= CHARGE_JUMP_COST) {
-                isValid = true;
-                player.setCurrentPoints(Math.max(nutriScore - CHARGE_JUMP_COST, 0));
+            if (jumpType.equals("charge")) {
+                if (nutriScore >= CHARGE_JUMP_COST) {
+                    isValid = true;
+                    player.setCurrentPoints(Math.max(nutriScore - CHARGE_JUMP_COST, 0));
+                }
+            } else if (jumpType.equals("normal")) {
+                if (nutriScore >= NORMAL_JUMP_COST) {
+                    isValid = true;
+                    player.setCurrentPoints(Math.max(nutriScore - NORMAL_JUMP_COST, 0));
+                }
             }
         }
         return isValid;
