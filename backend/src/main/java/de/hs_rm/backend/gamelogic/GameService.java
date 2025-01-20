@@ -1,13 +1,18 @@
 package de.hs_rm.backend.gamelogic;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
+import de.hs_rm.backend.gamelogic.map.Tile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
 
 @Service
 public class GameService {
@@ -34,6 +41,7 @@ public class GameService {
 
     @Value("${game.itemsPerSurfaceRatio}")
     private int itemsPerSurfaceRatio;
+    
     
     private Map<String,Game> gameList = new HashMap<String,Game>();
     Logger logger = LoggerFactory.getLogger(GameService.class);
@@ -194,28 +202,86 @@ public class GameService {
         return game;
     }
 
-    public boolean move(String username, int targetX, int targetY, int targetZ, double angle) {
-        // Um den Spieler zu finden
-        for (Game game : gameList.values()) {
-            Player player = game.findPlayerByUsername(username);
-            if (player != null) {
-                // Spielfeldgrenzen
-                if (targetX < 0 || targetY < 0 || targetX >= game.getPlaymap().getWidth()
-                        || targetY >= game.getPlaymap().getHeight()) {
-                    throw new IllegalArgumentException(
-                            "Target position (" + targetX + ", " + targetY + ") is out of bounds.");
-                }
-                //Bewegung
-                boolean success = game.move(username, targetX, targetY, targetZ,angle);
-                if (!success) {
-                    throw new IllegalArgumentException(
-                            "Failed to move Player '" + username + "'. Tile is a wall");
-                } else {
-                    return success;
-                }
-            }
+    public Map<String,Character> getCharacterListByGameId(String lobbyId){
+        Game existingGame = getGameById(lobbyId);
+
+        if(existingGame == null) {
+            throw new IllegalArgumentException("No Game Found");
         }
-        throw new IllegalArgumentException("Player '" + username + "' not found in any game.");
+
+        return existingGame.getCharacters();
+    }
+
+    public Collection<Object> getCharactersByGameId(String lobbyId){
+        Game existingGame = getGameById(lobbyId);
+
+        if(existingGame == null) {
+            throw new IllegalArgumentException("No Game Found");
+        }
+
+        return existingGame.getCharacterDataWithNames().values();
+    }
+
+    public boolean move(String lobbyid, PlayerPosition position) {
+        Game existingGame = getGameById(lobbyid);
+
+        if(existingGame == null){
+            throw new IllegalArgumentException("No Game Found");
+        }
+
+        if(existingGame.isStarted()){
+            boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(), position.getPosZ(), position.getAngle());
+
+            // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
+            // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
+            // 4 Himmelsrichtungen)
+            if (!validMove) {
+              validMove = adjustPlayerPositon(existingGame, null);   
+            }
+
+            return validMove;
+        }
+
+        return false;
+    }
+
+    public boolean adjustPlayerPositon(Game existingGame, PlayerPosition position){
+        //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
+        float offset = 0.005f;
+
+        if (existingGame.move(position.getPlayerName(),Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
+            position.setPosX((float) (Math.round(position.getPosX()) + offset));
+            return true;
+        } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
+            position.setPosY((float) (Math.round(position.getPosY()) + offset));
+            return true;
+        } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
+            position.setPosX((float) (Math.floor(position.getPosX()) - offset));
+            return true;
+        } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
+            position.setPosY((float) (Math.floor(position.getPosY()) - offset));
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean checkItemCollcted(String lobbyid){
+        Game existingGame = getGameById(lobbyid);
+        for(Tile tile : existingGame.getPlaymap().getTilesList()){
+                if (tile.isItemWasRecentlyCollected()) {  
+                    tile.setItemWasRecentlyCollected(false);
+                    return true;
+                }
+        }
+        return false;
+    }
+
+    public PlayerRole checkWinner(String lobbyid){
+        Game existingGame = getGameById(lobbyid);
+
+        existingGame.determineWinner();
+        return existingGame.getWinnerRole();
     }
 
     public void setGameList(Map<String, Game> gameList) {

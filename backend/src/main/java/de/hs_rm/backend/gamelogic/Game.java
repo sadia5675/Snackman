@@ -473,15 +473,6 @@ public class Game {
 
     }
 
-    public boolean moveTest(String username, double posX, double posY, double posZ, double angle) {
-        Character curCharacter = characters.get(username);
-
-        curCharacter.move(posX, posY, posZ, angle);
-        // LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),
-        // curCharacter.getPosY());
-        return true;
-    }
-
     public boolean isItemCollected(double posX, double posY) {
         // Implement the logic to check if an item was collected at the given position
         Tile tile = getTileAtPosition(posX, posY);
