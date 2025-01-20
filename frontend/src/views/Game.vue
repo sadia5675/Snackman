@@ -23,8 +23,8 @@ import {
 
 
 const themeStore = useThemeStore();
-import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
-import type { Message } from 'postcss'
+import type {IChickenDTD} from '@/stores/game/dtd/IChickenDTD'
+import type {Message} from 'postcss'
 
 const gameStore = useGameStore()
 const route = useRoute()
@@ -43,9 +43,9 @@ const map = ref<string[] | undefined>(undefined);
 
 //Movement
 let movingForward: boolean,
-    movingBackward: boolean,
-    movingLeft: boolean,
-    movingRight: boolean = false
+  movingBackward: boolean,
+  movingLeft: boolean,
+  movingRight: boolean = false
 const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
@@ -129,24 +129,24 @@ function showCollisionMessage(message: string) {
 const snackmanLife = computed(() => currentCharacter.value?.life ?? 0);
 
 watch(
-    () => currentCharacter.value?.life,
-    (newLife, oldLife) => {
-      if (newLife !== oldLife) {
-        console.log(`Life changed from ${oldLife} to ${newLife}`);
-      }
+  () => currentCharacter.value?.life,
+  (newLife, oldLife) => {
+    if (newLife !== oldLife) {
+      console.log(`Life changed from ${oldLife} to ${newLife}`);
     }
+  }
 );
 
 // Ghost-Touches aktualisieren
 const ghostTouch = computed(() => currentCharacter.value?.touchcount ?? 0);
 
 watch(
-    () => currentCharacter.value?.touchcount,
-    (newTouches, oldTouches) => {
-      if (newTouches !== oldTouches) {
-        console.log(`Ghost-Touches changed from ${oldTouches} to ${newTouches}`);
-      }
+  () => currentCharacter.value?.touchcount,
+  (newTouches, oldTouches) => {
+    if (newTouches !== oldTouches) {
+      console.log(`Ghost-Touches changed from ${oldTouches} to ${newTouches}`);
     }
+  }
 );
 
 // Maximales Leben des Charakters
@@ -162,13 +162,13 @@ const requiredPointsToWin = computed(() => snackmanMaxPoints.value / 2);
 const snackmanPoints = computed(() => currentCharacter.value?.currentPoints ?? 0);
 
 watch(
-    () => currentCharacter.value?.currentPoints,
-    (newPoints, oldPoints) => {
-      if (newPoints !== oldPoints) {
-        console.log(`Points changed from ${oldPoints} to ${newPoints}`);
-        // Zusätzliche Logik, z. B. Punkte-Animationen
-      }
+  () => currentCharacter.value?.currentPoints,
+  (newPoints, oldPoints) => {
+    if (newPoints !== oldPoints) {
+      console.log(`Points changed from ${oldPoints} to ${newPoints}`);
+      // Zusätzliche Logik, z. B. Punkte-Animationen
     }
+  }
 );
 // Role die gewonnen hat
 const winnerRole = computed(() => gameStore.gameState.gamedata.winnerRole ?? null);
@@ -288,8 +288,8 @@ function handleGamepadInput(delta: number) {
       // Optional: Vertikale Kamera-Rotation
       const maxVerticalAngle = Math.PI / 4; // Begrenze vertikale Rotation (z.B. +/- 45°)
       camera.rotation.x = Math.max(
-          -maxVerticalAngle,
-          Math.min(maxVerticalAngle, camera.rotation.x - rightStickY * delta * 2.5)
+        -maxVerticalAngle,
+        Math.min(maxVerticalAngle, camera.rotation.x - rightStickY * delta * 2.5)
       );
     }
   }
@@ -362,7 +362,7 @@ function loadMusic() {
 }
 
 const {scene, camera, renderer, pointerLockControls, clock, listener} =
-    createSceneCameraRendererControlsClockListener()
+  createSceneCameraRendererControlsClockListener()
 
 let controllLocked = watch(pointerLockControls, async (oldValue, newValue) => {
   console.log("CHANGE");
@@ -498,9 +498,9 @@ function triggerJumpAfterChargeTime(delta: number) {
 }
 
 function calculateMovementDirection(
-    cameraViewDirection: THREE.Vector3,
-    yPlaneVector: THREE.Vector3,
-    delta: number
+  cameraViewDirection: THREE.Vector3,
+  yPlaneVector: THREE.Vector3,
+  delta: number
 ): THREE.Vector3 {
   const movementVector = new THREE.Vector3();
 
@@ -508,46 +508,46 @@ function calculateMovementDirection(
   if (movingForward && !movingBackward) {
     if (movingRight && !movingLeft) {
       movementVector.addScaledVector(
-          cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
-          movementSpeed * delta
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (7 * Math.PI) / 4),
+        movementSpeed * delta
       );
     } else if (movingLeft && !movingRight) {
       movementVector.addScaledVector(
-          cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 4),
-          movementSpeed * delta
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 4),
+        movementSpeed * delta
       );
     } else {
       movementVector.addScaledVector(
-          cameraViewDirection.clone().applyAxisAngle(yPlaneVector, 2 * Math.PI),
-          movementSpeed * delta
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, 2 * Math.PI),
+        movementSpeed * delta
       );
     }
   } else if (movingBackward && !movingForward) {
     if (movingRight && !movingLeft) {
       movementVector.addScaledVector(
-          cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
-          movementSpeed * delta
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (5 * Math.PI) / 4),
+        movementSpeed * delta
       );
     } else if (movingLeft && !movingRight) {
       movementVector.addScaledVector(
-          cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
-          movementSpeed * delta
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 4),
+        movementSpeed * delta
       );
     } else {
       movementVector.addScaledVector(
-          cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI),
-          movementSpeed * delta
+        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI),
+        movementSpeed * delta
       );
     }
   } else if (movingRight && !movingLeft) {
     movementVector.addScaledVector(
-        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
-        movementSpeed * delta
+      cameraViewDirection.clone().applyAxisAngle(yPlaneVector, (3 * Math.PI) / 2),
+      movementSpeed * delta
     );
   } else if (movingLeft && !movingRight) {
     movementVector.addScaledVector(
-        cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 2),
-        movementSpeed * delta
+      cameraViewDirection.clone().applyAxisAngle(yPlaneVector, Math.PI / 2),
+      movementSpeed * delta
     );
   }
 
@@ -685,8 +685,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   const modelLoader = new GLTFLoader();
   const adjustAngle = Math.PI;
   const missingPlayers = Array.from(players.keys()).filter(
-      (playerName) =>
-          !playerPositions.map((position) => position.playerName).includes(playerName)
+    (playerName) =>
+      !playerPositions.map((position) => position.playerName).includes(playerName)
   );
   const snackmanModel = themeStore.currentTheme?.character.snackman;
   const ghostModel = themeStore.currentTheme?.character.ghost;
@@ -729,8 +729,8 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
         if (typeof modelPath === 'string') {
           loadingPath = modelPath
           scaleNumber = getAppropriateScaleNumberThemeCharacter(
-              playerData?.playerrole,
-              themeStore.selectedTheme.toString(),
+            playerData?.playerrole,
+            themeStore.selectedTheme.toString(),
           )
         } else {
           loadingPath = modelPath.path;
@@ -753,13 +753,13 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
           scene.add(sprite);
 
           model.position.set(
-              playerPosition.x,
-              1 +
-              getAppropriateYoffsetForThemeCharacter(
-                  playerData?.playerrole,
-                  themeStore.selectedTheme.toString(),
-              ),
-              playerPosition.y,
+            playerPosition.x,
+            1 +
+            getAppropriateYoffsetForThemeCharacter(
+              playerData?.playerrole,
+              themeStore.selectedTheme.toString(),
+            ),
+            playerPosition.y,
           )
           model.rotation.y = (playerPosition.angle * Math.PI * 2) + adjustAngle;
 
@@ -780,13 +780,13 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
           messungsBox.getSize(breite)
           messungsBox.expandByObject(model)
           model.position.set(
-              playerPosition.x - breite.x / 2,
-              playerPosition.z +
-              getAppropriateYoffsetForThemeCharacter(
-                  playerData?.playerrole,
-                  themeStore.selectedTheme.toString(),
-              ),
-              playerPosition.y,
+            playerPosition.x - breite.x / 2,
+            playerPosition.z +
+            getAppropriateYoffsetForThemeCharacter(
+              playerData?.playerrole,
+              themeStore.selectedTheme.toString(),
+            ),
+            playerPosition.y,
           )
           sprite.position.set(playerPosition.x, 1.5, playerPosition.y);
           model.rotation.y = playerPosition.angle + adjustAngle
@@ -860,18 +860,18 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
     if (!modelCache.has(url)) {
       modelCache.set(url, new Promise((resolve, reject) => {
         new GLTFLoader().load(
-            url,
-            (gltf) => {
-              const model = gltf.scene;
-              model.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                  child.castShadow = true;
-                }
-              });
-              resolve(model);
-            },
-            undefined,
-            (error) => reject(error)
+          url,
+          (gltf) => {
+            const model = gltf.scene;
+            model.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                child.castShadow = true;
+              }
+            });
+            resolve(model);
+          },
+          undefined,
+          (error) => reject(error)
         );
       }));
     }
@@ -923,8 +923,8 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
           };
 
           const randomModelPath = new URL(
-              itemPaths[tile][0],
-              import.meta.url
+            itemPaths[tile][0],
+            import.meta.url
           ).href;
           loadCachedModel(randomModelPath).then((model) => {
             const item = model.clone(); // Clone to avoid modifying the cached model
@@ -998,22 +998,22 @@ function addSkybox(scene: THREE.Scene, skyBoxPath: string | {
   const loader = new THREE.TextureLoader();
   if (typeof skyBoxPath === 'string') {
     loader.load(
-        skyBoxPath,
-        (texture) => {
-          const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
-          const sphereMaterial = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide,
-          });
+      skyBoxPath,
+      (texture) => {
+        const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.BackSide,
+        });
 
-          const skySphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-          scene.add(skySphere);
-          console.log("SkySphere erfolgreich hinzugefügt!");
-        },
-        undefined,
-        (error) => {
-          console.error("Fehler beim Laden der SkySphere-Textur:", error);
-        }
+        const skySphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(skySphere);
+        console.log("SkySphere erfolgreich hinzugefügt!");
+      },
+      undefined,
+      (error) => {
+        console.error("Fehler beim Laden der SkySphere-Textur:", error);
+      }
     );
   } else {
     const materials = [
@@ -1043,58 +1043,59 @@ function loadMapFromLocalStorage(): string[] | null {
   }
   return null;
 }
-function renderChicken(chickenData:  IChickenDTD[]){
+
+function renderChicken(chickenData: IChickenDTD[]) {
   console.log("INSIDE RENDER: ", chickenData);
-  const loader =new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
+  const loader = new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
   //Überprüfung ob es eine chicken id gibt wenn nicht wird ein erstellt und wenn ja wir die position aktualsiert
-  chickenData.forEach((chicken)=>{
+  chickenData.forEach((chicken) => {
     console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
     if (!chicken.id) {
       console.warn("Chicken hat keine ID:", chicken.id);
       return; // Weiterverarbeitung abbrechen
     }
-    if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
-      loadingChickens .add(chicken.id);
+    if (!chickens.has(chicken.id) && !loadingChickens.has(chicken.id)) {
+      loadingChickens.add(chicken.id);
       console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
-      const chickenModelURL =new URL('@/assets/chicken/chicken.glb', import.meta.url).href;
+      const chickenModelURL = new URL('@/assets/chicken/chicken.glb', import.meta.url).href;
       console.log("Chcieken url", chickenModelURL);
       console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
-        const model = gltf.scene;
+          const model = gltf.scene;
           model.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               child.castShadow = true;
             }
           });
           model.scale.set(0.5, 0.5, 0.5);
-        model.name = chicken.id;
-        chickens.set(chicken.id, model);
-        scene.add(model);
-        model.position.set(chicken.posX, 1, chicken.posY);
-        console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
-        loadingChickens .delete(chicken.id);
-      },
-        undefined,(error) => {
-            console.error("Fehler beim Laden des Chicken-Modells:", error);
+          model.name = chicken.id;
+          chickens.set(chicken.id, model);
+          scene.add(model);
+          model.position.set(chicken.posX, 1, chicken.posY);
+          console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+          loadingChickens.delete(chicken.id);
+        },
+        undefined, (error) => {
+          console.error("Fehler beim Laden des Chicken-Modells:", error);
         }
-
       );
-    }else{
+    } else {
       console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
-        const existingChickenModel = chickens.get(chicken.id)
-        if(existingChickenModel ){
-          moveChicken(existingChickenModel , chicken);
-          console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+      const existingChickenModel = chickens.get(chicken.id)
+      if (existingChickenModel) {
+        moveChicken(existingChickenModel, chicken);
+        console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
 
-        }
+      }
     }
   })
 
 }
 
 function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
-  const targetPosition = new THREE.Vector3(chickenData.posY + 0.5,.5,chickenData.posX + 0.5);
-  const currentPosition= modellChicken.position;
+  const targetPosition = new THREE.Vector3(chickenData.posY + 0.5, .5, chickenData.posX + 0.5);
+  const currentPosition = modellChicken.position;
+  modellChicken.rotation.y = ((chickenData.angle / 360) * (Math.PI * 2)) - (Math.PI / 2);
 
   console.log("Aktuelle Position:", currentPosition);
   console.log("Zielposition:", targetPosition);
@@ -1102,7 +1103,7 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
 
   const direction = targetPosition.clone().sub(currentPosition).normalize();
   const chickenSpeed = 1; // Geschwindigkeit des Chickens (Einheiten/Sekunde)
-  const delta= clock.getDelta();
+  const delta = clock.getDelta();
 
 
   console.log('Richtung:', direction);
@@ -1111,10 +1112,10 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
 
   if (currentPosition.distanceTo(targetPosition) < chickenSpeed * delta) {
     const movement = direction.multiplyScalar(chickenSpeed * delta);
-  modellChicken.position.add(movement);
-  console.log('Bewegung:', movement);
-  console.log('Bewegt zu:', modellChicken.position);
-  }else{
+    modellChicken.position.add(movement);
+    console.log('Bewegung:', movement);
+    console.log('Bewegt zu:', modellChicken.position);
+  } else {
     modellChicken.position.set(targetPosition.x, .5, targetPosition.z);
     console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
   }
@@ -1170,8 +1171,8 @@ async function handleCharacters(data: ICharacterDTD[]) {
 
 function removeItemFromSceneByPosition(posX: number, posY: number) {
   const itemToRemove = rotatingItems.find(
-      (item) =>
-          Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
+    (item) =>
+      Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
   );
 
   if (itemToRemove) {
@@ -1197,7 +1198,7 @@ watch([spawnX, spawnZ], ([newX, newZ]) => {
 
 async function handleChickenPositions(data: IChickenDTD[]) {
   console.log("Processing Chicken Positions:", data);
-  let chickenPositions: IChickenDTD[]= [];
+  let chickenPositions: IChickenDTD[] = [];
   data.forEach(chicken => {
     console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
 
@@ -1278,9 +1279,9 @@ onMounted(async () => {
           }
         }
         // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
-          if (winnerRole.value !== null) {
-            setTimeout(() => router.push({ name: 'GameEnd' }), 500);
-          }
+        if (winnerRole.value !== null) {
+          setTimeout(() => router.push({name: 'GameEnd'}), 500);
+        }
         break;
       }
 
@@ -1305,9 +1306,9 @@ onMounted(async () => {
   })
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
-        console.log("FROM CHICKEN POSITIONS: ", message);
-        await handleChickenPositions(message);
-    });
+    console.log("FROM CHICKEN POSITIONS: ", message);
+    await handleChickenPositions(message);
+  });
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
@@ -1351,7 +1352,7 @@ onMounted(async () => {
     console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
   }
 
-  if(spawnPoints != null){
+  if (spawnPoints != null) {
     spawnPoints.forEach(spawnPoint => {
       if (sessionStorage.getItem('myName') == spawnPoint.playerName) {
         spawnX.value = Number(spawnPoint.posX);
@@ -1359,35 +1360,35 @@ onMounted(async () => {
       }
     })
   }
-animate()
+  animate()
 })
 
 watch(
-    () => themeStore.selectedTheme,
-    (newTheme) => {
-      if (newTheme) {
-        console.log(`Theme geändert zu: ${newTheme}`);
-        const currentTheme = themeStore.currentTheme;
-        //console.log(`Ändere Skybox zu: ${themeStore.currentTheme.sky}`);
-        //addSkybox(scene, themeStore.currentTheme.sky); // Dynamisch Skybox ändern
-        //console.log("Skybox-Pfad:", themeStore.currentTheme.sky);
+  () => themeStore.selectedTheme,
+  (newTheme) => {
+    if (newTheme) {
+      console.log(`Theme geändert zu: ${newTheme}`);
+      const currentTheme = themeStore.currentTheme;
+      //console.log(`Ändere Skybox zu: ${themeStore.currentTheme.sky}`);
+      //addSkybox(scene, themeStore.currentTheme.sky); // Dynamisch Skybox ändern
+      //console.log("Skybox-Pfad:", themeStore.currentTheme.sky);
 
-        // Map neu laden, falls vorhanden
-        if (map.value && currentTheme) {
-          loadMap(map.value, {
-            ground: currentTheme.ground,
-            wall: currentTheme.wall,
-          });
-        } else {
-          console.error('Keine Map oder kein aktuelles Theme gefunden');
-        }
-        if (themeStore.currentTheme.skybox) {
-          addSkybox(scene, themeStore.currentTheme.skybox);
-        } else {
-          console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
-        }
+      // Map neu laden, falls vorhanden
+      if (map.value && currentTheme) {
+        loadMap(map.value, {
+          ground: currentTheme.ground,
+          wall: currentTheme.wall,
+        });
+      } else {
+        console.error('Keine Map oder kein aktuelles Theme gefunden');
+      }
+      if (themeStore.currentTheme.skybox) {
+        addSkybox(scene, themeStore.currentTheme.skybox);
+      } else {
+        console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
       }
     }
+  }
 );
 
 </script>
