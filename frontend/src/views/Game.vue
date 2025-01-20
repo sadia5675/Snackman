@@ -26,6 +26,7 @@ const themeStore = useThemeStore();
 import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
 import type { Message } from 'postcss'
 
+const restUrl: string = '/api/game';
 const gameStore = useGameStore()
 const route = useRoute()
 const lobbyId = route.params.id.toString()
@@ -46,6 +47,7 @@ let movingForward: boolean,
     movingBackward: boolean,
     movingLeft: boolean,
     movingRight: boolean = false
+let SprintIntervalId: number | null = null;
 const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
@@ -227,11 +229,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
   window.addEventListener('keydown', (e) => {
     switch (e.code) {
       case 'ShiftLeft':
-        if (movementSpeed === slowMovementSpeed) {
-          movementSpeed = fastMovementSpeed
-        } else {
-          movementSpeed = slowMovementSpeed
-        }
+        switchSprint()
         break
       case 'KeyW':
         movingForward = true
@@ -424,8 +422,7 @@ function animate() {
   handleGamepadInput(delta);
 }
 
-async function isValidJump(checkChargeJump: boolean): Promise<boolean> {
-  const restUrl: string = '/api/game';
+async function validateJump(checkChargeJump: boolean): Promise<boolean> {
   const playerId: string = currentPlayer.value?.name ?? "";
   const jumpCheckUrl: string = checkChargeJump ? 'isValidJump/charge' : 'isValidJump/normal';
 
@@ -456,6 +453,67 @@ async function isValidJump(checkChargeJump: boolean): Promise<boolean> {
   }
 }
 
+async function switchSprint() {
+  if (isSprinting()) {
+    stopSprinting()
+  } else {
+    const sprintIsValid = await validateSprint()
+    if (sprintIsValid) {
+      movementSpeed = fastMovementSpeed
+
+      SprintIntervalId = setInterval(async () => {
+        const sprintIsValid = await validateSprint()
+        if (!sprintIsValid) {
+          stopSprinting()
+        }
+      }, 500)
+    }
+  }
+}
+
+async function validateSprint(): Promise<boolean> {
+  const playerId: string = currentPlayer.value?.name ?? "";
+
+  if (playerId === "") {
+    console.error('Error: Unable to validate sprint, player ID is missing');
+    return false;
+  }
+
+  try {
+    // Perform the fetch request
+    const response: Response = await fetch(`${restUrl}/ingame/${lobbyId}/${playerId}/isValidSprint`);
+
+    // Check if the response is successful
+    if (!response.ok) {
+      console.error('Error: Unable to validate sprint', response.statusText);
+      return false; // Return false if the backend call fails
+    }
+
+    // Parse the JSON response
+    const isValid: boolean = await response.json();
+    console.log('Sprint backend validation:', isValid);
+
+    // Return the parsed value
+    return isValid;
+  } catch (error) {
+    console.error('Error while validating sprint:', error);
+    return false; // Return false in case of an error
+  }
+}
+
+function isSprinting() {
+  return movementSpeed === fastMovementSpeed
+}
+
+function stopSprinting() {
+  movementSpeed = slowMovementSpeed
+
+  if (SprintIntervalId) {
+    clearInterval(SprintIntervalId)
+    SprintIntervalId = null
+  }
+}
+
 
 // Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
 function triggerHighJumpAfterChargeTime(delta: number) {
@@ -475,7 +533,7 @@ function triggerHighJumpAfterChargeTime(delta: number) {
 
     if (jumpChargeTime >= maxJumpChargeTime) {
       isValidatingJump = true;
-      isValidJump(true).then((valid) => {
+      validateJump(true).then((valid) => {
         jumpChargeTime = 0; // Ladezeit zurücksetzen
         isChargingJump = false; // Leertaste kann losgelassen werden
         if (valid) {
@@ -489,7 +547,7 @@ function triggerHighJumpAfterChargeTime(delta: number) {
     }
   } else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
     isValidatingJump = true;
-    isValidJump(false).then((valid) => {
+    validateJump(false).then((valid) => {
       jumpChargeTime = 0;
       if (valid) {
         jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung

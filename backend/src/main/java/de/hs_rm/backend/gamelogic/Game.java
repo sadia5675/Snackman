@@ -1,6 +1,5 @@
 package de.hs_rm.backend.gamelogic;
 
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,8 +27,6 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
-import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
@@ -61,6 +58,7 @@ public class Game {
     private boolean privateLobby;
     private String password;
 
+    private static final int SPRINT_PER_500MS_COST = 5;
     private static final int CHARGE_JUMP_COST = 100;
     private static final int NORMAL_JUMP_COST = 10;
 
@@ -607,14 +605,27 @@ public class Game {
             if (jumpType.equals("charge")) {
                 if (nutriScore >= CHARGE_JUMP_COST) {
                     isValid = true;
-                    player.setCurrentPoints(Math.max(nutriScore - CHARGE_JUMP_COST, 0));
+                    player.setCurrentPoints(nutriScore - CHARGE_JUMP_COST);
                 }
             } else if (jumpType.equals("normal")) {
                 if (nutriScore >= NORMAL_JUMP_COST) {
                     isValid = true;
-                    player.setCurrentPoints(Math.max(nutriScore - NORMAL_JUMP_COST, 0));
+                    player.setCurrentPoints(nutriScore - NORMAL_JUMP_COST);
                 }
             }
+        }
+        return isValid;
+    }
+
+    public boolean isValidSprint(String playerId) {
+        boolean isValid = false;
+        Character potentialRunner = characters.get(playerId);
+        if (potentialRunner instanceof Snackman player) {
+            int nutriScore = player.getCurrentPoints();
+                if (nutriScore >= SPRINT_PER_500MS_COST) {
+                    isValid = true;
+                    player.setCurrentPoints(nutriScore - SPRINT_PER_500MS_COST);
+                }
         }
         return isValid;
     }

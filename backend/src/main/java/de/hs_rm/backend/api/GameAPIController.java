@@ -8,13 +8,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
 import de.hs_rm.backend.gamelogic.ChickenService;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
@@ -46,25 +44,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.hs_rm.backend.exception.GameJoinException;
-import de.hs_rm.backend.exception.GameLeaveException;
-import de.hs_rm.backend.exception.SetRoleException;
-import de.hs_rm.backend.gamelogic.Game;
-import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Character;
-import de.hs_rm.backend.gamelogic.characters.players.Player;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
-import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
-import de.hs_rm.backend.gamelogic.map.PlayMap;
-import de.hs_rm.backend.gamelogic.map.PlayMapService;
-import de.hs_rm.backend.messaging.GameMessagingService;
 
 /**
  * REST controller for managing game-related operations.
@@ -519,7 +498,7 @@ public class GameAPIController {
     } */
 
     @GetMapping("/ingame/{gameId}/{playerId}/isValidJump/{jumpType}")
-    public ResponseEntity<?> isValidChargeJump(
+    public ResponseEntity<?> isValidJump(
             @PathVariable String gameId,
             @PathVariable String playerId,
             @PathVariable String jumpType
@@ -530,6 +509,21 @@ public class GameAPIController {
         }
 
         boolean isValid = existingGame.isValidJump(playerId, jumpType);
+
+        return ResponseEntity.ok(isValid);
+    }
+
+    @GetMapping("/ingame/{gameId}/{playerId}/isValidSprint")
+    public ResponseEntity<?> isValidSprint(
+            @PathVariable String gameId,
+            @PathVariable String playerId
+    ) {
+        Game existingGame = gameService.getGameById(gameId);
+        if (existingGame == null) {
+            return createErrorResponse("No game found.");
+        }
+
+        boolean isValid = existingGame.isValidSprint(playerId);
 
         return ResponseEntity.ok(isValid);
     }
