@@ -1182,12 +1182,28 @@ function renderChicken(chickenData:  IChickenDTD[]){
       );
     }else{
       console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
-        const existingChickenModel = chickens.get(chicken.id)
-        if(existingChickenModel ){
-          moveChicken(existingChickenModel , chicken);
-          console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
-
+      const existingChickenModel = chickens.get(chicken.id)
+      if (existingChickenModel) {
+        if(chicken.currentCalorie !== undefined && chicken.currentCalorie >= 0 && chicken.currentCalorie < 100) {
+          existingChickenModel.scale.set(0.5, 0.5, 0.5);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 100 && chicken.currentCalorie < 200) {
+          existingChickenModel.scale.set(0.7, 0.6, 0.6);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 200  && chicken.currentCalorie < 300) {
+          existingChickenModel.scale.set(1.0, 0.8 , 0.8);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 300  && chicken.currentCalorie < 400) {
+          existingChickenModel.scale.set(1.2, 1.0 , 1.0);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 400  && chicken.currentCalorie < 500) {
+          existingChickenModel.scale.set(1.5, 1.2 , 1.2);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 500  && chicken.currentCalorie < 600) {
+          existingChickenModel.scale.set(1.8, 1.4 , 1.4);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 600) {
+          existingChickenModel.scale.set(2.0, 1.5, 1.5);
         }
+
+        moveChicken(existingChickenModel, chicken);
+        console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+
+      }
     }
   })
 
@@ -1203,7 +1219,7 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
 
   const direction = targetPosition.clone().sub(currentPosition).normalize();
   const chickenSpeed = 1; // Geschwindigkeit des Chickens (Einheiten/Sekunde)
-  const delta= clock.getDelta();
+  const delta = clock.getDelta();
 
 
   console.log('Richtung:', direction);
@@ -1212,10 +1228,11 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
 
   if (currentPosition.distanceTo(targetPosition) < chickenSpeed * delta) {
     const movement = direction.multiplyScalar(chickenSpeed * delta);
-  modellChicken.position.add(movement);
-  console.log('Bewegung:', movement);
-  console.log('Bewegt zu:', modellChicken.position);
-  }else{
+    modellChicken.position.add(movement);
+    console.log('Bewegung:', movement);
+    console.log('Bewegt zu:', modellChicken.position);
+    updateChickenRotation(chickenData.angle ,modellChicken)
+  } else {
     modellChicken.position.set(targetPosition.x, .5, targetPosition.z);
     console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
   }
@@ -1241,6 +1258,15 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
   modellChicken.rotation.y = THREE.MathUtils.lerp(currentRotation, targetRotation, lerpFactor);*/
 
   console.log("Aktuelle Rotation (in Grad):", THREE.MathUtils.radToDeg(modellChicken.rotation.y));
+}
+
+function updateChickenRotation( angleInDegree: number, chickenModel: THREE.Object3D){
+  const angleInRadians = THREE.MathUtils.degToRad(angleInDegree);
+
+  const rotationOffset = - Math.PI / 2;
+  chickenModel.rotation.y = angleInRadians + rotationOffset;
+
+  console.log(`Chicken dreht sich auf Y-Achse: ${angleInDegree}° (${angleInRadians} rad)`);
 }
 
 function followChicken(camera: THREE.Camera, chicken: THREE.Group, offset: THREE.Vector3) {
@@ -1271,8 +1297,8 @@ async function handleCharacters(data: ICharacterDTD[]) {
 
 function removeItemFromSceneByPosition(posX: number, posY: number) {
   const itemToRemove = rotatingItems.find(
-      (item) =>
-          Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
+    (item) =>
+      Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
   );
 
   if (itemToRemove) {
@@ -1298,7 +1324,7 @@ watch([spawnX, spawnZ], ([newX, newZ]) => {
 
 async function handleChickenPositions(data: IChickenDTD[]) {
   console.log("Processing Chicken Positions:", data);
-  let chickenPositions: IChickenDTD[]= [];
+  let chickenPositions: IChickenDTD[] = [];
   data.forEach(chicken => {
     console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
 
@@ -1407,9 +1433,9 @@ onMounted(async () => {
   })
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
-        console.log("FROM CHICKEN POSITIONS: ", message);
-        await handleChickenPositions(message);
-    });
+    console.log("FROM CHICKEN POSITIONS: ", message);
+    await handleChickenPositions(message);
+  });
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
@@ -1461,9 +1487,10 @@ onMounted(async () => {
       }
     })
   }
-animate()
+  animate()
 })
 
+/*
 watch(
     () => themeStore.selectedTheme,
     (newTheme) => {
@@ -1490,7 +1517,7 @@ watch(
         }
       }
     }
-);
+); */
 
 </script>
 

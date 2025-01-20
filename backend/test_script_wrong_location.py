@@ -5,6 +5,7 @@ import time
 
 chickenObj = chicken
 environmentObj = environment
+CALORIESBONUS_EGG = CALORIESBONUS
 
 
 chickenObj.setAngle(0)
@@ -13,9 +14,17 @@ chickenObj.setAngle(0)
 chicken_index_environment_list = 4
 
 
-print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
+
 
 def right_hand_algo():
+    print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
+
+    print("CHICKEN KALORIE: ", chickenObj.getCurrentCalorie())
+    # print("KALORIES BONUS EGG: ", CALORIESBONUS_EGG)
+    # if (chickenObj.getCurrentCalorie() >= CALORIESBONUS_EGG):
+    #     time.sleep(5)
+    if (chickenObj.getCurrentCalorie() >= 600):
+        time.sleep(5)
 
    
     actuell_environment = environmentObj.getEnvironment(chickenObj.getPosX(), chickenObj.getPosY())
@@ -24,6 +33,7 @@ def right_hand_algo():
 
     print_environment(actuell_environment)
   
+    
 
     movements = {
         0: {"delta_x": 0, "delta_y": -1, "check_index": -3},
@@ -47,9 +57,13 @@ def right_hand_algo():
         move = movements[angle]
         chicken_new_position = chicken_index_environment_list + move["check_index"]
 
+        
+        
         if (actuell_environment[chicken_new_position].getType().name() == "SURFACE"):
             move_to(move["delta_x"], move["delta_y"], angle, chicken_new_position, actuell_environment)
             return
+        
+        
 
  
 
