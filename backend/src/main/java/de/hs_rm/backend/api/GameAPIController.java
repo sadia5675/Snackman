@@ -675,6 +675,6 @@ public class GameAPIController {
         return ResponseEntity.ok(Map.of(
                 "status", "ok",
                 "isPrivate", existingGame.getPrivateLobby(),
-                "password", existingGame.getPassword()));
+                "password", ""));
     }
 }

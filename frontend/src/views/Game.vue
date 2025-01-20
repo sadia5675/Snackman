@@ -331,7 +331,7 @@ function updateGamepadInput() {
 //Diese Funktion lädt die Hintergrundmusik
 function loadMusic() {
   const audioLoader = new THREE.AudioLoader();
-  
+
   const walkingSound = new THREE.Audio(listener);
   const walkingSoundURL = new URL(`@/assets/game/realistic/sounds/walking.mp3`, import.meta.url).href;
 
@@ -1420,9 +1420,12 @@ onMounted(async () => {
           }
         }
         // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
-        if (winnerRole.value !== null) {
-          setTimeout(() => router.push({name: 'GameEnd'}), 500);
-        }
+          if (winnerRole.value !== null) {
+            setTimeout(() => {
+              stompClient.deactivate(),
+              router.push({ name: 'GameEnd' });
+            }, 500);
+          }
         break;
       }
 
