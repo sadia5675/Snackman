@@ -1,13 +1,13 @@
 package de.hs_rm.backend.messaging.response;
 
-import com.fasterxml.jackson.databind.JsonSerializable.Base;
-
 public class ItemCollectedResponse extends BaseResponse{
+    final private String itemName;
     private double positionX;
-    private  double positionY;
+    private double positionY;
 
-    public ItemCollectedResponse(double posX, double posY){
+    public ItemCollectedResponse(String itemName, double posX, double posY){
         super("itemCollected","ok");
+        this.itemName = itemName;
         this.positionX = posX;
         this.positionY = posY;
     }
@@ -26,5 +26,9 @@ public class ItemCollectedResponse extends BaseResponse{
 
     public void setPositionY(double positionY) {
         this.positionY = positionY;
+    }
+
+    public String getItemName() {
+        return itemName;
     }
 }
