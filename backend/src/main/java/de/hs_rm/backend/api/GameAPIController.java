@@ -325,7 +325,7 @@ public class GameAPIController {
                 messagingService.sendNewCharacterPosition(lobbyid, playerPositionResponse);
             }
 
-}
+    }
 
 
     /* @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")

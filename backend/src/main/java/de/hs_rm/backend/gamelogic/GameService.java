@@ -236,7 +236,7 @@ public class GameService {
             // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
             // 4 Himmelsrichtungen)
             if (!validMove) {
-              validMove = adjustPlayerPositon(existingGame, null);   
+              validMove = adjustPlayerPositon(existingGame, position);   
             }
 
             return validMove;
@@ -246,24 +246,100 @@ public class GameService {
     }
 
     public boolean adjustPlayerPositon(Game existingGame, PlayerPosition position){
-        //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
-        float offset = 0.005f;
+        //Sogt das die Validation mit einer kleinen Verschiebung beginnt
+        //Diese wird in der while Schleife benutzt und stätig erhöht
+        float offset = 0.01f;
+        //Sorgt dafür das nach der valieden Verschiebung nochmal eine kleine Verschiebung gemacht wird damit man nicht
+        //zu nah an der Wand ist
+        float buffer = 0.02f;
 
-        if (existingGame.move(position.getPlayerName(),Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
-            position.setPosX((float) (Math.round(position.getPosX()) + offset));
-            return true;
-        } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
-            position.setPosY((float) (Math.round(position.getPosY()) + offset));
-            return true;
-        } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
-            position.setPosX((float) (Math.floor(position.getPosX()) - offset));
-            return true;
-        } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
-            position.setPosY((float) (Math.floor(position.getPosY()) - offset));
-            return true;
+        boolean validMove = false;
+        while (!validMove && offset <= 0.5f) {
+            float[] correctionsX = {
+                (float) position.getPosX() - offset,
+                (float) position.getPosX() + offset,
+                (float) position.getPosX()
+            };
+
+            float[] correctionsY = {
+                (float) position.getPosY() - offset,
+                (float) position.getPosY() + offset,
+                (float) position.getPosY()
+            };
+
+            float minDistanceX = Float.MAX_VALUE;
+            float bestX = (float) position.getPosX();
+            float bestY = (float) position.getPosY();
+
+            // Überprüfen ob der Spieler sich auf die angepasste X Position bewegen darf
+            for (float correction : correctionsX) {
+                if (existingGame.move(position.getPlayerName(), correction, position.getPosY(), position.getPosZ(), position.getAngle())) {
+                    // Berechnung der Distanz zwischen der eigendlich gewünschten Position und der angepassten Position (c = a^2 + b^2)
+                    float distance = (float) Math.sqrt((Math.pow(correction - position.getPosY(), 2) + Math.pow(position.getPosX() - position.getPosY(), 2)));
+                    if (distance < minDistanceX) {
+                        minDistanceX = distance;
+                        if(correction < position.getPosX()){
+                            bestX = correction - buffer;
+                        }else {
+                            bestX = correction + buffer;
+                        }
+                        validMove = true;
+                    }
+                }
+            }
+
+            float minDistanceY = Float.MAX_VALUE;
+
+            // Überprüfen ob der Spieler sich auf die angepasste X Position bewegen darf
+            for (float correction : correctionsY) {
+                if (existingGame.move(position.getPlayerName(), position.getPosX(), correction, position.getPosZ(), position.getAngle())) {
+                    // Berechnung der Distanz zwischen der eigendlich gewünschten Position und der angepassten Position (c = a^2 + b^2)
+                    float distance = (float) Math.sqrt((Math.pow(position.getPosX() - correction, 2) + Math.pow(position.getPosX() - position.getPosY(), 2)));
+                    if (distance < minDistanceY) {
+                        minDistanceY = distance;
+                        if(correction < position.getPosY()){
+                            bestY = correction - buffer;
+                        }else {
+                            bestY = correction + buffer;
+                        }
+                        validMove = true;
+                    }
+                }
+            }
+
+            // Überprüfen ob der Spieler sich auf die angepasste X und Y Position bewegen darf (Diagonale Verschiebung)
+            for (float correctionX : correctionsX) {
+                for (float correctionY : correctionsY) {
+                    if (existingGame.move(position.getPlayerName(), correctionX, correctionY, position.getPosZ(), position.getAngle())) {
+                        // Berechnung der Distanz zwischen der eigendlich gewünschten Position und der angepassten Position (c = a^2 + b^2)
+                        float distance = (float) Math.sqrt((Math.pow(correctionX - correctionY, 2) + Math.pow(position.getPosX() - position.getPosY(), 2)));
+                        if (distance < minDistanceX && distance < minDistanceY) {
+                            bestX = correctionX;
+                            if(correctionY < position.getPosY()){
+                                bestY = correctionY - buffer;
+                            }else {
+                                bestY = correctionY + buffer;
+                            }
+                            if(correctionX < position.getPosX()){
+                                bestX = correctionX - buffer;
+                            }else {
+                                bestX = correctionX + buffer;
+                            }
+                            validMove = true;
+                        }
+                    }
+                }
+            }
+
+
+            if (bestX != position.getPosX() || bestY != position.getPosY()) {
+                position.setPosX(bestX);
+                position.setPosY(bestY);
+            }
+
+            offset += 0.01f;
         }
-
-        return false;
+        return validMove;
     }
 
     public boolean checkItemCollcted(String lobbyid){
