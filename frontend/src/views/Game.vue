@@ -41,6 +41,26 @@ const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
 const map = ref<string[] | undefined>(undefined);
 
+//tutorial
+const showHelpHint = ref(true);
+const showTutorial = ref(false);
+const showWASDOverlay = ref(true);
+
+//nach 30 sekunden soll Tutorial hinweis ausgeblendet werden
+onMounted(() => {
+  //Tastenhinweis nur 8sek
+  setTimeout(()=> {
+    showWASDOverlay.value =false;
+  }, 8000);
+  setTimeout(() => {
+    showHelpHint.value =false;
+  }, 30000);
+});
+
+const closeTutorial = () => {
+  showTutorial.value =false
+};
+
 
 //Movement
 let movingForward: boolean,
@@ -247,6 +267,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         if (gameStore.jumpAllowed) {
           isChargingJump = true;
         }
+        break;
+      case 'KeyH':
+        showTutorial.value = true;
         break;
     }
   })
@@ -922,7 +945,7 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
   const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
   const groundTexture = getCachedTexture(selectedTheme.ground);
-  const wallTexture = getCachedTexture(selectedTheme.wall); 
+  const wallTexture = getCachedTexture(selectedTheme.wall);
   const groundMaterial = new THREE.MeshStandardMaterial({map: groundTexture});
   const wallMaterial = new THREE.MeshStandardMaterial({map: wallTexture});
 
@@ -1574,6 +1597,73 @@ watch(
         Close
       </button>
     </div>
+  </div>
+
+  <!-- Overlay für WASD-Steuerung -->
+  <div v-if="showWASDOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10 z-50 pointer-events-none">
+    <div class="flex flex-col items-center bg-white p-4 rounded-lg shadow-lg w-56 opacity-70">
+
+      <div class="mb-4 text-center">
+        <span class="text-sm font-bold">W</span>
+        <div class="text-xs text-gray-600">Vorwärts</div>
+      </div>
+      <div class="flex justify-between w-full">
+        <div class="text-center">
+          <span class="text-sm font-bold">A</span>
+          <div class="text-xs text-gray-600">Links</div>
+        </div>
+        <div class="text-center">
+          <span class="text-sm font-bold">D</span>
+          <div class="text-xs text-gray-600">Rechts</div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <span class="text-sm font-bold">S</span>
+        <div class="text-xs text-gray-600">Rückwärts</div>
+      </div>
+    </div>
+  </div>
+
+  <!--Tutorial-->
+  <div v-if="showTutorial" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-bold mb-4">Spielehinweise</h3>
+      <ul class="text-left mb-6">
+        <li class="mb-2">
+          Snackman sammelt Items, um Kalorien zu erhalten, die für das Springen benötigt werden!
+        </li>
+        <li class="mb-2">
+          Leichter Sprung: <strong>10 Kalorien</strong>
+        </li>
+        <li class="mb-2">
+          Schwerer Sprung: <strong>100 Kalorien</strong>
+        </li>
+        <li class="mb-2">
+          Rennen verbraucht <strong>10 Kalorien/sekunde</strong>
+        </li>
+        <li class="mb-2">
+          Drücke <strong>Leertaste</strong> zum Springen, halte sie gedrückt, um die Sprungkraft einzustellen
+        </li>
+        <li class="mb-2">
+          Geister fügen Schaden zu, wenn sie mit Snackman kollidieren
+        </li>
+        <li class="mb-2">
+          Sammle als Snackman Herzen, um Leben zu regenerieren
+        </li>
+        <li class="mb-2">
+          Schilder machen Snackman für <strong>5 Sekunden unverwundbar</strong>
+        </li>
+        <li class="mb-2">
+          Kurze Sprünge erlauben es, über Wände zu sehen, lange Sprünge bieten Weitsicht
+        </li>
+      </ul>
+      <button @click="closeTutorial" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+        Schließen
+      </button>
+    </div>
+  </div>
+  <div v-if="showHelpHint" class="absolute top-4 left-1/2 transform -translate-x-1/2 p-2 border-2 border-black text-center text-white bg-opacity-50 bg-black z-50 rounded-lg">
+    Press <strong>H</strong> for Help
   </div>
 
 
