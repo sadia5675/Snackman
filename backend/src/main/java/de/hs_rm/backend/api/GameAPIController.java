@@ -21,6 +21,10 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
+import de.hs_rm.backend.messaging.response.CollisionValidationResponse;
+import de.hs_rm.backend.messaging.response.ItemCollectedResponse;
+import de.hs_rm.backend.messaging.response.PlayerMoveValidationResponse;
+import de.hs_rm.backend.messaging.response.PlayerPositionResponse;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 import java.time.LocalDateTime;
@@ -304,7 +308,38 @@ public class GameAPIController {
             messagingService.sendPlayerList(lobbyid, response);
         }
     }
+
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
+    public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
+        boolean madeValidMove = gameService.move(lobbyid, position);
+
+            if (madeValidMove) {
+
+                boolean itemCollected = gameService.checkItemCollcted(lobbyid);
+                if(itemCollected){
+                    ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
+                    messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
+                }
+                
+                // sende das die Validation in Ordnung war
+                PlayerMoveValidationResponse playerMoveValidationResponse = new PlayerMoveValidationResponse(position);
+                messagingService.sendPositionValidation(lobbyid, playerMoveValidationResponse);
+
+                //Winner checken
+                PlayerRole winnerRole = gameService.checkWinner(lobbyid);
+                CollisionValidationResponse collisionValidationResponse = new CollisionValidationResponse(gameService.getCharacterListByGameId(lobbyid), winnerRole);
+                messagingService.sendPlayerCollision(lobbyid, collisionValidationResponse);
+
+
+                //senden der Liste von Chars
+                PlayerPositionResponse playerPositionResponse = new PlayerPositionResponse(gameService.getCharactersByGameId(lobbyid));
+                messagingService.sendNewCharacterPosition(lobbyid, playerPositionResponse);
+            }
+
+    }
+
+
+    /* @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
 
         //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
@@ -320,15 +355,8 @@ public class GameAPIController {
 
         if(existingGame.isStarted()){
             Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-            // boolean validMove = existingGame.moveTest(position.getPlayerName(),
-            // position.getPosX(), position.getPosY(), position.getAngle());
             boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
                     position.getPosZ(), position.getAngle());
-
-
-            // logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),
-            // VALID: {} ", position.getPlayerName(), position.getPosX(),
-            // position.getPosY(), position.getAngle(), validMove);
 
             // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
             // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
@@ -390,7 +418,7 @@ public class GameAPIController {
                 messagingService.sendNewCharacterPosition(lobbyid, response);
             }
         }
-    }
+    }  */
 
     @PostMapping("/{gameId}/jumpAllowed")
     public ResponseEntity<Map<String, Boolean>> checkJumpAllowed(
@@ -600,28 +628,6 @@ public class GameAPIController {
         response.put("time", LocalDateTime.now().toString());
 
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}")
-    public ResponseEntity<?> movePlayer(
-            @PathVariable String gameId,
-            @PathVariable String username,
-            @PathVariable int coordinateX,
-            @PathVariable int coordinateY,
-            @PathVariable int coordinateZ) {
-        Game existingGame = gameService.getGameById(gameId);
-
-        if (existingGame == null) {
-            return createErrorResponse("No game found.");
-        }
-        try {
-            gameService.move(username, coordinateX, coordinateY, coordinateZ, 1);
-            return createOkResponse(existingGame);
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse(e.getMessage());
-        } catch (Exception e) {
-            return createErrorResponse("An unexpected error occurred: " + e.getMessage());
-        }
     }
 
     // Helper method for standardized error response

@@ -129,8 +129,15 @@ public class Game {
             new SnackmanObjectItem("Double Points", -1, -1, "Doubles points gained for a limited time"),
             new SnackmanObjectItem("Extra Life", -1, -1, "Grants an extra life"));
 
-    public Game(Player gamemaster, int snackmanLife, int snackmanMaxLife, double snackmanSpeed, double ghostSpeed,
-            int itemsPerSurfaceRatio, String pathToChickenBot) {
+    public Game(
+            Player gamemaster,
+            int snackmanLife,
+            int snackmanMaxLife,
+            double snackmanSpeed,
+            double ghostSpeed,
+            int itemsPerSurfaceRatio,
+            String pathToChickenBot
+    ) {
         this.id = generateId(5);
         this.players = new ArrayList<>();
         this.chickens = new ArrayList<>();
@@ -524,15 +531,6 @@ public class Game {
         LOGGER.info("Chicken: {}, Game: {}", total, this.id);
         this.chickenNum = total;
 
-    }
-
-    public boolean moveTest(String username, double posX, double posY, double posZ, double angle) {
-        Character curCharacter = characters.get(username);
-
-        curCharacter.move(posX, posY, posZ, angle);
-        // LOGGER.info("{} moved to {} | {}", curCharacter, curCharacter.getPosX(),
-        // curCharacter.getPosY());
-        return true;
     }
 
     public boolean isItemCollected(double posX, double posY) {
