@@ -285,8 +285,11 @@ function handleGamepadInput(delta: number) {
     const gamepad = navigator.getGamepads()[controllerIndex];
     if (gamepad) {
       // Rechter Joystick (Axes 2 und 3)
-      const rightStickX = gamepad.axes[2]; // Horizontal (Rotation Y)
-      const rightStickY = gamepad.axes[3]; // Vertikal (Rotation X oder Zoom)
+      let rightStickX = gamepad.axes[2]; // Horizontal (Rotation Y)
+      let rightStickY = gamepad.axes[3]; // Vertikal (Rotation X oder Zoom)
+
+      if (Math.abs(rightStickX) < deadzone) rightStickX = 0;
+      if (Math.abs(rightStickY) < deadzone) rightStickY = 0;
 
       // Rotation der Kamera (Y-Achse, Horizontal)
       camera.rotation.y -= rightStickX * delta * 2.5; // Empfindlichkeit anpassen
