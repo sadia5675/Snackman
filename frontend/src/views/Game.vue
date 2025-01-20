@@ -1296,7 +1296,7 @@ async function handleCharacters(data: ICharacterDTD[]) {
   renderCharactersTest(playerPositions)
 }
 
-function removeItemFromSceneByPosition(itemName: string, posX: number, posY: number) {
+function removeItemFromSceneByPosition(posX: number, posY: number, itemName?: string) {
   const itemToRemove = rotatingItems.find(
     (item) =>
       Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
@@ -1355,7 +1355,7 @@ async function handleChickenPositions(data: IChickenDTD[]) {
       eggList: chicken.eggList || [],
       currentCalorie: chicken.currentCalorie
     });
-    removeItemFromSceneByPosition(chicken.posY,chicken.posX);
+    removeItemFromSceneByPosition(chicken.posY, chicken.posX);
     console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });
   renderChicken(chickenPositions)
@@ -1376,7 +1376,7 @@ onUnmounted(async () => {
 
 onMounted(async () => {
   try {
-    await gameStore.fetchGameStatus()
+    await gameStore.fetchGameStatus(lobbyId)
     const playerName = sessionStorage.getItem('myName');
     if (playerName) {
       console.log(playerName)
@@ -1459,7 +1459,7 @@ onMounted(async () => {
       case "itemCollected":
         console.log(`collected at{} {}`, message.posX, message.positionY)
         console.log('MESSAGE: ' + message.toString())
-        removeItemFromSceneByPosition(message.itemName, message.positionX, message.positionY);
+        removeItemFromSceneByPosition(message.positionX, message.positionY, message.itemName);
         break;
 
       default:
