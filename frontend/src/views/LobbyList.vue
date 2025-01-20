@@ -15,7 +15,9 @@ const modal = useModalStore();
 const apiUrl = "/api/game";
 
 const games = ref<IGameDTD[]>([]);
-
+const offeneSpiele= computed(()=> {
+  return games.value.filter(game=> !game.started);
+})
 const newPlayer: IPlayerDTD = reactive({
   name: "",
   email: "",
@@ -94,7 +96,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="game in games" :key="game.id" :game="game">
+          <tr v-for="game in offeneSpiele" :key="game.id" :game="game">
             <LobbyTabellenZeile :game="game" @open-modal="modal.checkPrivateGame(game.id)" />
           </tr>
         </tbody>
