@@ -53,6 +53,9 @@ public class Chicken {
     }
 
     public Egg eatSnack(FoodItems item, int posX, int posY){
+        if(item instanceof Egg){
+            return null;
+        }
         this.currentCalorie += item.getNutriScore().getCalorieBonus();
         if(this.currentCalorie>= this.CALORIESBONUS_EGG){
             System.out.println("Egg created");
