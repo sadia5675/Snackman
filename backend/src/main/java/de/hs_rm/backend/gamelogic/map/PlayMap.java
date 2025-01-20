@@ -33,14 +33,14 @@ public PlayMap(String filePath, String mapsDirectory) {
         throw new IllegalArgumentException("File path cannot be null or empty.");
     }
     this.mapsDirectory = mapsDirectory;
-    
+
     try {
         loadMap(filePath);
         if (map == null || map.length == 0) {
             throw new IllegalArgumentException("Loaded map is invalid or empty.");
         }
         //createTiles();
-        
+
     } catch (IllegalArgumentException e) {
         LOGGER.error("Invalid map file: {}", e.getMessage());
         throw e; // IllegalArgumentException weiterwerfen
@@ -194,6 +194,17 @@ public List<Tile> getTilesList() {
 
 public void setTilesList(List<Tile> tilesList) {
     this.tilesList = tilesList;
+}
+
+public Tile getTileFromList(int x, int y) {
+    // ToDo Aron: Schauen ob rechnung richtig ist
+    if (x >= 0 && x < map.length && y >= 0 && y < map[0].length) {
+        Tile tile = tilesList.get(x * map[0].length + y);
+        return tile;
+    } else {
+        LOGGER.warn("Invalid position to get tile from list: ({}, {})", x, y);
+        return null;
+    }
 }
 
 public int getWidth() {

@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
-import de.hs_rm.backend.gamelogic.characters.players.Chicken;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 
 import java.time.LocalDateTime;

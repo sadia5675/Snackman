@@ -2,12 +2,14 @@ package de.hs_rm.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
 @SpringBootApplication(scanBasePackages = "de.hs_rm.backend")
+@EnableScheduling
 public class BackendApplication {
 
 	private static final Logger LOGGER = Logger.getLogger(BackendApplication.class.getName());
@@ -15,12 +17,12 @@ public class BackendApplication {
 
 		/* if base/maps not exist, create base/maps outside of java */
 		ensureDirectoriesExist("base/maps");
+		ensureDirectoriesExist("base/skripte");
 
 		try {
             // Extrahiere script.py aus resources/scripts/script.py
-            ResourceExtractor.extractScript("/scripts/test.py", "./test.py");
-			ResourceExtractor.extractScript("/maps/Trest.txt", "base/maps/Trest.txt");
-			ResourceExtractor.extractScript("/maps/1.txt", "base/maps/1.txt");
+			ResourceExtractor.extractScript("/maps/Hallo.txt", "base/maps/Hallo.txt");
+			ResourceExtractor.extractScript("/skripte/chicken_bot_movement.py", "base/skripte/chicken_bot_movement.py");
 
             // Weitere Logik hier
         } catch (IOException e) {

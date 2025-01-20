@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -47,12 +48,27 @@ public class GameAPIControllerTest {
         int coordinateZ = 1;
         double coordinateDouble = 0.0;
         Player player = new Player(username);
-        
-       Game mockGame = new Game(player, 3, 5, 1.0, 1.0, 3); // Erstellen Sie ein Mock-Spiel
+
+       Game mockGame = new Game(
+               player,
+               3,
+               5,
+               1.0,
+               1.0,
+               3,
+               ""
+       ); // Erstellen Sie ein Mock-Spiel
+        PlayerPosition playerPosition = new PlayerPosition(
+                username,
+                coordinateX,
+                coordinateY,
+                coordinateZ,
+                coordinateDouble
+        );
 
         // Mockt die Rückgabe des Spiels
         when(gameService.getGameById(gameId)).thenReturn(mockGame);
-        when(gameService.move(username, coordinateX, coordinateY, coordinateZ, coordinateDouble)).thenReturn(true);  // Bewegung erfolgreich
+        when(gameService.move(username, playerPosition)).thenReturn(true);  // Bewegung erfolgreich
 
         // Führt einen POST-Request aus, um die Bewegung zu testen
         mockMvc.perform(post("/api/game/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}", gameId, username,
@@ -73,7 +89,7 @@ public class GameAPIControllerTest {
         int coordinateZ = 1;
         Player player = new Player(username);
 
-        Game mockGame = new Game(player, 3, 5, 1,1, 10, 0); 
+        Game mockGame = new Game(player, 3, 5, 1,1, 10, 0);
 
         when(gameService.getGameById(gameId)).thenReturn(mockGame);
         when(gameService.move(username, coordinateX, coordinateY, coordinateZ)).thenReturn(false);  // Bewegung schlägt fehl

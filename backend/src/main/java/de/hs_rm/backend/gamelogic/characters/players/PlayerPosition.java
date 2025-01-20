@@ -22,6 +22,14 @@ public class PlayerPosition {
         this.posZ = 1;
     }
 
+    public PlayerPosition(String playerName, double posX, double posY, double posZ, double angle){
+        this.playerName = playerName;
+        this.posX = posX;
+        this.posY = posY;
+        this.posZ = posZ;
+        this.angle = angle;
+    }
+
     @Override
     public String toString() {
         return "PlayerPosition{" +

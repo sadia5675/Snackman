@@ -16,7 +16,7 @@
       Empty
     </li>
   </ul>
-  
+
   <button v-if="isGamemaster" class="w-full mt-2 flex gap-2 px-4 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 font-semibold text-black p-3 rounded-lg hover:bg-yellow-600 transition"
         @click="randomizeRoles()">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dices"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
@@ -34,7 +34,7 @@
           <p>{{ mapStore.mapsDTD.selectedMap?.name || 'None' }}</p>
           </div>
           <div class="text-white flex gap-2 p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paintbrush"><path d="m14.622 17.897-10.68-2.913"/><path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"/><path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/></svg>         
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paintbrush"><path d="m14.622 17.897-10.68-2.913"/><path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"/><path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/></svg>
           <p>{{ themeStore.selectedTheme || 'None' }}</p>
         </div>
       </div>
@@ -73,10 +73,10 @@
         </button>
         <div class="flex flex-col flex-1">
       <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-      <input type="number" v-model="chickenCount" class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
-    
+      <input type="number" v-model="chickenCount"  class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
+
     </div>
-        
+
      </div>
      <div  class="flex gap-2">
       <button  v-if="isGamemaster"
@@ -90,7 +90,7 @@
       >
         {{ isHost ? 'Start Game' : '---' }}
       </button>
-      
+
     <button :class="{
       'bg-red-700 hover:bg-red-800 text-zinc-200': isHost,
       'bg-gray-600': !isHost
@@ -215,14 +215,16 @@ const placeholderCount = computed(() => maxPlayers - players.value.length);
 // Hole Passwort aus gamestore
 const gamePassword = computed(() => gameStore.gameState.gamedata?.password || null);
 
+const chickenCount = ref(1);
 
 // Anzahl der festgelegten Chickens im Game
+/*
 const chickenCount = computed({
   get: () => gameStore.gameState.gamedata?.chickens.length || 0,
   set: async (value: number) => {
     await gameStore.setChickenCount(value)
   },
-})
+}) */
 
 // Überprüfung, ob aktueller Spieler Gamemaster ist
 const isGamemaster = computed(() => {
@@ -263,9 +265,10 @@ async function startGame() {
     if (!mapStore.mapsDTD.selectedMap?.map) {
       throw new Error("No map selected!");
     }
-    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
+    await gameStore.startGameViaStomp(mapStore.mapsDTD.selectedMap?.name, chickenCount.value); // muss ins Backend gesendet werden, da die Tiles erstellt werden müssen
     // Log zum Testen
     console.log(gameStore.gameState);
+    //console.log("ChickenCount: ", chickenCount.value)
     console.log("playMap: ", gameStore.gameState.gamedata.playmap); // gamestate hat jetzt auch die aktuelle map
   } catch (error) {
     console.log(error);

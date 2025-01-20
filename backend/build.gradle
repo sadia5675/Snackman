@@ -24,6 +24,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.python:jython-standalone:2.7.3'
 	implementation 'org.jgrapht:jgrapht-core:1.5.1'
 	implementation 'org.python:jython-slim:2.7.4'
 }
@@ -88,5 +89,10 @@ task build_frontend {
 		}
 	}
 }
+
+bootRun {
+	jvmArgs = ['-Dpython.import.site=false']
+}
+
 bootJar.dependsOn build_frontend
 

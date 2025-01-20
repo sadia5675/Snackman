@@ -13,16 +13,24 @@ import de.hs_rm.backend.exception.GameJoinException;
 import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.Game;
 import de.hs_rm.backend.gamelogic.GameService;
+import de.hs_rm.backend.gamelogic.ChickenService;
+import de.hs_rm.backend.gamelogic.characters.players.Character;
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
+import de.hs_rm.backend.messaging.response.CollisionValidationResponse;
+import de.hs_rm.backend.messaging.response.ItemCollectedResponse;
+import de.hs_rm.backend.messaging.response.PlayerMoveValidationResponse;
+import de.hs_rm.backend.messaging.response.PlayerPositionResponse;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -77,12 +85,13 @@ public class GameAPIController {
     GameService gameService;
 
     @Autowired
+    ChickenService chickenService;
+
+    @Autowired
     PlayMapService playMapService;
 
     Logger logger = LoggerFactory.getLogger(GameAPIController.class);
     private static final Logger LOGGER = LoggerFactory.getLogger(GameAPIController.class);
-
-    // private Game game;
 
     // TODO: Sicherheit für Spiel, keys in responsebody
     // TODO: Was passiert wenn Fehler nicht hier sondern in Spiellogik (Game-Klasse)
@@ -104,7 +113,7 @@ public class GameAPIController {
         // Nur zu Testzwecken hier
         // PythonInterpreter interpreter = new PythonInterpreter();
         // try {
-        //     String scriptPath = "ChickenBotMovement.py";
+        //     String scriptPath = "chicken_bot_movement.py";
 
         // File scriptFile = new File(scriptsDirectory, scriptPath);
 
@@ -125,32 +134,33 @@ public class GameAPIController {
         return createOkResponse(newGame);
     }
 
-    // Method to join an existing game
-    // @PostMapping("/join/{gameId}")
-    // public ResponseEntity<?> joinGame(@PathVariable String gameId) {
-    // if (game == null || !game.getId().equals(gameId)) {
-    // return createErrorResponse("Game ID is invalid!");
-    // }
-    // // Logik zum Beitreten des Spiels
-    // return ResponseEntity.ok(game);
-    // }
-
     // Method to start the game
     @PostMapping("/start/{gameId}")
-    public ResponseEntity<?> startGame(@PathVariable String gameId, @RequestBody Map<String, String> payload) {
-        String selectedMap = payload.get("selectedMap").trim();
+    public ResponseEntity<?> startGame(@PathVariable String gameId,  @RequestBody Map<String, Object> payload) {
+        String selectedMap = (String) payload.get("selectedMap");
+        int chickenNum =(Integer) payload.get("chickenNum");
+
         logger.info("Starting game with ID: {} and selected map: {}", gameId, selectedMap);
 
         if (selectedMap == null || selectedMap.isEmpty()) {
             return createErrorResponse("Invalid request: 'selectedMap' is required.");
         }
+        if (chickenNum == 0) {
+            return createErrorResponse("Invalid request: 'chickenNum' is required.");
+        }
         PlayMap playMap = playMapService.createPlayMap(selectedMap);
         // #63 NEW: gameService now starts the game
-        Game existingGame = gameService.startGame(gameId, playMap);
+        Game existingGame = gameService.startGame(gameId, playMap, chickenNum);
 
         if (existingGame == null) {
             return createErrorResponse("No game found to start.");
         }
+
+        //boolean success = gameService.startGame(gameId, playMap, chickenNum);
+/*
+        if (!success) {
+            return createErrorResponse("Chicken nummbers in game is not fair");
+        } */
 
         return createOkResponse(existingGame);
     }
@@ -184,12 +194,14 @@ public class GameAPIController {
         );
     }
 
-    @MessageMapping("/topic/game/{lobbyid}/start/{selectedMapName}")
+    @MessageMapping("/topic/game/{lobbyid}/start/{selectedMapName}/{chickenNum}")
     @SendTo("/topic/game/{lobbyid}")
     public void startGameViaStomp(
             Player actingPlayer,
             @DestinationVariable String lobbyid,
-            @DestinationVariable String selectedMapName) {
+            @DestinationVariable String selectedMapName,
+            @DestinationVariable int chickenNum
+    ) {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
@@ -200,7 +212,10 @@ public class GameAPIController {
 
             } else {
                 PlayMap playMap = playMapService.createPlayMap(selectedMapName);
-                Game existingGame = gameService.startGame(lobbyid, playMap);
+                Game existingGame = gameService.startGame(lobbyid, playMap, chickenNum);
+
+                logger.info("Received chickenNum: {}", existingGame.getChickenNum());
+                logger.info("Chickens before initialization: {}", existingGame.getChickens());
 
                 response.put("type", "gameStart");
                 response.put("feedback", existingGame);
@@ -293,7 +308,38 @@ public class GameAPIController {
             messagingService.sendPlayerList(lobbyid, response);
         }
     }
+
     @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
+    public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
+        boolean madeValidMove = gameService.move(lobbyid, position);
+
+            if (madeValidMove) {
+
+                boolean itemCollected = gameService.checkItemCollcted(lobbyid);
+                if(itemCollected){
+                    ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
+                    messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
+                }
+                
+                // sende das die Validation in Ordnung war
+                PlayerMoveValidationResponse playerMoveValidationResponse = new PlayerMoveValidationResponse(position);
+                messagingService.sendPositionValidation(lobbyid, playerMoveValidationResponse);
+
+                //Winner checken
+                PlayerRole winnerRole = gameService.checkWinner(lobbyid);
+                CollisionValidationResponse collisionValidationResponse = new CollisionValidationResponse(gameService.getCharacterListByGameId(lobbyid), winnerRole);
+                messagingService.sendPlayerCollision(lobbyid, collisionValidationResponse);
+
+
+                //senden der Liste von Chars
+                PlayerPositionResponse playerPositionResponse = new PlayerPositionResponse(gameService.getCharactersByGameId(lobbyid));
+                messagingService.sendNewCharacterPosition(lobbyid, playerPositionResponse);
+            }
+
+    }
+
+
+    /* @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
 
         //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
@@ -309,15 +355,8 @@ public class GameAPIController {
 
         if(existingGame.isStarted()){
             Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-            // boolean validMove = existingGame.moveTest(position.getPlayerName(),
-            // position.getPosX(), position.getPosY(), position.getAngle());
             boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
                     position.getPosZ(), position.getAngle());
-
-
-            // logger.info("Requested Player({}) move to: posX({}), posY({}) angle({}),
-            // VALID: {} ", position.getPlayerName(), position.getPosX(),
-            // position.getPosY(), position.getAngle(), validMove);
 
             // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
             // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
@@ -379,7 +418,7 @@ public class GameAPIController {
                 messagingService.sendNewCharacterPosition(lobbyid, response);
             }
         }
-    }
+    }  */
 
     @PostMapping("/{gameId}/jumpAllowed")
     public ResponseEntity<Map<String, Boolean>> checkJumpAllowed(
@@ -396,6 +435,24 @@ public class GameAPIController {
         return ResponseEntity.ok(Map.of("jumpAllowed", isJumpAllowed));
     }
 
+
+
+    @MessageMapping("/topic/ingame/{lobbyid}/chickenPosition")
+    @SendTo("/topic/ingame/{lobbyod}")
+    public Map<String, Object> chickenPosition(@DestinationVariable String lobbyid){
+
+        Game existingGame = gameService.getGameById(lobbyid);
+        List<Chicken> chickens = existingGame.getChickens();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("type", "chickenPositions");
+        response.put("chickens", chickens);
+        response.put("status", "ok");
+        response.put("time", LocalDateTime.now().toString());
+        logger.info("Sending Chicken Data: {}", chickens);
+
+        return response;
+    }
 
 
     // Method to end the game
@@ -448,6 +505,7 @@ public class GameAPIController {
     }
 
     // Method to set the number of elements (e.g., chickens) in the game
+    /*
     @PostMapping("/setChicken/{gameId}/{number}")
     public ResponseEntity<?> setNumberOfChicken(@PathVariable String gameId, @PathVariable int number) {
         // #63 NEW: gameService now sets the number of Chickens
@@ -458,7 +516,7 @@ public class GameAPIController {
         }
 
         return createOkResponse(existingGame);
-    }
+    } */
 
     @GetMapping("/ingame/{gameId}/{playerId}/isValidChargeJump")
     public ResponseEntity<?> isValidChargeJump(
@@ -570,28 +628,6 @@ public class GameAPIController {
         response.put("time", LocalDateTime.now().toString());
 
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/move/{gameId}/{username}/{coordinateX}/{coordinateY}/{coordinateZ}")
-    public ResponseEntity<?> movePlayer(
-            @PathVariable String gameId,
-            @PathVariable String username,
-            @PathVariable int coordinateX,
-            @PathVariable int coordinateY,
-            @PathVariable int coordinateZ) {
-        Game existingGame = gameService.getGameById(gameId);
-
-        if (existingGame == null) {
-            return createErrorResponse("No game found.");
-        }
-        try {
-            gameService.move(username, coordinateX, coordinateY, coordinateZ, 1);
-            return createOkResponse(existingGame);
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse(e.getMessage());
-        } catch (Exception e) {
-            return createErrorResponse("An unexpected error occurred: " + e.getMessage());
-        }
     }
 
     // Helper method for standardized error response
