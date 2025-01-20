@@ -898,6 +898,10 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
+function loadAndSetSurpriseEgg() {
+  return;
+}
+
 function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
   const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -1000,6 +1004,9 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             '4': [
               new URL("@/assets/game/items/4/hearts.glb", import.meta.url)
             ],
+            'kinderSupriseEgg':[
+              new URL("@assets/game/items/kinder_surprise_egg/kinder_surprise_egg.glb", import.meta.url)
+            ],
 
           };
 
@@ -1038,6 +1045,9 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             } else if (randomModelPath.includes('hearts')) {
               item.position.set(x, 0.65, z);
               item.scale.set(0.03, 0.03, 0.03)
+            }else if(randomModelPath.includes('supriseEgg')){
+              item.scale.set(0.03, 0.03, 0.03)
+              item.position.set(x, 0.6, z);
             }
             scene.add(item);
 
