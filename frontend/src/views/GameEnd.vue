@@ -70,9 +70,10 @@
 
 <script setup lang="ts">
 import router from '@/router';
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted} from 'vue'
 import { Playerrole } from '@/stores/game/dtd/EPlayerrole.js'
 import { useGameStore } from '@/stores/game/gamestore'
+import { stompClient } from '@/config/stompWebsocket';
 
 const gameStore = useGameStore()
 
@@ -100,8 +101,34 @@ const ghostTouch = computed(() => currentCharacter.value?.touchcount ?? 0);
 
 
 function backToStart() {
-  gameStore.resetGameState(); 
-  sessionStorage.clear();
-  router.push({ name: 'index' });
+  try {
+    console.log("Navigating back to start...");
+
+    // beenden
+    if (gameStore.disconnectWebSocket) {
+      gameStore.disconnectWebSocket();
+      console.log("WebSocket disconnected.");
+    }
+
+    // reset
+    gameStore.resetGameState();
+    sessionStorage.clear();
+
+    // starseite
+    router.push({ name: 'index' }).then(() => {
+      console.log("Navigated to start. Forcing reload...");
+      // Reload 
+      window.location.reload();
+    }).catch((error) => {
+      console.error("Error during navigation to index:", error);
+    });
+  } catch (error) {
+    console.error("Error returning to start:", error);
+  }
 }
+
+onMounted(() => {
+  console.log("Setting up WebSocket cleanup...");
+});
+
 </script>

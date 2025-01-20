@@ -436,6 +436,13 @@ export const useGameStore = defineStore('gameStore', () => {
       }
     }
 
+    function disconnectWebSocket() {
+      if (stompClient && stompClient.connected) {
+        stompClient.deactivate();
+        console.log("WebSocket client disconnected.");
+      }
+    }
+
   return {
     gameState,
     jumpAllowed,
@@ -454,6 +461,7 @@ export const useGameStore = defineStore('gameStore', () => {
     isGamePrivate,
     resetGameState,
     getJumpAllowed,
+    disconnectWebSocket,
     subscribeToChickenPositions
   }
 })

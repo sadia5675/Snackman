@@ -1232,6 +1232,7 @@ onMounted(async () => {
         // aktualiesieren
         gameStore.gameState.gamedata.characters = message.updateCharacters
         gameStore.gameState.gamedata.winnerRole = message.winnerRole
+        gameStore.gameState.gamedata.started = message.started
 
         // für hit/life feed
         for (const [name, characterDetails] of Object.entries(gameStore.gameState.gamedata.characters)) {
@@ -1247,7 +1248,7 @@ onMounted(async () => {
         }
         // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
           if (winnerRole.value !== null) {
-            router.push({ name: 'GameEnd' });
+            setTimeout(() => router.push({ name: 'GameEnd' }), 500);
           }
         break;
       }

@@ -95,8 +95,7 @@ public class GameService {
         if(game == null) {
             return null;
         }
-
-        game.end();
+        gameList.remove(gameId);
 
         return game;
 
