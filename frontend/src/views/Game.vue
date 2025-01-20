@@ -901,6 +901,10 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
         case 'C': // Item C
         case 'B': // Item B
         case 'A': // Item A
+        case '1': // Item 1
+        case '2': // Item 2
+        case '3': // Item 3
+        case '4': // Item 4
           const groundItemMatrix = new THREE.Matrix4().makeTranslation(x, 0, z);
           groundMesh.setMatrixAt(groundIndex++, groundItemMatrix);
 
@@ -920,6 +924,19 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             A: [
               new URL("@/assets/game/items/E/strawberry_shortcake/strawberry_shortcake.glb", import.meta.url)
             ],
+            '1': [
+              new URL("@/assets/game/items/1/pedalo.glb", import.meta.url)
+            ],
+            '2': [
+              new URL("@/assets/game/items/2/shields.glb", import.meta.url)
+            ],
+            '3': [
+              new URL("@/assets/game/items/3/doublepoint.glb", import.meta.url)
+            ],
+            '4': [
+              new URL("@/assets/game/items/4/hearts.glb", import.meta.url)
+            ],
+
           };
 
           const randomModelPath = new URL(
@@ -938,15 +955,25 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             } else if (randomModelPath.includes('cottoncandy')) {
               item.position.set(x, 0.75, z);
               item.scale.set(0.2, 0.2, 0.2);
-            } else if (randomModelPath.includes('popcorn')) {
-              item.position.set(x, 0.75, z);
-              item.scale.set(0.09, 0.09, 0.09);
             } else if (randomModelPath.includes('candy_cane')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.07, 0.07, 0.07);
             } else if (randomModelPath.includes('chips')) {
               item.position.set(x, 0.8, z);
               item.scale.set(0.1, 0.1, 0.1);
+            } else if (randomModelPath.includes('pedalo')) {
+              item.position.set(x, 0.75, z);
+              item.rotateZ(Math.PI / 4);
+              item.scale.set(0.1, 0.1, 0.1);
+            } else if (randomModelPath.includes('shields')) {
+              item.position.set(x, 0.8, z);
+              item.scale.set(0.1, 0.1, 0.1);
+            } else if (randomModelPath.includes('doublepoint')) {
+              item.position.set(x, 0.7, z);
+              item.scale.set(1.5, 1.5, 1.5)
+            } else if (randomModelPath.includes('hearts')) {
+              item.position.set(x, 0.65, z);
+              item.scale.set(0.03, 0.03, 0.03)
             }
             scene.add(item);
 
