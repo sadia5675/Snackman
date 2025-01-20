@@ -91,6 +91,13 @@ public class Chicken {
 
     }
 
+    public void stopBehaviour(){
+        LOGGER.info("Stoppe run_auto()");
+        if(pyInterpreter != null) {
+            pyInterpreter.exec("stop_auto");
+        }
+    }
+
     public void move(int x, int y, int angle) {
         this.posX = x;
         this.posY = y;

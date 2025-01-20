@@ -12,6 +12,8 @@ chickenObj.setAngle(0)
 
 chicken_index_environment_list = 4
 
+is_game_running = True
+
 
 print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
 
@@ -105,9 +107,15 @@ def print_environment(actuell_environment):
 
 
 def run_auto():
+    global is_game_running
     print("run_auto ausgeführt")
-    while True:
+    while is_game_running:
         right_hand_algo()
         time.sleep(1)
+
+def stop_auto():
+    print("stop_auto ausgeführt")
+    global is_game_running 
+    is_game_running = False
    
 
