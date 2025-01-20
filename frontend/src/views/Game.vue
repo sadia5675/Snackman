@@ -899,11 +899,11 @@ function getCachedTexture(url: string): THREE.Texture {
 }
 
 function supriseChicken(posX: number, posY : number) {
-    const loader = new GLTFLoader(); 
+    const loader = new GLTFLoader();
     const supriseEgg = new URL("@assets/game/items/kinder_surprise_egg/suprise_egg.glb", import.meta.url).href;
     loader.load(supriseEgg, (gltf) => {
-      const model= gltf.scene; 
-      model.position.set(posX,1, posY); 
+      const model= gltf.scene;
+      model.position.set(posX,1, posY);
       model.scale.set(1, 1, 1)
       scene.add(model);
       console.log("Surprise egg added at (${posX}, ${posY})");
@@ -913,6 +913,7 @@ function supriseChicken(posX: number, posY : number) {
             console.error('Error loading the surprise egg model:', error);
         }
     );
+    console.log("Surprise egg added at",posX, " ",posY);
 }
 
 function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
@@ -1419,8 +1420,9 @@ onMounted(async () => {
     }
   })
 
-  subscribeTo(`/ingame/chicken/eggUpdate`, async (Message: any) =>{
-
+  subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) =>{
+    supriseChicken(message.posX, message.posY);
+    console.log("Egg Update: ", message);
   })
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {

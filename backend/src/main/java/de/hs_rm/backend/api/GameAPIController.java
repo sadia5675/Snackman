@@ -299,6 +299,12 @@ public class GameAPIController {
                     ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
                     messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
                 }
+
+                boolean eggLayed = gameService.checkEggLayed(lobbyid);
+                if(eggLayed){
+                    ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
+                    messagingService.sendEggUpdate(lobbyid, itemCollectedResponse);
+                }
                 
                 // sende das die Validation in Ordnung war
                 PlayerMoveValidationResponse playerMoveValidationResponse = new PlayerMoveValidationResponse(position);
