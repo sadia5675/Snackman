@@ -2,7 +2,7 @@
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
 import {PointLight, PointLightHelper, WebGLRenderer} from 'three'
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
 import {useGameStore} from '@/stores/game/gamestore'
 import type {IMessageDTD} from '@/stores/game/dtd/IMessageDTD'
@@ -40,7 +40,7 @@ const players = new Map<string, number>(); // Spieler mit Namen als Key auf Char
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
 const map = ref<string[] | undefined>(undefined);
-
+const soundList: THREE.Audio[] = []
 
 //Movement
 let movingForward: boolean,
@@ -203,20 +203,69 @@ function createSceneCameraRendererControlsClockListener() {
   return {scene, camera, renderer, pointerLockControls, clock, listener}
 }
 
+function handleKeyUpEvent (e: KeyboardEvent) {
+  switch (e.code) {
+    case 'ShiftLeft':
+      switchSprint()
+      break
+    case 'KeyW':
+      movingForward = true
+      break
+    case 'KeyA':
+      movingLeft = true
+      break
+    case 'KeyS':
+      movingBackward = true
+      break
+    case 'KeyD':
+      movingRight = true
+      break
+    case 'Space':
+      if (gameStore.jumpAllowed) {
+        isChargingJump = true;
+      }
+      break;
+  }
+}
+
+function handleResize() {
+  //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth, window.innerHeight)
+
+  //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+}
+
+function handleKeyDownEvent(e : KeyboardEvent){
+  switch (e.code) {
+    case 'KeyW':
+      movingForward = false
+      break
+    case 'KeyA':
+      movingLeft = false
+      break
+    case 'KeyS':
+      movingBackward = false
+      break
+    case 'KeyD':
+      movingRight = false
+      break
+    case 'Space':
+      isChargingJump = false;
+      break
+  }
+}
+
 function registerListeners(window: Window, renderer: WebGLRenderer) {
   renderer.domElement.addEventListener('click', (e) => {
     renderer.domElement.requestPointerLock()
   })
 
-  window.addEventListener('resize', (e) => {
-    //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
-    renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setSize(window.innerWidth, window.innerHeight)
 
-    //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-  })
+
+  window.addEventListener('resize', handleResize)
 
   document.addEventListener('pointerlockchange', (e) => {
     if (!document.pointerLockElement) {
@@ -226,49 +275,8 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
     }
   })
 
-  window.addEventListener('keydown', (e) => {
-    switch (e.code) {
-      case 'ShiftLeft':
-        switchSprint()
-        break
-      case 'KeyW':
-        movingForward = true
-        break
-      case 'KeyA':
-        movingLeft = true
-        break
-      case 'KeyS':
-        movingBackward = true
-        break
-      case 'KeyD':
-        movingRight = true
-        break
-      case 'Space':
-        if (gameStore.jumpAllowed) {
-          isChargingJump = true;
-        }
-        break;
-    }
-  })
-  window.addEventListener('keyup', (e) => {
-    switch (e.code) {
-      case 'KeyW':
-        movingForward = false
-        break
-      case 'KeyA':
-        movingLeft = false
-        break
-      case 'KeyS':
-        movingBackward = false
-        break
-      case 'KeyD':
-        movingRight = false
-        break
-      case 'Space':
-        isChargingJump = false;
-        break
-    }
-  })
+  window.addEventListener('keydown', handleKeyUpEvent)
+  window.addEventListener('keyup', handleKeyDownEvent)
 }
 
 // Funktion zur Abfrage der Gamepad-Eingaben
@@ -320,28 +328,13 @@ function updateGamepadInput() {
 //Diese Funktion lädt die Hintergrundmusik
 function loadMusic() {
   const audioLoader = new THREE.AudioLoader();
-
-  // Liste der Sound-Dateien
-  const soundFilenames = ['bg-music.mp3', 'walking.mp3', 'hit.mp3'];
-  const soundList: THREE.Audio[] = []
-
-  const bgSound = new THREE.Audio(listener);
-  const bgSoundURL = new URL(`@/assets/game/realistic/sounds/bg-music.mp3`, import.meta.url).href;
-
-  audioLoader.load(bgSoundURL, function (buffer) {
-    bgSound.setBuffer(buffer);
-    bgSound.setLoop(true);
-    bgSound.setVolume(musicVolume.value / 100);
-    bgSound.play()
-  });
-  soundList.push(bgSound);
-
+  
   const walkingSound = new THREE.Audio(listener);
   const walkingSoundURL = new URL(`@/assets/game/realistic/sounds/walking.mp3`, import.meta.url).href;
 
   audioLoader.load(walkingSoundURL, function (buffer) {
     walkingSound.setBuffer(buffer);
-    walkingSound.setLoop(true);
+    walkingSound.setLoop(false);
     walkingSound.setVolume(effectVolume.value / 100);
   });
   soundList.push(walkingSound);
@@ -351,10 +344,20 @@ function loadMusic() {
 
   audioLoader.load(hitSoundURL, function (buffer) {
     hitSound.setBuffer(buffer);
-    hitSound.setLoop(true);
+    hitSound.setLoop(false);
     hitSound.setVolume(effectVolume.value / 100);
   });
   soundList.push(hitSound);
+
+  const jumpSound = new THREE.Audio(listener);
+  const jumpSoundURL = new URL(`@/assets/game/realistic/sounds/jumpo.mp3`, import.meta.url).href;
+
+  audioLoader.load(jumpSoundURL, function (buffer) {
+    jumpSound.setBuffer(buffer);
+    jumpSound.setLoop(false);
+    jumpSound.setVolume(effectVolume.value / 100);
+  });
+  soundList.push(jumpSound);
 
   return soundList
 }
@@ -362,17 +365,18 @@ function loadMusic() {
 const {scene, camera, renderer, pointerLockControls, clock, listener} =
     createSceneCameraRendererControlsClockListener()
 
+/*
 let controllLocked = watch(pointerLockControls, async (oldValue, newValue) => {
   console.log("CHANGE");
   newValue.isLocked;
-});
+}); */
 
 registerListeners(window, renderer)
-const [bgMusic, walkingSound, hitSound] = loadMusic()
-watch(musicVolume, (newVolume) => bgMusic.setVolume(newVolume / 100))
+let [walkingSound, hitSound, jumpSound] = loadMusic()
 watch(effectVolume, (newVolume) => {
   walkingSound.setVolume(newVolume / 100);
-  hitSound.setVolume(newVolume / 100)
+  hitSound.setVolume(newVolume / 100);
+  jumpSound.setVolume(newVolume / 100);
 })
 
 
@@ -540,6 +544,8 @@ function triggerHighJumpAfterChargeTime(delta: number) {
           // Wenn die Ladezeit 2 Sekunden überschreitet, führe den Sprung aus
           jumpVelocity = maxJumpSpeed;  // Erhöhe die Sprunggeschwindigkeit für den großen Sprung
           isJumping = true; // Der Spieler springt jetzt
+          walkingSound.stop()
+          jumpSound.play()
           console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
         }
         isValidatingJump = false;
@@ -549,6 +555,8 @@ function triggerHighJumpAfterChargeTime(delta: number) {
     isValidatingJump = true;
     validateJump(false).then((valid) => {
       jumpChargeTime = 0;
+      walkingSound.stop()
+      jumpSound.play()
       if (valid) {
         jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
         isJumping = true; // Sprung aktivieren
@@ -1300,10 +1308,24 @@ async function handleChickenPositions(data: IChickenDTD[]) {
       eggList: chicken.eggList || [],
       currentCalorie: chicken.currentCalorie
     });
+    removeItemFromSceneByPosition(chicken.posY,chicken.posX);
     console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });
   renderChicken(chickenPositions)
 }
+
+onUnmounted(async () => {
+  console.log("UNMOUNTED UNMOUNTED")
+  window.removeEventListener('keyup', handleKeyUpEvent);
+  window.removeEventListener('keydown',handleKeyDownEvent);
+  window.removeEventListener('resize', handleResize);
+  renderer.dispose();
+  jumpSound.disconnect();
+  hitSound.disconnect();
+  walkingSound.disconnect();
+  camera.remove(listener);
+})
+
 
 onMounted(async () => {
   try {
@@ -1453,6 +1475,7 @@ onMounted(async () => {
 animate()
 })
 
+/*
 watch(
     () => themeStore.selectedTheme,
     (newTheme) => {
@@ -1480,19 +1503,21 @@ watch(
       }
     }
 );
+*/
+
 
 </script>
 
 <template>
   <div ref="threeContainer" id="app" class="gameContainer relative z-20"></div>
   <div class="absolute z-50 top-0 flex justify-between w-full items-center p-8">
-    <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
-      <!-- Items anzeigen, wenn vorhanden -->
-      <div v-if="collectedItems.length > 0">
-        {{ collectedItems.join(', ') }}
-      </div>
-      <div v-else></div>
-    </div>
+
+    <!-- <div id="items" class="ml-4 p-8 bg-black text-white border-2 border-white rounded-lg shadow-lg z-20 w-45 h-45">
+       <div v-if="collectedItems.length > 0">
+         {{ collectedItems.join(', ') }}
+       </div>
+       <div v-else></div>
+     </div> -->
     <div id="hud" class="hud absoute text-white font-bold">
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="flex gap-2">
         <div v-for="index in snackmanMaxLife" :key="index">
@@ -1503,7 +1528,7 @@ watch(
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-        <p>Points: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
+        <p>Nutriscore: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
       </div>
       <!-- TouchCountanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
@@ -1528,14 +1553,9 @@ watch(
   <div v-if="showSettings" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">
       <h3 class="text-2xl font-bold mb-4">Lautstärke</h3>
-      Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume"> {{
-        musicVolume
-      }}%
-      <br>
       Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
       {{ effectVolume }}%
       <br>
-      <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
       <button @click="lockPointer" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
         Close
       </button>
@@ -1566,4 +1586,3 @@ watch(
 </template>
 
 <style scoped></style>
-
