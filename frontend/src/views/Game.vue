@@ -898,8 +898,21 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
-function loadAndSetSurpriseEgg() {
-  return;
+function supriseChicken(posX: number, posY : number) {
+    const loader = new GLTFLoader(); 
+    const supriseEgg = new URL("@assets/game/items/kinder_surprise_egg/suprise_egg.glb", import.meta.url).href;
+    loader.load(supriseEgg, (gltf) => {
+      const model= gltf.scene; 
+      model.position.set(posX,1, posY); 
+      model.scale.set(1, 1, 1)
+      scene.add(model);
+      console.log("Surprise egg added at (${posX}, ${posY})");
+    },
+        undefined,
+        (error) => {
+            console.error('Error loading the surprise egg model:', error);
+        }
+    );
 }
 
 function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
@@ -1404,6 +1417,10 @@ onMounted(async () => {
       default:
         console.warn("Unbekannter Nachrichtentyp:", message.type);
     }
+  })
+
+  subscribeTo(`/ingame/chicken/eggUpdate`, async (Message: any) =>{
+
   })
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
