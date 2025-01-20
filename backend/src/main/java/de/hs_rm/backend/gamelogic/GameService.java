@@ -339,15 +339,16 @@ public class GameService {
         return validMove;
     }
 
-    public boolean checkItemCollcted(String lobbyid){
+    public String checkItemCollcted(String lobbyid){
         Game existingGame = getGameById(lobbyid);
         for(Tile tile : existingGame.getPlaymap().getTilesList()){
-                if (tile.isItemWasRecentlyCollected()) {  
-                    tile.setItemWasRecentlyCollected(false);
-                    return true;
+                if (tile.getRecentlyCollectedItemName() != null) {
+                    String itemName = tile.getRecentlyCollectedItemName();
+                    tile.setRecentlyCollectedItemName(null);
+                    return itemName;
                 }
         }
-        return false;
+        return null;
     }
 
     public boolean checkEggLayed(String lobbyid){

@@ -47,7 +47,7 @@ let movingForward: boolean,
     movingBackward: boolean,
     movingLeft: boolean,
     movingRight: boolean = false
-let SprintIntervalId: number | null = null;
+let sprintIntervalId: number | null = null;
 const slowMovementSpeed = 2
 const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
@@ -468,7 +468,7 @@ async function switchSprint() {
     if (sprintIsValid) {
       movementSpeed = fastMovementSpeed
 
-      SprintIntervalId = setInterval(async () => {
+      sprintIntervalId = setInterval(async () => {
         const sprintIsValid = await validateSprint()
         if (!sprintIsValid) {
           stopSprinting()
@@ -515,9 +515,9 @@ function isSprinting() {
 function stopSprinting() {
   movementSpeed = slowMovementSpeed
 
-  if (SprintIntervalId) {
-    clearInterval(SprintIntervalId)
-    SprintIntervalId = null
+  if (sprintIntervalId) {
+    clearInterval(sprintIntervalId)
+    sprintIntervalId = null
   }
 }
 
@@ -1296,13 +1296,31 @@ async function handleCharacters(data: ICharacterDTD[]) {
   renderCharactersTest(playerPositions)
 }
 
-function removeItemFromSceneByPosition(posX: number, posY: number) {
+function removeItemFromSceneByPosition(itemName: string, posX: number, posY: number) {
   const itemToRemove = rotatingItems.find(
     (item) =>
       Math.abs(item.position.x - posX) <= 0.5 && Math.abs(item.position.z - posY) <= 0.5
   );
 
   if (itemToRemove) {
+    console.log("Item to remove: ", itemName);
+    if (itemName == "Speed Boost") {
+      // increase speed boost for ghosts only for 10 seconds
+      if (currentPlayer.value?.playerrole == Playerrole.GHOST) {
+        console.log("Speed Boost collected by Ghost, increasing speed");
+        movementSpeed = fastMovementSpeed
+
+        if (sprintIntervalId) {
+          clearInterval(sprintIntervalId)
+        }
+        sprintIntervalId = setInterval(async () => {
+          const sprintIsValid = await validateSprint()
+          if (!sprintIsValid) {
+            stopSprinting()
+          }
+        }, 5000)
+      }
+    }
     // Entferne das Item aus der Szene
     scene.remove(itemToRemove);
 
@@ -1441,7 +1459,7 @@ onMounted(async () => {
       case "itemCollected":
         console.log(`collected at{} {}`, message.posX, message.positionY)
         console.log('MESSAGE: ' + message.toString())
-        removeItemFromSceneByPosition(message.positionX, message.positionY);
+        removeItemFromSceneByPosition(message.itemName, message.positionX, message.positionY);
         break;
 
       default:
@@ -1600,27 +1618,6 @@ watch(
       </button>
     </div>
   </div>
-
-
-  <Modal>
-    <template #titel>
-      <h3 class="header-modal-adventure">Lautstärke</h3>
-    </template>
-    <template #content>
-      <div flex flex-col gap-3>
-        Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume">
-        {{ musicVolume }}%
-        <br>
-        Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
-        {{ effectVolume }}%
-        <br>
-        <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
-        <button @click="lockPointer" class="button-small-adventure">
-          Close
-        </button>
-      </div>
-    </template>
-  </Modal>
 
 </template>
 

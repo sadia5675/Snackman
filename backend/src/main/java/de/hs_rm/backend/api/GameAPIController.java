@@ -295,9 +295,9 @@ public class GameAPIController {
 
             if (madeValidMove) {
 
-                boolean itemCollected = gameService.checkItemCollcted(lobbyid);
-                if(itemCollected){
-                    ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
+                String itemCollected = gameService.checkItemCollcted(lobbyid);
+                if(itemCollected != null){
+                    ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(itemCollected, position.getPosX(), position.getPosY());
                     messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
                 }
 
