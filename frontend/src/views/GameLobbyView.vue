@@ -106,7 +106,7 @@
       <h2 class="text-lg font-semibold text-zinc-200 mb-4">Select a Map</h2>
 
       <!-- Grid mit Map-Bildern -->
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto custom-scrollbar">
         <div v-for="map in mapStore.mapsDTD.maps" :key="map.id" :class="[
           'p-4 rounded-lg shadow-lg transition cursor-pointer',
           map.id === selectedMap?.id ? 'bg-blue-700 border-blue-400' : 'bg-gray-800 hover:bg-gray-700'
@@ -534,3 +534,18 @@ function closeThemePopup() {
       isThemePopupVisible.value = false;
 }
 </script>
+<style>
+/* Scrollbar-Styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Breite der Scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* Farbe des Scrollbars */
+  border-radius: 4px; /* Abgerundete Ecken */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #1f2937; /* Farbe der Scrollspur */
+}
+</style>
