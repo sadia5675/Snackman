@@ -898,20 +898,22 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
-function supriseChicken(posX: number, posY : number) {
+function surpriseChicken(posX: number, posY : number) {
     const loader = new GLTFLoader();
-    const supriseEgg = new URL("@assets/game/items/kinder_surprise_egg/suprise_egg.glb", import.meta.url).href;
+    const supriseEgg = new URL("@/assets/game/items/kinder_surprise_egg/surprise_egg.glb", import.meta.url).href;
     loader.load(supriseEgg, (gltf) => {
       const model= gltf.scene;
-      model.position.set(posX,1, posY);
+      model.position.set(posX,1,posY);
       model.scale.set(1, 1, 1)
       scene.add(model);
-      console.log("Surprise egg added at (${posX}, ${posY})");
-    },
-        undefined,
-        (error) => {
-            console.error('Error loading the surprise egg model:', error);
+      rotatingItems.push(model);
+      model.traverse((child) =>{
+        if(child instanceof THREE.Mesh){
+          child.castShadow = true;
         }
+      })
+      console.log("Surprise egg added at (${posX}, ${posY})");
+    }
     );
     console.log("Surprise egg added at",posX, " ",posY);
 }
@@ -920,7 +922,7 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
   const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
   const groundTexture = getCachedTexture(selectedTheme.ground);
-  const wallTexture = getCachedTexture(selectedTheme.wall);
+  const wallTexture = getCachedTexture(selectedTheme.wall); 
   const groundMaterial = new THREE.MeshStandardMaterial({map: groundTexture});
   const wallMaterial = new THREE.MeshStandardMaterial({map: wallTexture});
 
@@ -1421,7 +1423,9 @@ onMounted(async () => {
   })
 
   subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) =>{
-    supriseChicken(message.posX, message.posY);
+    surpriseChicken(3,5);
+    console.log("Hier die Koordinaten" , message.positionY, message.positionX);
+    console.log("ASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     console.log("Egg Update: ", message);
   })
 
