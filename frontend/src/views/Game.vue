@@ -898,6 +898,26 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
+function surpriseChicken(posX: number, posY : number) {
+    const loader = new GLTFLoader();
+    const supriseEgg = new URL("@/assets/game/items/kinder_surprise_egg/surprise_egg.glb", import.meta.url).href;
+    loader.load(supriseEgg, (gltf) => {
+      const model= gltf.scene;
+      model.position.set(posX,1,posY);
+      model.scale.set(1, 1, 1)
+      scene.add(model);
+      rotatingItems.push(model);
+      model.traverse((child) =>{
+        if(child instanceof THREE.Mesh){
+          child.castShadow = true;
+        }
+      })
+      console.log("Surprise egg added at (${posX}, ${posY})");
+    }
+    );
+    console.log("Surprise egg added at",posX, " ",posY);
+}
+
 function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
   const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
   const wallGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -1000,6 +1020,9 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             '4': [
               new URL("@/assets/game/items/4/hearts.glb", import.meta.url)
             ],
+            'kinderSupriseEgg':[
+              new URL("@assets/game/items/kinder_surprise_egg/kinder_surprise_egg.glb", import.meta.url)
+            ],
 
           };
 
@@ -1038,6 +1061,9 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             } else if (randomModelPath.includes('hearts')) {
               item.position.set(x, 0.65, z);
               item.scale.set(0.03, 0.03, 0.03)
+            }else if(randomModelPath.includes('supriseEgg')){
+              item.scale.set(0.03, 0.03, 0.03)
+              item.position.set(x, 0.6, z);
             }
             scene.add(item);
 
@@ -1147,7 +1173,7 @@ function renderChicken(chickenData:  IChickenDTD[]){
     if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
       loadingChickens .add(chicken.id);
       console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
-      const chickenModelURL =new URL('@/assets/chicken/chicken.glb', import.meta.url).href;
+      const chickenModelURL =new URL('@/assets/chicken/newerchicken.glb', import.meta.url).href;
       console.log("Chcieken url", chickenModelURL);
       console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
@@ -1185,7 +1211,7 @@ function renderChicken(chickenData:  IChickenDTD[]){
 function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
   const targetPosition = new THREE.Vector3(chickenData.posY + 0.5, .5, chickenData.posX + 0.5);
   const currentPosition = modellChicken.position;
-  modellChicken.rotation.y = ((chickenData.angle / 360) * (Math.PI * 2)) - (Math.PI / 2);
+  modellChicken.rotation.y = (chickenData.angle / 360) * (Math.PI * 2);
 
   console.log("Aktuelle Position:", currentPosition);
   console.log("Zielposition:", targetPosition);
@@ -1394,6 +1420,13 @@ onMounted(async () => {
       default:
         console.warn("Unbekannter Nachrichtentyp:", message.type);
     }
+  })
+
+  subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) =>{
+    surpriseChicken(3,5);
+    console.log("Hier die Koordinaten" , message.positionY, message.positionX);
+    console.log("ASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    console.log("Egg Update: ", message);
   })
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
