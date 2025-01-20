@@ -95,7 +95,7 @@ onMounted(() => {
         </thead>
         <tbody>
           <tr v-for="game in games" :key="game.id" :game="game">
-            <LobbyTabellenZeile :game="game" @open-modal="modal.checkPrivateGame(game.id)" />
+            <LobbyTabellenZeile :game="game" @openModal="modal.checkPrivateGame(game.id)" />
           </tr>
         </tbody>
       </table>

@@ -28,6 +28,10 @@ public class GameMessagingService {
         template.convertAndSend("/topic/game/" + lobbyid, ev);
     }
 
+    public void sendPlayerLeave(String lobbyid, Object res){
+        template.convertAndSend("/topic/game/" + lobbyid, res);
+    }
+
     public void sendNewCharacterPosition(String lobbyid, Object position){
         //logger.info("Sending playerPositions");
         template.convertAndSend("/topic/ingame/playerPositions/" + lobbyid, position);
@@ -41,6 +45,7 @@ public class GameMessagingService {
         //logger.info("Sending item update to lobby {}: {}", lobbyid, itemUpdate);
         template.convertAndSend("/topic/ingame/" + lobbyid + "/itemUpdates", itemUpdate);
     }
+
 
 
     // ToDo Aron

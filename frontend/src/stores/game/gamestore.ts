@@ -223,46 +223,47 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   }
 
+  function handleLeaveResponse(
+    message: IMessageDTD,
+    leavingPlayer: IPlayerDTD,
+    resolve: (value: boolean) => void,
+    reject: (reason?: any) => void
+  ) {
+    console.log("INSIDE HANDLE")
+    if (message.status === 'ok') {
+      console.log(`${leavingPlayer.name} successfully left.`);
+  
+      const updatedPlayers = message.feedback as IPlayerDTD[];
+      gameState.gamedata.players.splice(0, gameState.gamedata.players.length, ...updatedPlayers);
+  
+      const myName = sessionStorage.getItem("myName");
+      if (myName === leavingPlayer.name) {
+        sessionStorage.removeItem("myName");
+        stompClient.deactivate();
+        router.push({ name: "index" });
+      }
+      resolve(true);
+    }
+    else {
+      console.error("Leave error:", message.feedback);
+      resolve(false);
+    }
+  }
 
   function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        if (!stompClient.connected) {
-          stompClient.activate();
-
-          stompClient.onConnect = () => {
-            sendLeaveMessage();
-          };
-        } else {
-          sendLeaveMessage();
-        }
-
-        function sendLeaveMessage() {
-          console.log("Sending leave message for:", leavingPlayer.name);
-          sendMessage(`/topic/game/${lobbyId}/leave`, { name: leavingPlayer.name });
-
-          subscribeTo(`/game/${lobbyId}`, (message: IMessageDTD) => {
-            if (message.status === 'ok') {
-              console.log(`${leavingPlayer.name} erfolgreich verlassen.`);
-
-              const updatedPlayers = message.feedback as IPlayerDTD[];
-              gameState.gamedata.players.splice(0, gameState.gamedata.players.length, ...updatedPlayers);
-
-              const myName = sessionStorage.getItem("myName");
-              if (myName === leavingPlayer.name) {
-                sessionStorage.removeItem("myName");
-                router.push({ name: "index" });
-              }
-
-              resolve(true);
-            } else {
-              console.error("Leave error:", message.feedback);
-              resolve(false);
-            }
-          });
-        }
+        // Nachricht senden
+        sendMessage(`/topic/game/${lobbyId}/leave`, leavingPlayer);
+        console.log("Leave message sent for:", leavingPlayer.name);
+  
+        // Auf Rückmeldung warten
+        subscribeTo(`/game/${lobbyId}`, (message: IMessageDTD) => {
+          handleLeaveResponse(message, leavingPlayer, resolve, reject);
+        });
       } catch (error) {
         console.error("Error in leaveGame:", error);
+        reject(error); // Promise ablehnen
       }
     });
   }
@@ -294,9 +295,9 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
-  async function fetchGameStatus() {
+  async function fetchGameStatus(lobbyId: string) {
     try {
-      const response = await fetch(`${restUrl}/status/${gameState.gamedata.id}`)
+      const response = await fetch(`${restUrl}/status/${lobbyId}`)
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
     } catch (error) {
@@ -382,6 +383,9 @@ export const useGameStore = defineStore('gameStore', () => {
             gameState.gamedata = message.feedback as IGameDTD
             console.log(gameState)
             break
+          case 'playerLeave':
+            console.log("PlayerLeave Feedback: ", message.feedback);
+            gameState.gamedata.players = message.feedback as IPlayerDTD[];
           case 'themeUpdate':
             const themeStore = useThemeStore()
             const newTheme = message.feedback as string
@@ -415,7 +419,7 @@ export const useGameStore = defineStore('gameStore', () => {
         resolve(true)
       } else {
         modal.setErrorMessage(message.feedback as string)
-        stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
+        //stompClient.deactivate().then(r => console.log('Deactivated stompClient:', r))
         resolve(false)
       }
     }

@@ -312,7 +312,7 @@ async function leaveGame(lobbyId: string) {
 
 onMounted(async () => {
   try {
-    await gameStore.fetchGameStatus();
+    await gameStore.fetchGameStatus(lobbyId);
     await themeStore.fetchSelectedTheme(lobbyId);
     console.log("Passwort von gamestate", gameStore.gameState.gamedata?.password);
   } catch (error) {
@@ -389,7 +389,7 @@ onMounted(async () => {
   }
 
   try {
-    await gameStore.fetchGameStatus();
+    await gameStore.fetchGameStatus(lobbyId);
   } catch (error) {
     console.error('Error fetching game status:', error);
   }
@@ -454,7 +454,7 @@ onMounted(async () => {
 
 onMounted(async () => {
   try {
-    await gameStore.fetchGameStatus();
+    await gameStore.fetchGameStatus(lobbyId);
     //Log zum testen
     //gamestore.joinLobby(lobbyId,);
 

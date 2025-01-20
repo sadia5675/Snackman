@@ -1,7 +1,9 @@
 package de.hs_rm.backend.gamelogic;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import de.hs_rm.backend.exception.GameJoinException;
+import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -101,11 +104,11 @@ public class GameService {
 
     }
 
-    public Game leaveGame(String gameId,Player player){
+    public List<Player> leaveGame(String gameId,Player player){
         Game game = gameList.get(gameId);
 
         if(game == null){
-            return null;
+            throw new GameLeaveException("Game nicht gefunden");
         }
 
         game.leaveGame(player);
@@ -113,9 +116,9 @@ public class GameService {
         if(game.getPlayers().isEmpty()){
             gameList.remove(gameId);
             game = null;
+            return new ArrayList<>();
         }
-
-        return game;
+        return game.getPlayers();
     }
 
     public Boolean isJumpAllowed(String gameId, String playerName){
