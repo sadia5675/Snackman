@@ -6,7 +6,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
 import {useGameStore} from '@/stores/game/gamestore'
 import type {IMessageDTD} from '@/stores/game/dtd/IMessageDTD'
-import {sendMessage, subscribeTo} from '@/config/stompWebsocket'
+import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket'
 import {useRoute} from 'vue-router'
 import type {IPlayerPositionDTD} from '@/stores/game/dtd/IPlayerPositionDTD'
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
@@ -1440,8 +1440,8 @@ onMounted(async () => {
         // überprüft, ob es ein gewinner gibt und zeigt die ensprechende ansicht
           if (winnerRole.value !== null) {
             setTimeout(() => {
-              stompClient.deactivate(),
               router.push({ name: 'GameEnd' });
+              stompClient.deactivate()
             }, 500);
           }
         break;
