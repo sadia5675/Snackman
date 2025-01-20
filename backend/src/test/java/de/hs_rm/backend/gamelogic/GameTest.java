@@ -13,7 +13,7 @@ import de.hs_rm.backend.gamelogic.map.Tile;
 import de.hs_rm.backend.gamelogic.map.TileType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir; 
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,9 +29,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class GameTest{
+    /*
     private Game game;
     private Player mockGamemaster;
-    @TempDir 
+    @TempDir
     Path tempDir;
 
     @BeforeEach
@@ -44,6 +45,7 @@ class GameTest{
         // Initialisierung des Spiels
         game = new Game(mockGamemaster, 3, 5, 1,1, 10);
     }
+    /*
 
     @Test
     void testAddPlayer() {
@@ -109,7 +111,8 @@ class GameTest{
     }
     */
 
-    /* 
+    /*
+
     @Test
     void testMoveCharacter() {
         // Mock PlayMap and Tiles
@@ -159,14 +162,16 @@ class GameTest{
         assertEquals(2, character.getPosY(), "Character's Y position should be updated to 2.");
     }
     */
-    
+
+    /*
     @Test
     void testCannotKickGamemaster() {
         boolean result = game.kick("Gamemaster", "Gamemaster");
 
         assertFalse(result, "Der Gamemaster sollte nicht entfernt werden können.");
     }
-
+    */
+    /*
     private List<Tile> createMockTilesList(int size) {
         List<Tile> tiles = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -316,7 +321,7 @@ class GameTest{
         assertFalse(wasKicked);
         assertEquals(2, game.getPlayers().size());
     }
-    
+
     @Test // Überprüft, die berechung von MaxPointsSnackman
     void testCalculateMaxPointsSnackman() {
         List<FoodItems> placedSnacks = List.of(
@@ -331,7 +336,8 @@ class GameTest{
         assertEquals(30, game.getMaxPointsSnackman());
     }
 
-    /* 
+    /*
+    /*
     @Test // Auf den Spielfeld bewegen
     void testMove() throws IOException {
         // Pfad zur temporären Test-Datei

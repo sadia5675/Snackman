@@ -1,6 +1,10 @@
-
 package de.hs_rm.backend.gamelogic;
 
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.hs_rm.backend.gamelogic.characters.players.Character;
-import de.hs_rm.backend.gamelogic.characters.players.Chicken;
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.FoodItems;
 import de.hs_rm.backend.gamelogic.characters.players.Ghost;
 import de.hs_rm.backend.gamelogic.characters.players.GhostObjectItem;
@@ -24,6 +28,7 @@ import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
 import de.hs_rm.backend.gamelogic.characters.players.Snackman;
 import de.hs_rm.backend.gamelogic.characters.players.SnackmanObjectItem;
+import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
 import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.Tile;
@@ -40,15 +45,18 @@ public class Game {
     private PlayMap playmap;
     private int chickenNum;
     private String selectedMap;
-    private int itemsNum;
-
-    private String selectedTheme = "realistic";
 
     private int snackmanLife;
     private int snackmanMaxLife;
     private double snackmanSpeed;
     private double ghostSpeed;
     private int itemsPerSurfaceRatio;
+    private int nutriscore;
+    private String pathToChickenBot;
+
+    private int itemsNum;
+
+    private String selectedTheme = "realistic";
 
     private boolean privateLobby;
     private String password;
@@ -121,8 +129,15 @@ public class Game {
             new SnackmanObjectItem("Double Points", -1, -1, "Doubles points gained for a limited time"),
             new SnackmanObjectItem("Extra Life", -1, -1, "Grants an extra life"));
 
-    public Game(Player gamemaster, int snackmanLife, int snackmanMaxLife, double snackmanSpeed, double ghostSpeed,
-            int itemsPerSurfaceRatio) {
+    public Game(
+            Player gamemaster,
+            int snackmanLife,
+            int snackmanMaxLife,
+            double snackmanSpeed,
+            double ghostSpeed,
+            int itemsPerSurfaceRatio,
+            String pathToChickenBot
+    ) {
         this.id = generateId(5);
         this.players = new ArrayList<>();
         this.chickens = new ArrayList<>();
@@ -145,6 +160,8 @@ public class Game {
         this.snackmanSpeed = snackmanSpeed;
         this.ghostSpeed = ghostSpeed;
         this.itemsPerSurfaceRatio = itemsPerSurfaceRatio;
+        this.pathToChickenBot = pathToChickenBot;
+
         maxPointsSnackman = 0; // wird unten berechnet
         winnerRole = null;
     }
@@ -179,6 +196,23 @@ public class Game {
         winnerRole = null;
     }
 
+    public int getChickenNum() {
+        return chickenNum;
+    }
+
+
+    public void setChickenNum(int chickenNum) {
+        this.chickenNum = chickenNum;
+    }
+
+    public String getPathToChickenBot() {
+        return pathToChickenBot;
+    }
+
+    public void setPathToChickenBot(String pathToChickenBot) {
+        this.pathToChickenBot = pathToChickenBot;
+    }
+
     // Generiert eindeutige ID
     // Synchronisieren --> verhindert, dass mehrere Threads gleichzeitig doppelte
     // IDs erzeugen
@@ -202,13 +236,6 @@ public class Game {
             sb.append(alphaNumericString.charAt(index));
         }
         return sb.toString();
-    }
-
-    public boolean start() {
-        if (this.playmap == null) {
-            return false;
-        }
-        return start(this.playmap);
     }
 
     public List<PlayerPosition> createSpawnPoints() {
@@ -274,12 +301,18 @@ public class Game {
         return Math.sqrt(Math.pow(pos[0]-pp.getPosX(), 2) + Math.pow(pos[1]-pp.getPosY(), 2));
     }
 
-    public boolean start(PlayMap playMap) {
+    public boolean start(PlayMap playMap, int chickenNum, String pathToChickenBot) {
         LOGGER.info("started: {} gameid: {}", this.started, this.id);
+        this.chickenNum = chickenNum;
+        this.playmap = playMap;
 
-        // TODO: hier sollte random name als param übergeben werden
-        if (this.playmap == null) {
-            this.playmap = playMap;
+        int surfaceCount = playmap.getCountSurface();
+        int maxChickenAllowed = surfaceCount / 5; // 1 Chicken pro 5 SURFACE-Tiles
+
+        LOGGER.info("Requested chicken count exceeds allowed maximum: Requested={}, Allowed={}, SurfaceTiles={}", this.chickenNum, maxChickenAllowed, surfaceCount);
+        if (this.chickenNum> maxChickenAllowed) {
+            LOGGER.warn("Requested chicken count exceeds allowed maximum: Requested={}, Allowed={}, SurfaceTiles={}", this.chickenNum, maxChickenAllowed, surfaceCount);
+        return false;
         }
 
         Random random = new Random();
@@ -359,7 +392,7 @@ public class Game {
             PlayerPosition playerSpawn = spawnPoints.stream().filter(p -> p.getPlayerName().equals(player.getName())).findFirst().get();
             int spawnTileIndex = (int) Math.floor(playerSpawn.getPosX()) * playmap.getWidth()
                 + (int) Math.floor(playerSpawn.getPosY());
-                
+
             spawnTile = playMap.getTilesList().get(spawnTileIndex);
 
             switch (player.getPlayerrole()) {
@@ -368,7 +401,7 @@ public class Game {
                     newCharacter = new Ghost(ghostSpeed, (int) Math.floor(playerSpawn.getPosX()), (int) Math.floor(playerSpawn.getPosY()));
                     characters.put(player.getName(), newCharacter);
                     spawnTile.addCharacter(player.getName(),newCharacter);
-                    
+
                 }
                 case SNACKMAN -> {
                     newCharacter = new Snackman(snackmanSpeed, (int) Math.floor(playerSpawn.getPosX()), (int) Math.floor(playerSpawn.getPosY()), snackmanLife, snackmanMaxLife);
@@ -383,17 +416,44 @@ public class Game {
         }
         // DONE: random position von hühnchen
         for (int i = 0; i < this.chickenNum; i++) {
+
+            UUID uniqueID = UUID.randomUUID();
             Tile randomTile;
             int index = -1;
+
+            Path pathToChickenBotPath = Paths.get(pathToChickenBot);
+            LOGGER.info("currentPath = {}", pathToChickenBotPath);
+            //Path pathToChickenBotPath = Paths.get("/Users/erina/Documents/2024swtpro02/backend/src/main/resources/scripts/test_script_wrong_location.py");
+
+            // ToDo Aron: url ist nur zu Testzwecken hier bis entsprechende Umgebungsvariablen in application.properties und ordner außerhalb src erneut implementiert sind!
+            if (Files.exists(pathToChickenBotPath)){
+                LOGGER.info("Path to test scripts:{}" , pathToChickenBotPath);
+            }else{
+                LOGGER.error("Script not found");
+            }
+
             do {
                 index = random.nextInt(playmap.getTilesList().size());
                 randomTile = playmap.getTilesList().get(index);
             } while (randomTile.getType() != TileType.SURFACE || randomTile.hasChicken());
 
-            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth());
+
+            Chicken chicken = new Chicken(index % playmap.getWidth(), index / playmap.getWidth(), pathToChickenBotPath, this, uniqueID.toString());
+
+
             chickens.add(chicken);
             // DONE: chicken zu random tile hinzufügen
             randomTile.addChicken(chicken);
+
+            LOGGER.info("Adding chicken: {} at Tile: {}", i, randomTile);
+            LOGGER.info("Chicken added to tile: {}", randomTile);
+            Thread thread = new Thread(() -> {
+                LOGGER.info("Runnign in a thread" + Thread.currentThread().getName());
+
+                chicken.executeBehavior();
+            });
+            thread.start();
+
         }
         this.started = true;
         return started;

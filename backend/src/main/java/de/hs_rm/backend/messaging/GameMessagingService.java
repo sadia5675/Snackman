@@ -62,4 +62,10 @@ public class GameMessagingService {
         //logger.info("Sending player collision details");
         template.convertAndSend("/topic/ingame/PlayerKollision/" + lobbyid, collisionDetails);
     }
+
+    public void sendNewChickenPosition(String lobyid, Object position){
+        //logger.info("Sending chickenPositions {}", position, "to lobby: {}", lobyid);
+        template.convertAndSend("/topic/ingame/chickenPosition/" + lobyid, position);
+    }
+
 }

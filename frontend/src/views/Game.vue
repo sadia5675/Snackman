@@ -23,11 +23,15 @@ import {
 
 
 const themeStore = useThemeStore();
+import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
+import type { Message } from 'postcss'
 
 const gameStore = useGameStore()
 const route = useRoute()
 const lobbyId = route.params.id.toString()
-
+const loadingChickens = new Set<string>(); // Tracke laufende Ladevorgänge
+const chickens = new Map<string, THREE.Object3D>(); // ChickenID als Key und Model-ID als Value
+const cameraOffset = new THREE.Vector3(0, 5, -10); // Offset der Kamera relativ zum Chicken
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
 //let lastMoveValid = false;
@@ -168,9 +172,6 @@ watch(
 );
 // Role die gewonnen hat
 const winnerRole = computed(() => gameStore.gameState.gamedata.winnerRole ?? null);
-
-// Typ falsch?
-const chickenPositions = ref<IChickenPositionDTD[]>([]);
 
 
 function addItem(itemName: string) {
@@ -788,21 +789,6 @@ function renderCharactersTest(playerPositions: IPlayerPositionDTD[]) {
   })
 }
 
-function renderChicken(chickenPositions: IChickenPositionDTD[]) {
-  const modelLoader = new GLTFLoader()
-  const chickenModelURL = new URL('@/assets/game/realistic/chicken/chicken.gltf', import.meta.url).href;
-
-  chickenPositions.forEach((chickenPosition) => {
-    modelLoader.load('@/assets/game/realistic/chicken/chicken.gltf', (objekt) => {
-      const model = objekt.scene
-      model.position.set(chickenPosition.x, 1, chickenPosition.y)
-      model.scale.set(0.03, 0.03, 0.03)
-      model.rotateY(chickenPosition.angle)
-      scene.add(model)
-    })
-  })
-}
-
 function createNameSprite(playerName: string) {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -1032,6 +1018,107 @@ function loadMapFromLocalStorage(): string[] | null {
   }
   return null;
 }
+function renderChicken(chickenData:  IChickenDTD[]){
+  console.log("INSIDE RENDER: ", chickenData);
+  const loader =new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
+  //Überprüfung ob es eine chicken id gibt wenn nicht wird ein erstellt und wenn ja wir die position aktualsiert
+  chickenData.forEach((chicken)=>{
+    console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
+    if (!chicken.id) {
+      console.warn("Chicken hat keine ID:", chicken.id);
+      return; // Weiterverarbeitung abbrechen
+    }
+    if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
+      loadingChickens .add(chicken.id);
+      console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
+      const chickenModelURL =new URL('@/assets/chicken/chicken.glb', import.meta.url).href;
+      console.log("Chcieken url", chickenModelURL);
+      console.log("Neues Chicken wird erstellt:", chicken.id);
+      loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
+        const model = gltf.scene;
+        model.scale.set(0.5, 0.5, 0.5);
+        model.name = chicken.id;
+        chickens.set(chicken.id, model);
+        scene.add(model);
+        model.position.set(chicken.posX, 1, chicken.posY);
+        console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+        loadingChickens .delete(chicken.id);
+      },
+        undefined,(error) => {
+            console.error("Fehler beim Laden des Chicken-Modells:", error);
+        }
+
+      );
+    }else{
+      console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
+        const existingChickenModel = chickens.get(chicken.id)
+        if(existingChickenModel ){
+          moveChicken(existingChickenModel , chicken);
+          console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+
+        }
+    }
+  })
+
+}function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
+  const targetPosition = new THREE.Vector3(chickenData.posY + 0.5,.5,chickenData.posX + 0.5);
+  const currentPosition= modellChicken.position;
+
+  console.log("Aktuelle Position:", currentPosition);
+  console.log("Zielposition:", targetPosition);
+  // Bewegung in Richtung Zielpunkt
+
+  const direction = targetPosition.clone().sub(currentPosition).normalize();
+  const chickenSpeed = 1; // Geschwindigkeit des Chickens (Einheiten/Sekunde)
+  const delta= clock.getDelta();
+
+
+  console.log('Richtung:', direction);
+
+  console.log("Neue Position des Chicken-Modells:", modellChicken.position);
+
+  if (currentPosition.distanceTo(targetPosition) < chickenSpeed * delta) {
+    const movement = direction.multiplyScalar(chickenSpeed * delta);
+  modellChicken.position.add(movement);
+  console.log('Bewegung:', movement);
+  console.log('Bewegt zu:', modellChicken.position);
+  }else{
+    modellChicken.position.set(targetPosition.x, .5, targetPosition.z);
+    console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
+  }
+
+
+  /*const targetRotation = THREE.MathUtils.degToRad(chickenData[nextIndex].angle);
+  const currentRotation = THREE.MathUtils.degToRad(chickenData[currentIndex].angle);
+
+  let lerpFactor = 0; // Standardmäßig keine Interpolation
+  if (currentDistance > totalDistance * 0.75) {
+    // Erste 1/4 der Strecke: Bleibt bei der aktuellen Rotation
+    lerpFactor = 0;
+  } else if (currentDistance < totalDistance * 0.25) {
+    // Letzte 1/4 der Strecke: Zielrotation erreicht
+    lerpFactor = 1;
+  } else {
+    // Zwischen 1/4 und 3/4 der Strecke: Interpolation
+    const progress = (totalDistance - currentDistance) / totalDistance; // Fortschritt zwischen 0 und 1
+    lerpFactor = (progress - 0.25) / 0.5; // Normierung auf den Bereich 0.25 bis 0.75
+  }
+
+  // Interpoliere die Rotation basierend auf lerpFactor
+  modellChicken.rotation.y = THREE.MathUtils.lerp(currentRotation, targetRotation, lerpFactor);*/
+
+  console.log("Aktuelle Rotation (in Grad):", THREE.MathUtils.radToDeg(modellChicken.rotation.y));
+}
+
+function followChicken(camera: THREE.Camera, chicken: THREE.Group, offset: THREE.Vector3) {
+  if (chicken) {
+    // Kamera-Position basierend auf Chicken-Position und Offset
+    const targetPosition = chicken.position.clone().add(offset);
+    camera.position.lerp(targetPosition, 0.1); // Sanfte Bewegung der Kamera
+    camera.lookAt(chicken.position); // Kamera auf das Chicken ausrichten
+    console.log("Kamera folgt Chicken:", chicken.position);
+  }
+}
 
 async function handleCharacters(data: ICharacterDTD[]) {
   let playerPositions: IPlayerPositionDTD[] = [];
@@ -1075,6 +1162,26 @@ watch([spawnX, spawnZ], ([newX, newZ]) => {
       }
     });
 
+
+async function handleChickenPositions(data: IChickenDTD[]) {
+  console.log("Processing Chicken Positions:", data);
+  let chickenPositions: IChickenDTD[]= [];
+  data.forEach(chicken => {
+    console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
+
+    chickenPositions.push({
+      id: chicken.id,
+      posX: chicken.posX,
+      posY: chicken.posY,
+      angle: chicken.angle,
+      eggList: chicken.eggList || [],
+      currentCalorie: chicken.currentCalorie
+    });
+    console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
+  });
+  renderChicken(chickenPositions)
+}
+
 onMounted(async () => {
   try {
     await gameStore.fetchGameStatus()
@@ -1089,14 +1196,6 @@ onMounted(async () => {
   }
   const spawnPoints = gameStore.gameState.gamedata.spawnPoints;
   console.log("SPAWNS: ", spawnPoints)
-
-  if (gameStore.gameState.gamedata.chickens === null) {
-    chickenPositions.value = []
-    console.log("Keine Positionsdaten weil Chicken Array leer")
-  } else {
-    chickenPositions.value = gameStore.gameState.gamedata.chickens;
-    console.log("Chickens-Positionsdaten: " + chickenPositions.value)
-  }
 
 
 
@@ -1174,6 +1273,10 @@ onMounted(async () => {
     }
   })
 
+  subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
+        console.log("FROM CHICKEN POSITIONS: ", message);
+        await handleChickenPositions(message);
+    });
 
   if (threeContainer.value) {
     threeContainer.value.appendChild(renderer.domElement)
@@ -1216,22 +1319,7 @@ onMounted(async () => {
   } else {
     console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
   }
-  const mockPositions: IPlayerPositionDTD[] = [
-    {
-      playerName: 'test',
-      x: 1,
-      y: 1,
-      z: 1,
-      angle: Math.PI,
-    },
-    {
-      playerName: 'test',
-      x: 2,
-      y: 2,
-      z: 1,
-      angle: 2 * Math.PI,
-    },
-  ]
+
   if(spawnPoints != null){
     spawnPoints.forEach(spawnPoint => {
       if(sessionStorage.getItem('myName') == spawnPoint.playerName){
@@ -1240,9 +1328,9 @@ onMounted(async () => {
       }
     })
   }
-  renderChicken(chickenPositions.value)
-  animate()
+animate()
 })
+
 watch(
   () => themeStore.selectedTheme,
   (newTheme) => {
@@ -1355,3 +1443,4 @@ watch(
 </template>
 
 <style scoped></style>
+

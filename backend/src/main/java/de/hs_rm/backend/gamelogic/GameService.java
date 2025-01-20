@@ -1,13 +1,9 @@
 package de.hs_rm.backend.gamelogic;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import de.hs_rm.backend.exception.SetRoleException;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
@@ -41,8 +37,10 @@ public class GameService {
 
     @Value("${game.itemsPerSurfaceRatio}")
     private int itemsPerSurfaceRatio;
-    
-    
+
+    @Value("${chicken.path}")
+    private String pathToChickenBot;
+
     private Map<String,Game> gameList = new HashMap<String,Game>();
     Logger logger = LoggerFactory.getLogger(GameService.class);
 
@@ -73,20 +71,20 @@ public class GameService {
     }
 
     public Game createGame(Player gamemaster){
-        Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio);
+        Game newGame = new Game(gamemaster, snackmanLife, snackmanMaxLife, snackmanSpeed, ghostSpeed, itemsPerSurfaceRatio, pathToChickenBot);
         gameList.put(newGame.getId(), newGame);
 
         return newGame;
     }
 
-    public Game startGame(String gameId, PlayMap playMap) {
+    public Game startGame(String gameId, PlayMap playMap, int chickenNum) {
         Game game = gameList.get(gameId);
 
         if(game == null){
             return null;
         }
 
-        game.start(playMap);
+        game.start(playMap, chickenNum, pathToChickenBot);
 
         return game;
     }

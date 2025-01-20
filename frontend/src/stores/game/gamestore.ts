@@ -2,16 +2,18 @@ import { defineStore } from "pinia";
 import { sendMessage, stompClient, subscribeTo } from '@/config/stompWebsocket';
 import { type Reactive, reactive, ref } from "vue";
 import type { IPlayerDTD } from "@/stores/game/dtd/IPlayerDTD";
+import type { IChickenDTD } from "./dtd/IChickenDTD";
 import type { GameResponse } from "@/stores/game/responses/GameResponse";
 import type { IGameDTD } from "@/stores/game/dtd/IGameDTD";
 import { emptyGame, type IGameState } from "@/stores/game/IGameState";
-import type { IMessageDTD} from "./dtd/IMessageDTD";
+import type { IMessageDTD } from "./dtd/IMessageDTD";
 import { useModalStore } from "../modalstore";
 import { Playerrole } from "./dtd/EPlayerrole";
 import { useRouter } from 'vue-router';
 import type {Result} from "@/stores/game/responses/Result";
 import { useThemeStore } from "@/stores/themes/themeStore";
 import { useMapStore } from "@/stores/map/MapStore";
+
 
 export const useGameStore = defineStore('gameStore', () => {
   // Base URL for API calls
@@ -91,8 +93,10 @@ export const useGameStore = defineStore('gameStore', () => {
       stompClient.onConnect = () => {
         if (gameState.gamedata?.players) {
           subscribeTo(`/game/${gameState.gamedata.id}`, (message: IMessageDTD) => {
-            handleStompMessage(message, () => {})
+            handleStompMessage(message, () => { })
           })
+          //Auf Hühnchenposition abonnieren
+          subscribeToChickenPositions(gameState.gamedata.id);
         }
       }
 
@@ -102,7 +106,7 @@ export const useGameStore = defineStore('gameStore', () => {
       sessionStorage.setItem("myName", gamemaster.name);
       sessionStorage.setItem("playerInfo", JSON.stringify(gamemaster));
 
-      if(gamemaster.password){
+      if (gamemaster.password) {
         sessionStorage.setItem("password", gamemaster.password);
       }
 
@@ -122,6 +126,9 @@ export const useGameStore = defineStore('gameStore', () => {
             handleStompMessage(message, resolve);
           })
 
+          //Auf Hühnchenposition abonnieren
+          subscribeToChickenPositions(lobbyId)
+
           sendMessage(`${topicUrl}/${lobbyId}/join`, newPlayer)
           sessionStorage.setItem('myName', newPlayer.name)
         }
@@ -140,25 +147,25 @@ export const useGameStore = defineStore('gameStore', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({selectedMap: selectedMapName}),
+        body: JSON.stringify({ selectedMap: selectedMapName }),
       })
       const gameResponse = await handleResponse(response)
       setGameStateFromResponse(gameResponse)
-  } catch (error) {
+    } catch (error) {
       handleGameStateError()
       console.error('Error starting game:', error)
     }
   }
 
-  async function startGameViaStomp(selectedMapName: string): Promise<Result> {
+  async function startGameViaStomp(selectedMapName: string, chickenCount: number): Promise<Result> {
     const actingPlayer = getActingPlayer()
     if (!actingPlayer) {
       return new Promise((resolve) =>
-      resolve({
-        ok: false,
-        message: 'No acting player found',
-        data: null,
-      }),
+        resolve({
+          ok: false,
+          message: 'No acting player found',
+          data: null,
+        }),
       )
     }
 
@@ -170,7 +177,7 @@ export const useGameStore = defineStore('gameStore', () => {
           data: null,
         })
       } else {
-        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}`, actingPlayer)
+        sendMessage(`${topicUrl}/${gameState.gamedata.id}/start/${selectedMapName}/${chickenCount}`, actingPlayer) //${chickenCount}
         resolve({
           ok: true,
           message: 'Game started',
@@ -204,6 +211,18 @@ export const useGameStore = defineStore('gameStore', () => {
       return false;
     }
   }
+
+  //Aufruf bei neuem Game und joinen -> (bekommt bis jetzt nur eine Map von Hinkeln mit X und Y Pos aus dem Backend)
+  function subscribeToChickenPositions(lobbyId: string): void {
+    if (!stompClient.connected) {
+      console.error("WebSocket ist nicht verbunden!");
+      return;
+    }
+    subscribeTo(`/ingame/${lobbyId}/chickenPosition`, (message: IMessageDTD) => {
+      handleStompMessage(message, () => { })
+    });
+  }
+
 
   function leaveGame(lobbyId: string, leavingPlayer: IPlayerDTD): Promise<boolean> {
     return new Promise((resolve) => {
@@ -272,20 +291,6 @@ export const useGameStore = defineStore('gameStore', () => {
     } catch (error) {
       handleGameStateError()
       console.error('Error kicking user:', error)
-    }
-  }
-
-
-  async function setChickenCount(number: number) {
-    try {
-      const response = await fetch(`${restUrl}/setChicken/${gameState.gamedata.id}/${number}`, {
-        method: 'POST',
-      })
-      const gameResponse = await handleResponse(response)
-      setGameStateFromResponse(gameResponse)
-    } catch (error) {
-      handleGameStateError()
-      console.error('Error setting chicken count:', error)
     }
   }
 
@@ -377,29 +382,33 @@ export const useGameStore = defineStore('gameStore', () => {
             gameState.gamedata = message.feedback as IGameDTD
             console.log(gameState)
             break
-            case 'themeUpdate':
-              const themeStore = useThemeStore()
-              const newTheme = message.feedback as string
-              if (themeStore.themes[newTheme]) {
-                themeStore.selectedTheme = newTheme
-                console.log(`Theme updated to: ${newTheme}`)
-              } else {
-                console.error('Received invalid theme:', newTheme)
-              }
-              break
-            case'mapUpdate':
-              const mapStore = useMapStore();
-              const newMapName = message.feedback;
-              const updatedMap = mapStore.mapsDTD.maps.find(map => map.name === newMapName);
-              if (updatedMap) {
-                mapStore.mapsDTD.selectedMap = updatedMap;
-                console.log(`Map updated to: ${updatedMap.name}`);
-              } else {
-                console.error('Received invalid map:', newMapName);
-              }
-              break;
+          case 'themeUpdate':
+            const themeStore = useThemeStore()
+            const newTheme = message.feedback as string
+            if (themeStore.themes[newTheme]) {
+              themeStore.selectedTheme = newTheme
+              console.log(`Theme updated to: ${newTheme}`)
+            } else {
+              console.error('Received invalid theme:', newTheme)
+            }
+            break
+          case'mapUpdate':
+            const mapStore = useMapStore();
+            const newMapName = message.feedback;
+            const updatedMap = mapStore.mapsDTD.maps.find(map => map.name === newMapName);
+            if (updatedMap) {
+              mapStore.mapsDTD.selectedMap = updatedMap;
+              console.log(`Map updated to: ${updatedMap.name}`);
+            } else {
+              console.error('Received invalid map:', newMapName);
+            }
+            break;
           case 'playerMoveValidation':
             console.log("test")
+            break;
+          case 'chickenPositions':
+            gameState.gamedata.chickens = message.feedback as IChickenDTD[]
+            break;
           default:
             console.error('Unknown message type:', message.type)
         }
@@ -437,7 +446,7 @@ export const useGameStore = defineStore('gameStore', () => {
     leaveGame,
     kickUser,
     joinLobby,
-    setChickenCount,
+    //setChickenCount,
     fetchGameStatus,
     setPlayerRole,
     setPlayerRoleViaStomp,
@@ -445,6 +454,7 @@ export const useGameStore = defineStore('gameStore', () => {
     isGamePrivate,
     resetGameState,
     getJumpAllowed,
+    subscribeToChickenPositions
   }
 })
 
