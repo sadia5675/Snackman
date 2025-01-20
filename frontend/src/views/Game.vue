@@ -69,7 +69,7 @@ let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
 const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
 let isChargingJump = false // Ob der Spieler einen Sprung auflädt
 let isJumping = false // Verhindert doppeltes Springen
-let isValidatingChargeJump = false
+let isValidatingJump = false
 let jumpVelocity = 0 // Vertikale Geschwindigkeit des Sprungs
 const gravity = -9.8 // Schwerkraft
 const minJumpSpeed = 5 // Startgeschwindigkeit des kleinen Sprung
@@ -424,42 +424,44 @@ function animate() {
   handleGamepadInput(delta);
 }
 
-async function isValidChargeJump(): Promise<boolean> {
+async function isValidJump(checkChargeJump: boolean): Promise<boolean> {
   const restUrl: string = '/api/game';
   const playerId: string = currentPlayer.value?.name ?? "";
+  const jumpCheckUrl: string = checkChargeJump ? 'isValidJump/charge' : 'isValidJump/normal';
 
   if (playerId === "") {
-    console.error('Error: Unable to validate charging jump, player ID is missing');
+    console.error('Error: Unable to validate jump, player ID is missing');
     return false;
   }
 
   try {
     // Perform the fetch request
-    const response: Response = await fetch(`${restUrl}/ingame/${lobbyId}/${playerId}/isValidChargeJump`);
+    const response: Response = await fetch(`${restUrl}/ingame/${lobbyId}/${playerId}/${jumpCheckUrl}`);
 
     // Check if the response is successful
     if (!response.ok) {
-      console.error('Error: Unable to validate charging jump', response.statusText);
+      console.error('Error: Unable to validate jump', response.statusText);
       return false; // Return false if the backend call fails
     }
 
     // Parse the JSON response
     const isValid: boolean = await response.json();
-    console.log('Charging jump backend validation:', isValid);
+    console.log('Jump backend validation:', isValid);
 
     // Return the parsed value
     return isValid;
   } catch (error) {
-    console.error('Error while validating charging jump:', error);
+    console.error('Error while validating jump:', error);
     return false; // Return false in case of an error
   }
 }
 
 
 // Funktion, die den Sprung auslöst, wenn die 2 Sekunden um sind
-function triggerJumpAfterChargeTime(delta: number) {
+function triggerHighJumpAfterChargeTime(delta: number) {
+  if (isValidatingJump) return
+
   if (isChargingJump) {
-    if (isValidatingChargeJump) return
     // Wenn die Leertaste gedrückt wird, erhöhe die Ladezeit
 
     jumpChargeTime += delta; // Ladezeit hochzählen
@@ -472,8 +474,8 @@ function triggerJumpAfterChargeTime(delta: number) {
 
 
     if (jumpChargeTime >= maxJumpChargeTime) {
-      isValidatingChargeJump = true;
-      isValidChargeJump().then((valid) => {
+      isValidatingJump = true;
+      isValidJump(true).then((valid) => {
         jumpChargeTime = 0; // Ladezeit zurücksetzen
         isChargingJump = false; // Leertaste kann losgelassen werden
         if (valid) {
@@ -482,19 +484,23 @@ function triggerJumpAfterChargeTime(delta: number) {
           isJumping = true; // Der Spieler springt jetzt
           console.log(" Großer Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
         }
-        isValidatingChargeJump = false;
+        isValidatingJump = false;
       })
     }
   } else if (jumpChargeTime > 0 && jumpChargeTime < maxJumpChargeTime && !isJumping) {
-    jumpChargeTime = 0;
-    jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
-    isJumping = true; // Sprung aktivieren
-    console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+    isValidatingJump = true;
+    isValidJump(false).then((valid) => {
+      jumpChargeTime = 0;
+      if (valid) {
+        jumpVelocity = minJumpSpeed;  // Setze die Geschwindigkeit für den kleinen Sprung
+        isJumping = true; // Sprung aktivieren
+        console.log("Kleiner Sprung ausgelöst mit Geschwindigkeit:", jumpVelocity);
+      }
+      isValidatingJump = false;
+    })
   }
   // Wichtig für den Sprung Ladebalken
   updateJumpBar();
-
-
 }
 
 function calculateMovementDirection(
@@ -585,7 +591,7 @@ function applyJumpLogic(delta: number, nextPosition: THREE.Vector3) {
       jumpChargeTime = 0;
     }
   } else {
-    triggerJumpAfterChargeTime(delta);
+    triggerHighJumpAfterChargeTime(delta);
   }
 }
 

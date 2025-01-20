@@ -518,17 +518,18 @@ public class GameAPIController {
         return createOkResponse(existingGame);
     } */
 
-    @GetMapping("/ingame/{gameId}/{playerId}/isValidChargeJump")
+    @GetMapping("/ingame/{gameId}/{playerId}/isValidJump/{jumpType}")
     public ResponseEntity<?> isValidChargeJump(
             @PathVariable String gameId,
-            @PathVariable String playerId
+            @PathVariable String playerId,
+            @PathVariable String jumpType
     ) {
         Game existingGame = gameService.getGameById(gameId);
         if (existingGame == null) {
             return createErrorResponse("No game found.");
         }
 
-        boolean isValid = existingGame.isValidChargeJump(playerId);
+        boolean isValid = existingGame.isValidJump(playerId, jumpType);
 
         return ResponseEntity.ok(isValid);
     }
