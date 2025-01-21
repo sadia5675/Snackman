@@ -139,7 +139,7 @@ public class Tile {
         if (!itemList.isEmpty()) {
             // TODO: Item hier nehmen
             for (Item item : itemList) {
-                if(item instanceof FoodItems){
+                if(item instanceof FoodItems && !(item instanceof Egg)){
                     FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
                     Egg egg = chicken.eatSnack(foodItem, chicken.getPosX(), chicken.getPosY());
                     itemsToRemove.add(foodItem);
@@ -147,7 +147,6 @@ public class Tile {
 
                     if(egg != null){
                         this.eggRecentlyLayed = true;
-                        itemList.remove(item);
                         logger.info("Item '{}' removed from tile", item.getName());
                         //Ei wird hier zum Tile hinzugefügt
                         itemList.add(egg); //FEHLER!

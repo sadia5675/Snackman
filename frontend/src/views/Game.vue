@@ -23,8 +23,8 @@ import {
 
 
 const themeStore = useThemeStore();
-import type { IChickenDTD } from '@/stores/game/dtd/IChickenDTD'
-import type { Message } from 'postcss'
+import type {IChickenDTD} from '@/stores/game/dtd/IChickenDTD'
+import type {Message} from 'postcss'
 
 const restUrl: string = '/api/game';
 const gameStore = useGameStore()
@@ -131,12 +131,12 @@ function showCollisionMessage(message: string) {
 const snackmanLife = computed(() => currentCharacter.value?.life ?? 0);
 
 watch(
-    () => currentCharacter.value?.life,
-    (newLife, oldLife) => {
-      if (newLife !== oldLife) {
-        console.log(`Life changed from ${oldLife} to ${newLife}`);
-      }
+  () => currentCharacter.value?.life,
+  (newLife, oldLife) => {
+    if (newLife !== oldLife) {
+      console.log(`Life changed from ${oldLife} to ${newLife}`);
     }
+  }
 );
 
 // Ghost-Touches aktualisieren
@@ -909,24 +909,24 @@ function getCachedTexture(url: string): THREE.Texture {
   return texture;
 }
 
-function surpriseChicken(posX: number, posY : number) {
-    const loader = new GLTFLoader();
-    const supriseEgg = new URL("@/assets/game/items/kinder_surprise_egg/surprise_egg.glb", import.meta.url).href;
-    loader.load(supriseEgg, (gltf) => {
-      const model= gltf.scene;
-      model.position.set(posX,1,posY);
+function surpriseChicken(posX: number, posY: number) {
+  const loader = new GLTFLoader();
+  const supriseEgg = new URL("@/assets/game/items/kinder_surprise_egg/surprise_egg.glb", import.meta.url).href;
+  loader.load(supriseEgg, (gltf) => {
+      const model = gltf.scene;
+      model.position.set(posX, 1, posY + 0.5);
       model.scale.set(1, 1, 1)
       scene.add(model);
       rotatingItems.push(model);
-      model.traverse((child) =>{
-        if(child instanceof THREE.Mesh){
+      model.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
           child.castShadow = true;
         }
       })
       console.log("Surprise egg added at (${posX}, ${posY})");
     }
-    );
-    console.log("Surprise egg added at",posX, " ",posY);
+  );
+  console.log("Surprise egg added at", posX, " ", posY);
 }
 
 function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
@@ -1072,7 +1072,7 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             } else if (randomModelPath.includes('hearts')) {
               item.position.set(x, 0.65, z);
               item.scale.set(0.03, 0.03, 0.03)
-            }else if(randomModelPath.includes('supriseEgg')){
+            } else if (randomModelPath.includes('supriseEgg')) {
               item.scale.set(0.03, 0.03, 0.03)
               item.position.set(x, 0.6, z);
             }
@@ -1171,45 +1171,62 @@ function loadMapFromLocalStorage(): string[] | null {
   }
   return null;
 }
-function renderChicken(chickenData:  IChickenDTD[]){
+
+function renderChicken(chickenData: IChickenDTD[]) {
   console.log("INSIDE RENDER: ", chickenData);
-  const loader =new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
+  const loader = new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
   //Überprüfung ob es eine chicken id gibt wenn nicht wird ein erstellt und wenn ja wir die position aktualsiert
-  chickenData.forEach((chicken)=>{
+  chickenData.forEach((chicken) => {
     console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
     if (!chicken.id) {
       console.warn("Chicken hat keine ID:", chicken.id);
       return; // Weiterverarbeitung abbrechen
     }
-    if (!chickens.has(chicken.id)&&!loadingChickens .has(chicken.id)) {
-      loadingChickens .add(chicken.id);
+    if (!chickens.has(chicken.id) && !loadingChickens.has(chicken.id)) {
+      loadingChickens.add(chicken.id);
       console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
-      const chickenModelURL =new URL('@/assets/chicken/newerchicken.glb', import.meta.url).href;
+      const chickenModelURL = new URL('@/assets/chicken/newerchicken.glb', import.meta.url).href;
       console.log("Chcieken url", chickenModelURL);
       console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
-        const model = gltf.scene;
+          const model = gltf.scene;
           model.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               child.castShadow = true;
             }
           });
           model.scale.set(0.5, 0.5, 0.5);
-        model.name = chicken.id;
-        chickens.set(chicken.id, model);
-        scene.add(model);
-        model.position.set(chicken.posX, 1, chicken.posY);
-        console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
-        loadingChickens .delete(chicken.id);
-      },
-        undefined,(error) => {
-            console.error("Fehler beim Laden des Chicken-Modells:", error);
+          model.name = chicken.id;
+          chickens.set(chicken.id, model);
+          scene.add(model);
+          model.position.set(chicken.posX, 1, chicken.posY);
+          console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+          loadingChickens.delete(chicken.id);
+        },
+        undefined, (error) => {
+          console.error("Fehler beim Laden des Chicken-Modells:", error);
         }
       );
     } else {
       console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
       const existingChickenModel = chickens.get(chicken.id)
       if (existingChickenModel) {
+        if(chicken.currentCalorie !== undefined && chicken.currentCalorie >= 0 && chicken.currentCalorie < 100) {
+          existingChickenModel.scale.set(0.5, 0.5, 0.5);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 100 && chicken.currentCalorie < 200) {
+          existingChickenModel.scale.set(0.7, 0.6, 0.6);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 200  && chicken.currentCalorie < 300) {
+          existingChickenModel.scale.set(1.0, 0.8 , 0.8);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 300  && chicken.currentCalorie < 400) {
+          existingChickenModel.scale.set(1.2, 1.0 , 1.0);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 400  && chicken.currentCalorie < 500) {
+          existingChickenModel.scale.set(1.5, 1.2 , 1.2);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 500  && chicken.currentCalorie < 600) {
+          existingChickenModel.scale.set(1.8, 1.4 , 1.4);
+        } else if (chicken.currentCalorie !== undefined && chicken.currentCalorie >= 600) {
+          existingChickenModel.scale.set(2.0, 1.5, 1.5);
+        }
+
         moveChicken(existingChickenModel, chicken);
         console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
 
@@ -1268,6 +1285,15 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
   modellChicken.rotation.y = THREE.MathUtils.lerp(currentRotation, targetRotation, lerpFactor);*/
 
   console.log("Aktuelle Rotation (in Grad):", THREE.MathUtils.radToDeg(modellChicken.rotation.y));
+}
+
+function updateChickenRotation( angleInDegree: number, chickenModel: THREE.Object3D){
+  const angleInRadians = THREE.MathUtils.degToRad(angleInDegree);
+
+  const rotationOffset = - Math.PI / 2;
+  chickenModel.rotation.y = angleInRadians + rotationOffset;
+
+  console.log(`Chicken dreht sich auf Y-Achse: ${angleInDegree}° (${angleInRadians} rad)`);
 }
 
 function followChicken(camera: THREE.Camera, chicken: THREE.Group, offset: THREE.Vector3) {
@@ -1467,12 +1493,14 @@ onMounted(async () => {
     }
   })
 
-  subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) =>{
-    surpriseChicken(3,5);
-    console.log("Hier die Koordinaten" , message.positionY, message.positionX);
-    console.log("ASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
+  const posX = message.positionX;
+  const posY = message.positionY;
+  setTimeout(() => {
+    surpriseChicken(posX, posY);
     console.log("Egg Update: ", message);
-  })
+  }, 2000);
+})
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
     console.log("FROM CHICKEN POSITIONS: ", message);
@@ -1531,37 +1559,6 @@ onMounted(async () => {
   }
   animate()
 })
-
-/*
-watch(
-  () => themeStore.selectedTheme,
-  (newTheme) => {
-    if (newTheme) {
-      console.log(`Theme geändert zu: ${newTheme}`);
-      const currentTheme = themeStore.currentTheme;
-      //console.log(`Ändere Skybox zu: ${themeStore.currentTheme.sky}`);
-      //addSkybox(scene, themeStore.currentTheme.sky); // Dynamisch Skybox ändern
-      //console.log("Skybox-Pfad:", themeStore.currentTheme.sky);
-
-      // Map neu laden, falls vorhanden
-      if (map.value && currentTheme) {
-        loadMap(map.value, {
-          ground: currentTheme.ground,
-          wall: currentTheme.wall,
-        });
-      } else {
-        console.error('Keine Map oder kein aktuelles Theme gefunden');
-      }
-      if (themeStore.currentTheme.skybox) {
-        addSkybox(scene, themeStore.currentTheme.skybox);
-      } else {
-        console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
-      }
-    }
-  }
-);
-*/
-
 
 </script>
 
