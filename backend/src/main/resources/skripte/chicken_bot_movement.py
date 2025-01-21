@@ -14,7 +14,7 @@ chickenObj.setAngle(0)
 chicken_index_environment_list = 4
 
 
-
+print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
 
 def right_hand_algo():
     print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
@@ -27,6 +27,7 @@ def right_hand_algo():
         time.sleep(5)
 
    
+   
     actuell_environment = environmentObj.getEnvironment(chickenObj.getPosX(), chickenObj.getPosY())
     # print("ENV: ")
     # print(actuell_environment)
@@ -34,6 +35,7 @@ def right_hand_algo():
     print_environment(actuell_environment)
   
     
+  
 
     movements = {
         0: {"delta_x": 0, "delta_y": -1, "check_index": -3},
@@ -48,6 +50,8 @@ def right_hand_algo():
         current_angle % 360,         # Geradeaus
         (current_angle + 90) % 360,  # Rechts
         (current_angle - 90) % 360,  # Links
+        
+        
         
         
         (current_angle + 180) % 360  # Hinter mir
@@ -66,6 +70,7 @@ def right_hand_algo():
         
 
  
+ 
 
 
 def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_environment):
@@ -77,9 +82,11 @@ def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_enviro
     # new_angle = chickenObj.getAngle() + change_angle
     # new_angle = (chickenObj.getAngle() + change_angle) % 360
     new_angle = change_angle 
+    new_angle = change_angle 
     print("Change Angel: ", change_angle)
     print("Neuer Angle: ", new_angle)
     chickenObj.move(new_pos_x, new_pos_y, new_angle)
+    
     
 
     actuell_environment[chicken_new_position].addChicken(chickenObj)
@@ -89,14 +96,20 @@ def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_enviro
     print("Bewegungsschritt abgeschlossen") 
  
     
+    print("Bewegungsschritt abgeschlossen") 
+ 
+    
 
 
 def print_environment(actuell_environment):
     print("print_environment ausgeführt")
    
     
+   
+    
     print("Umgebung:")
     tile_width = 10
+   
    
     print("{:<{width}} {:<{width}} {:<{width}}".format(
         actuell_environment[0].getType().name(),
@@ -119,9 +132,16 @@ def print_environment(actuell_environment):
 
 
 def run_auto():
+    global is_game_running
     print("run_auto ausgeführt")
-    while True:
+    while is_game_running:
         right_hand_algo()
         time.sleep(1)
+
+def stop_auto():
+    print("stop_auto ausgeführt")
+    global is_game_running 
+    is_game_running = False
+   
    
 

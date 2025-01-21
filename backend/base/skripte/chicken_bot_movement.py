@@ -13,6 +13,8 @@ chickenObj.setAngle(0)
 
 chicken_index_environment_list = 4
 
+is_game_running = True
+
 
 
 
@@ -33,7 +35,7 @@ def right_hand_algo():
 
     print_environment(actuell_environment)
   
-    
+      
 
     movements = {
         0: {"delta_x": 0, "delta_y": -1, "check_index": -3},
@@ -48,8 +50,8 @@ def right_hand_algo():
         current_angle % 360,         # Geradeaus
         (current_angle + 90) % 360,  # Rechts
         (current_angle - 90) % 360,  # Links
-        
-        
+                
+                
         (current_angle + 180) % 360  # Hinter mir
     ]
 
@@ -65,12 +67,12 @@ def right_hand_algo():
         
         
 
- 
+  
 
 
 def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_environment):
 
-    actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
+    # actuell_environment[chicken_index_environment_list].removeChicken(chickenObj)
 
     new_pos_x = chickenObj.getPosX() + delta_x
     new_pos_y = chickenObj.getPosY() + delta_y
@@ -82,7 +84,7 @@ def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_enviro
     chickenObj.move(new_pos_x, new_pos_y, new_angle)
     
 
-    actuell_environment[chicken_new_position].addChicken(chickenObj)
+    # actuell_environment[chicken_new_position].addChicken(chickenObj)
 
     print("chicken bewegt sich nach : ",  new_angle)
     print("Neue Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY(), chickenObj.getAngle())
@@ -95,8 +97,11 @@ def print_environment(actuell_environment):
     print("print_environment ausgeführt")
    
     
+   
+    
     print("Umgebung:")
     tile_width = 10
+   
    
     print("{:<{width}} {:<{width}} {:<{width}}".format(
         actuell_environment[0].getType().name(),
@@ -119,9 +124,15 @@ def print_environment(actuell_environment):
 
 
 def run_auto():
+    global is_game_running
     print("run_auto ausgeführt")
-    while True:
+    while is_game_running:
         right_hand_algo()
         time.sleep(1)
+
+def stop_auto():
+    print("stop_auto ausgeführt")
+    global is_game_running 
+    is_game_running = False
    
 
