@@ -66,7 +66,7 @@ public class Snackman extends Character {
     // Methode: Aufnehmen von FoodItems
     public void eatSnack(FoodItems foodItem) {
         currentPoints += foodItem.getNutriScore().getCalorieBonus() * bonusFactor;
-        LOGGER.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentPoints);
+        // LOGGER.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentPoints);
     }
 
     @Override

@@ -557,7 +557,7 @@ public class Game {
         Character curCharacter = characters.get(username);
 
         if(CALORIESBONUS_EGG == 0){
-            CALORIESBONUS_EGG = 400;
+            CALORIESBONUS_EGG = 500;
         }
 
         int roundedPosX = (int) Math.floor(posX);
@@ -576,8 +576,7 @@ public class Game {
         // Berechnung des Zielindex
         int targetIndex = (roundedPosX * playmap.getWidth()) + roundedPosY;
         if (targetIndex < 0 || targetIndex >= playmap.getTilesList().size()) {
-            LOGGER.info("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex,
-                    playmap.getTilesList().size());
+            // LOGGER.info("Ungültiger Zielindex: targetIndex={}, Größe der Tile-Liste={}", targetIndex, playmap.getTilesList().size());
             return false;
         }
         Tile targetTile = playmap.getTilesList().get(targetIndex);

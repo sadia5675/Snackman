@@ -49,6 +49,10 @@ public class Chicken {
         PythonInterpreter.initialize(System.getProperties(), p, new String[] {});
         this.pyInterpreter = new PythonInterpreter();
 
+        if (CALORIESBONUS_EGG == 0){
+            CALORIESBONUS_EGG = 500;
+        }
+
         this.environmentApi = new ChickenEnvironmentApi(game);
     }
 
@@ -74,6 +78,7 @@ public class Chicken {
                 pyInterpreter.set("chicken", this);
                 // pyInterpreter.set("environment", environmentApi.getEnvironment(posX, posY, game));
                 pyInterpreter.set("environment", environmentApi);
+                pyInterpreter.set("CALORIESBONUS", CALORIESBONUS_EGG);
 
                 pyInterpreter.execfile(scriptFile.getAbsolutePath());
                 LOGGER.info("Python Skript erfolgreich gestartet");

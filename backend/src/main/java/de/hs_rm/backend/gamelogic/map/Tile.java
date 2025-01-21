@@ -137,22 +137,20 @@ public class Tile {
         this.chickenList.add(chicken);
         if (!itemList.isEmpty()) {
             for (Item item : itemList) {
-                if(item instanceof FoodItems){
+                if(item instanceof FoodItems && !(item instanceof Egg)){
                     FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
                     Egg egg = chicken.eatSnack(foodItem, chicken.getPosX(), chicken.getPosY());
                     itemsToRemove.add(foodItem);
                     this.recentlyCollectedItemName = item.getName();
 
-                    if(egg != null){
+                    if(egg != null) {
                         this.eggRecentlyLayed = true;
-                        itemList.remove(item);
-                        // LOGGER.info("Item '{}' removed from tile", item.getName());
-                        // Ei wird hier zum Tile hinzugefügt
-                        itemList.add(egg);
-                        // LOGGER.info("Egg by chicken geboren and added to tile");
+                        LOGGER.info("Item '{}' removed from tile", item.getName());
+                        //Ei wird hier zum Tile hinzugefügt
+                        itemList.add(egg); //FEHLER!
+                        LOGGER.info("Egg by chicken geboren and added to tile");
                         break;
                     }
-
                 }
             }
             itemsToRemove.forEach(item -> itemList.remove(item));

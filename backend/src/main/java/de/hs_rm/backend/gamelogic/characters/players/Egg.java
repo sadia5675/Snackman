@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 public class Egg extends FoodItems{
 
-    @Value("${egg.caloriesbonus}")
-    private int CALORIESBONUS_EGG;
+    @Value("${egg.caloriesbonus:0}")
+    private int CALORIESBONUS_EGG = 500;
 
 
     private boolean isEaten;
