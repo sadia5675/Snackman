@@ -6,37 +6,26 @@ import time
 chickenObj = chicken
 environmentObj = environment
 CALORIESBONUS_EGG = CALORIESBONUS
-
-
 chickenObj.setAngle(0)
-
-
 chicken_index_environment_list = 4
 
+is_game_running = False
 
-print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
+
+
 
 def right_hand_algo():
     print("Vorherige Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY())
 
-    # print("KALORIES BONUS EGG: ", CALORIESBONUS_EGG)
-    # if (chickenObj.getCurrentCalorie() >= CALORIESBONUS_EGG):
-    #     time.sleep(5)
     print("CHICKEN KALORIE: ", chickenObj.getCurrentCalorie())
     if (chickenObj.getCurrentCalorie() >= 580):
         time.sleep(5)
 
-   
-   
     actuell_environment = environmentObj.getEnvironment(chickenObj.getPosX(), chickenObj.getPosY())
-    # print("ENV: ")
-    # print(actuell_environment)
 
     print_environment(actuell_environment)
   
     
-  
-
     movements = {
         0: {"delta_x": 0, "delta_y": -1, "check_index": -3},
         90: {"delta_x": 1, "delta_y": 0, "check_index": 1},
@@ -50,11 +39,7 @@ def right_hand_algo():
         current_angle % 360,         # Geradeaus
         (current_angle + 90) % 360,  # Rechts
         (current_angle - 90) % 360,  # Links
-        
-        
-        
-        
-        (current_angle + 180) % 360  # Hinter mir
+        (current_angle + 180) % 360  # Zurück
     ]
 
     for angle in movement_priority:
@@ -62,15 +47,12 @@ def right_hand_algo():
         chicken_new_position = chicken_index_environment_list + move["check_index"]
 
         
-        
         if (actuell_environment[chicken_new_position].getType().name() == "SURFACE"):
             move_to(move["delta_x"], move["delta_y"], angle, chicken_new_position, actuell_environment)
             return
         
         
 
- 
- 
 
 
 def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_environment):
@@ -79,8 +61,6 @@ def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_enviro
 
     new_pos_x = chickenObj.getPosX() + delta_x
     new_pos_y = chickenObj.getPosY() + delta_y
-    # new_angle = chickenObj.getAngle() + change_angle
-    # new_angle = (chickenObj.getAngle() + change_angle) % 360
     new_angle = change_angle 
     new_angle = change_angle 
     print("Change Angel: ", change_angle)
@@ -88,23 +68,18 @@ def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_enviro
     chickenObj.move(new_pos_x, new_pos_y, new_angle)
     
     
-
     actuell_environment[chicken_new_position].addChicken(chickenObj)
 
     print("chicken bewegt sich nach : ",  new_angle)
     print("Neue Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY(), chickenObj.getAngle())
     print("Bewegungsschritt abgeschlossen") 
- 
     
-    print("Bewegungsschritt abgeschlossen") 
- 
-    
+
+
 
 
 def print_environment(actuell_environment):
     print("print_environment ausgeführt")
-   
-    
    
     
     print("Umgebung:")
@@ -131,17 +106,24 @@ def print_environment(actuell_environment):
     ))
 
 
+
+
 def run_auto():
     global is_game_running
+    is_game_running = True
     print("run_auto ausgeführt")
     while is_game_running:
         right_hand_algo()
         time.sleep(1)
 
+
+
+
 def stop_auto():
-    print("stop_auto ausgeführt")
     global is_game_running 
     is_game_running = False
+    print("stop_auto ausgeführt")
+    
    
    
 
