@@ -1585,7 +1585,7 @@ watch(
       </div>
       <!-- Punkteanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.SNACKMAN" class="points text-lg mt-2">
-        <p>Nutriscore: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
+        <p>Kalorien: {{ snackmanPoints }} / {{ requiredPointsToWin }}</p>
       </div>
       <!-- TouchCountanzeige -->
       <div v-if="currentPlayer?.playerrole === Playerrole.GHOST" class="points text-lg mt-2">
