@@ -45,6 +45,10 @@ async function getAllGames() {
   }
 }
 
+async function handleJoinGame(){
+
+}
+
 onMounted(() => {
   getAllGames();
 });

@@ -5,6 +5,7 @@ import type { IPlayerDTD } from './game/dtd/IPlayerDTD';
 import { useGameStore } from './game/gamestore';
 import { useRouter } from 'vue-router';
 import { Playerrole } from './game/dtd/EPlayerrole';
+import { stompClient } from '@/config/stompWebsocket';
 
 export const useModalStore = defineStore('modal', () => {
 
@@ -35,19 +36,21 @@ export const useModalStore = defineStore('modal', () => {
       inputErrorMessage.value = "Bitte einen Usernamen eingeben";
     } else {
       await game.createGame(newPlayer);
+      isModalOpen.value = false;
       router.push(`/lobby/${game.gameState.gamedata.id}`);
     }
   }
 
   async function joinGame(newPlayer: IPlayerDTD) {
+    stompClient.deactivate();
     if (!newPlayer.name) {
       inputErrorMessage.value = "Bitte einen Username eingeben"
     } else {
-
       const response = await game.joinLobby(gameId.value, newPlayer);
 
       if (response) {
         const id = game.gameState.gamedata.id;
+        isModalOpen.value = false;
         router.push(`/lobby/${gameId.value}`);
         return;
       }
