@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /*Basic Configuration for Scene(=Container), Camera and Rendering for Playground*/
 import * as THREE from 'three'
-import {PointLight, PointLightHelper, WebGLRenderer} from 'three'
+import {WebGLRenderer} from 'three'
 import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
 import {useGameStore} from '@/stores/game/gamestore'
@@ -11,8 +11,6 @@ import {useRoute} from 'vue-router'
 import type {IPlayerPositionDTD} from '@/stores/game/dtd/IPlayerPositionDTD'
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
 import type {ICharacterDTD} from '@/stores/game/dtd/ICharacterDTD'
-import type {IChickenPositionDTD} from '@/stores/game/dtd/IChickenPositionDTD'
-import Modal from '@/components/Modal.vue'
 import {Playerrole} from '@/stores/game/dtd/EPlayerrole';
 import router from '@/router';
 import {useThemeStore} from '@/stores/themes/themeStore';
@@ -24,7 +22,6 @@ import {
 
 const themeStore = useThemeStore();
 import type {IChickenDTD} from '@/stores/game/dtd/IChickenDTD'
-import type {Message} from 'postcss'
 
 const restUrl: string = '/api/game';
 const gameStore = useGameStore()
@@ -32,10 +29,8 @@ const route = useRoute()
 const lobbyId = route.params.id.toString()
 const loadingChickens = new Set<string>(); // Tracke laufende Ladevorgänge
 const chickens = new Map<string, THREE.Object3D>(); // ChickenID als Key und Model-ID als Value
-const cameraOffset = new THREE.Vector3(0, 5, -10); // Offset der Kamera relativ zum Chicken
 let nextPosition: THREE.Vector3
 let lastSend: number = 0
-//let lastMoveValid = false;
 const players = new Map<string, number>(); // Spieler mit Namen als Key auf Character Model
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
@@ -53,18 +48,12 @@ const fastMovementSpeed = 4
 let movementSpeed = slowMovementSpeed
 
 const showSettings = ref(false)
-const musicVolume = ref(50)
 const effectVolume = ref(50)
 const spawnX = ref(1);
 const spawnZ = ref(2);
 
 //für Ingame Spielernamen
 const playerNames = new Map<string, THREE.Sprite>();
-
-//für HuD
-//const life = ref(2) //startlife
-//const maxLife = ref(3)
-//const collectedItems = ref<string[]>([]) //Gesammelte Items
 
 // für springen
 let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
@@ -167,7 +156,7 @@ watch(
   () => currentCharacter.value?.currentPoints,
   (newPoints, oldPoints) => {
     if (newPoints !== oldPoints) {
-      console.log(`Points changed from ${oldPoints} to ${newPoints}`);
+      // console.log(`Points changed from ${oldPoints} to ${newPoints}`);
       // Zusätzliche Logik, z. B. Punkte-Animationen
     }
   }
@@ -324,8 +313,8 @@ function updateGamepadInput() {
   // Springen (X-Taste)
   isChargingJump = gamepad.buttons[0].pressed; // Button 0 = Kreuz (X auf PS5)
 
-  console.log(`Bewegen: Vor:${movingForward}, Zurück:${movingBackward}, Links:${movingLeft}, Rechts:${movingRight}`);
-  console.log(`Springen: ${isChargingJump}`);
+  // console.log(`Bewegen: Vor:${movingForward}, Zurück:${movingBackward}, Links:${movingLeft}, Rechts:${movingRight}`);
+  // console.log(`Springen: ${isChargingJump}`);
 }
 
 //Diese Funktion lädt die Hintergrundmusik
@@ -450,12 +439,12 @@ async function validateJump(checkChargeJump: boolean): Promise<boolean> {
 
     // Parse the JSON response
     const isValid: boolean = await response.json();
-    console.log('Jump backend validation:', isValid);
+    // console.log('Jump backend validation:', isValid);
 
     // Return the parsed value
     return isValid;
   } catch (error) {
-    console.error('Error while validating jump:', error);
+    // console.error('Error while validating jump:', error);
     return false; // Return false in case of an error
   }
 }
@@ -498,7 +487,7 @@ async function validateSprint(): Promise<boolean> {
 
     // Parse the JSON response
     const isValid: boolean = await response.json();
-    console.log('Sprint backend validation:', isValid);
+    // console.log('Sprint backend validation:', isValid);
 
     // Return the parsed value
     return isValid;
@@ -718,7 +707,7 @@ function validatePosition(nextPosition: THREE.Vector3) {
 
 
   if (checkCollision(nextPosition)) {
-    console.log("Movement blocked due to collision.");
+    // console.log("Movement blocked due to collision.");
     return;
   }
 
@@ -923,10 +912,10 @@ function surpriseChicken(posX: number, posY: number) {
           child.castShadow = true;
         }
       })
-      console.log("Surprise egg added at (${posX}, ${posY})");
+      // console.log("Surprise egg added at (${posX}, ${posY})");
     }
   );
-  console.log("Surprise egg added at", posX, " ", posY);
+  // console.log("Surprise egg added at", posX, " ", posY);
 }
 
 function loadMap(map: string[], selectedTheme: { ground: string; wall: string }) {
@@ -1173,21 +1162,21 @@ function loadMapFromLocalStorage(): string[] | null {
 }
 
 function renderChicken(chickenData: IChickenDTD[]) {
-  console.log("INSIDE RENDER: ", chickenData);
+  // console.log("INSIDE RENDER: ", chickenData);
   const loader = new GLTFLoader();//@/assets/game/realistic/snackman/snackman.glb
   //Überprüfung ob es eine chicken id gibt wenn nicht wird ein erstellt und wenn ja wir die position aktualsiert
   chickenData.forEach((chicken) => {
-    console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
+    // console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
     if (!chicken.id) {
-      console.warn("Chicken hat keine ID:", chicken.id);
+      // console.warn("Chicken hat keine ID:", chicken.id);
       return; // Weiterverarbeitung abbrechen
     }
     if (!chickens.has(chicken.id) && !loadingChickens.has(chicken.id)) {
       loadingChickens.add(chicken.id);
-      console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
+      // console.log(`Neues Chicken wird erstellt für die ID: ${chicken.id}`);
       const chickenModelURL = new URL('@/assets/chicken/newerchicken.glb', import.meta.url).href;
-      console.log("Chcieken url", chickenModelURL);
-      console.log("Neues Chicken wird erstellt:", chicken.id);
+      // console.log("Chicken url", chickenModelURL);
+      // console.log("Neues Chicken wird erstellt:", chicken.id);
       loader.load(chickenModelURL, (gltf: { scene: THREE.Group }) => {
           const model = gltf.scene;
           model.traverse((child) => {
@@ -1200,7 +1189,7 @@ function renderChicken(chickenData: IChickenDTD[]) {
           chickens.set(chicken.id, model);
           scene.add(model);
           model.position.set(chicken.posX, 1, chicken.posY);
-          console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+          // console.log(`Neues Chicken hinzugefügt: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
           loadingChickens.delete(chicken.id);
         },
         undefined, (error) => {
@@ -1208,7 +1197,7 @@ function renderChicken(chickenData: IChickenDTD[]) {
         }
       );
     } else {
-      console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
+      // console.log("Chicken bereits vorhanden. Aktualisiere Position:", chicken.id);
       const existingChickenModel = chickens.get(chicken.id)
       if (existingChickenModel) {
         if(chicken.currentCalorie !== undefined && chicken.currentCalorie >= 0 && chicken.currentCalorie < 100) {
@@ -1228,7 +1217,7 @@ function renderChicken(chickenData: IChickenDTD[]) {
         }
 
         moveChicken(existingChickenModel, chicken);
-        console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
+        // console.log(`Position des Chickens aktualisiert: ID=${chicken.id}, Position=${chicken.posX},${chicken.posY}`);
 
       }
     }
@@ -1241,8 +1230,8 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
   const currentPosition = modellChicken.position;
   modellChicken.rotation.y = (chickenData.angle / 360) * (Math.PI * 2);
 
-  console.log("Aktuelle Position:", currentPosition);
-  console.log("Zielposition:", targetPosition);
+  // console.log("Aktuelle Position:", currentPosition);
+  // console.log("Zielposition:", targetPosition);
   // Bewegung in Richtung Zielpunkt
 
   const direction = targetPosition.clone().sub(currentPosition).normalize();
@@ -1250,41 +1239,20 @@ function moveChicken(modellChicken: THREE.Object3D, chickenData: IChickenDTD) {
   const delta = clock.getDelta();
 
 
-  console.log('Richtung:', direction);
-
-  console.log("Neue Position des Chicken-Modells:", modellChicken.position);
+  // console.log('Richtung:', direction);
+  // console.log("Neue Position des Chicken-Modells:", modellChicken.position);
 
   if (currentPosition.distanceTo(targetPosition) < chickenSpeed * delta) {
     const movement = direction.multiplyScalar(chickenSpeed * delta);
     modellChicken.position.add(movement);
-    console.log('Bewegung:', movement);
-    console.log('Bewegt zu:', modellChicken.position);
+    // console.log('Bewegung:', movement);
+    // console.log('Bewegt zu:', modellChicken.position);
   } else {
     modellChicken.position.set(targetPosition.x, .5, targetPosition.z);
-    console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
+    // console.log('Ziel erreicht. Wechsel zu nächstem Punkt:', targetPosition);
   }
 
-
-  /*const targetRotation = THREE.MathUtils.degToRad(chickenData[nextIndex].angle);
-  const currentRotation = THREE.MathUtils.degToRad(chickenData[currentIndex].angle);
-
-  let lerpFactor = 0; // Standardmäßig keine Interpolation
-  if (currentDistance > totalDistance * 0.75) {
-    // Erste 1/4 der Strecke: Bleibt bei der aktuellen Rotation
-    lerpFactor = 0;
-  } else if (currentDistance < totalDistance * 0.25) {
-    // Letzte 1/4 der Strecke: Zielrotation erreicht
-    lerpFactor = 1;
-  } else {
-    // Zwischen 1/4 und 3/4 der Strecke: Interpolation
-    const progress = (totalDistance - currentDistance) / totalDistance; // Fortschritt zwischen 0 und 1
-    lerpFactor = (progress - 0.25) / 0.5; // Normierung auf den Bereich 0.25 bis 0.75
-  }
-
-  // Interpoliere die Rotation basierend auf lerpFactor
-  modellChicken.rotation.y = THREE.MathUtils.lerp(currentRotation, targetRotation, lerpFactor);*/
-
-  console.log("Aktuelle Rotation (in Grad):", THREE.MathUtils.radToDeg(modellChicken.rotation.y));
+  // console.log("Aktuelle Rotation (in Grad):", THREE.MathUtils.radToDeg(modellChicken.rotation.y));
 }
 
 function updateChickenRotation( angleInDegree: number, chickenModel: THREE.Object3D){
@@ -1293,7 +1261,7 @@ function updateChickenRotation( angleInDegree: number, chickenModel: THREE.Objec
   const rotationOffset = - Math.PI / 2;
   chickenModel.rotation.y = angleInRadians + rotationOffset;
 
-  console.log(`Chicken dreht sich auf Y-Achse: ${angleInDegree}° (${angleInRadians} rad)`);
+  // console.log(`Chicken dreht sich auf Y-Achse: ${angleInDegree}° (${angleInRadians} rad)`);
 }
 
 function followChicken(camera: THREE.Camera, chicken: THREE.Group, offset: THREE.Vector3) {
@@ -1302,7 +1270,7 @@ function followChicken(camera: THREE.Camera, chicken: THREE.Group, offset: THREE
     const targetPosition = chicken.position.clone().add(offset);
     camera.position.lerp(targetPosition, 0.1); // Sanfte Bewegung der Kamera
     camera.lookAt(chicken.position); // Kamera auf das Chicken ausrichten
-    console.log("Kamera folgt Chicken:", chicken.position);
+    // console.log("Kamera folgt Chicken:", chicken.position);
   }
 }
 
@@ -1329,11 +1297,11 @@ function removeItemFromSceneByPosition(posX: number, posY: number, itemName?: st
   );
 
   if (itemToRemove) {
-    console.log("Item to remove: ", itemName);
+    // console.log("Item to remove: ", itemName);
     if (itemName == "Speed Boost") {
       // increase speed boost for ghosts only for 10 seconds
       if (currentPlayer.value?.playerrole == Playerrole.GHOST) {
-        console.log("Speed Boost collected by Ghost, increasing speed");
+        // console.log("Speed Boost collected by Ghost, increasing speed");
         movementSpeed = fastMovementSpeed
 
         if (sprintIntervalId) {
@@ -1356,7 +1324,7 @@ function removeItemFromSceneByPosition(posX: number, posY: number, itemName?: st
       rotatingItems.splice(index, 1);
     }
   } else {
-    console.warn(`Kein Item an Position {} {}`, posX, posY)
+    // console.warn(`Kein Item an Position {} {}`, posX, posY)
   }
 }
 
@@ -1368,10 +1336,10 @@ watch([spawnX, spawnZ], ([newX, newZ]) => {
 
 
 async function handleChickenPositions(data: IChickenDTD[]) {
-  console.log("Processing Chicken Positions:", data);
+  // console.log("Processing Chicken Positions:", data);
   let chickenPositions: IChickenDTD[] = [];
   data.forEach(chicken => {
-    console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
+    // console.log(`Chicken-Daten: ID=${chicken.id}, X=${chicken.posX}, Y=${chicken.posY}`);
 
     chickenPositions.push({
       id: chicken.id,
@@ -1382,13 +1350,13 @@ async function handleChickenPositions(data: IChickenDTD[]) {
       currentCalorie: chicken.currentCalorie
     });
     removeItemFromSceneByPosition(chicken.posY, chicken.posX);
-    console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
+    // console.log(`Position X=${chicken.posX}, Y=${chicken.posY}`);
   });
   renderChicken(chickenPositions)
 }
 
 onUnmounted(async () => {
-  console.log("UNMOUNTED UNMOUNTED")
+  // console.log("UNMOUNTED UNMOUNTED")
   window.removeEventListener('keyup', handleKeyUpEvent);
   window.removeEventListener('keydown',handleKeyDownEvent);
   window.removeEventListener('resize', handleResize);
@@ -1405,7 +1373,7 @@ onMounted(async () => {
     await gameStore.fetchGameStatus(lobbyId)
     const playerName = sessionStorage.getItem('myName');
     if (playerName) {
-      console.log(playerName)
+      // console.log(playerName)
       await gameStore.getJumpAllowed(playerName, lobbyId);
     }
 
@@ -1413,7 +1381,7 @@ onMounted(async () => {
     console.error('Error fetching game status:', error)
   }
   const spawnPoints = gameStore.gameState.gamedata.spawnPoints;
-  console.log("SPAWNS: ", spawnPoints)
+  // console.log("SPAWNS: ", spawnPoints)
 
 
   //const chickenList = gameStore.gameState.gamedata.chickens
@@ -1483,8 +1451,8 @@ onMounted(async () => {
   subscribeTo(`/ingame/${lobbyId}/itemUpdates`, async (message: any) => {
     switch (message.type) {
       case "itemCollected":
-        console.log(`collected at{} {}`, message.posX, message.positionY)
-        console.log('MESSAGE: ' + message.toString())
+        // console.log(`collected at{} {}`, message.posX, message.positionY)
+        // console.log('MESSAGE: ' + message.toString())
         removeItemFromSceneByPosition(message.positionX, message.positionY, message.itemName);
         break;
 
@@ -1498,12 +1466,12 @@ subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
   const posY = message.positionY;
   setTimeout(() => {
     surpriseChicken(posX, posY);
-    console.log("Egg Update: ", message);
+    // console.log("Egg Update: ", message);
   }, 2000);
 })
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
-    console.log("FROM CHICKEN POSITIONS: ", message);
+    // console.log("FROM CHICKEN POSITIONS: ", message);
     await handleChickenPositions(message);
   });
 
@@ -1544,7 +1512,7 @@ subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
   }
   if (themeStore.currentTheme.skybox) {
     addSkybox(scene, themeStore.currentTheme.skybox);
-    console.log("Skybox-Pfade:", themeStore.currentTheme.skybox);
+    // console.log("Skybox-Pfade:", themeStore.currentTheme.skybox);
   } else {
     console.error("Keine Skybox-Daten im aktuellen Theme gefunden");
   }
