@@ -28,6 +28,8 @@ Das Spiel ist außerdem vorbei, sobald der Snackman alle seine Leben verloren ha
 #### Requirements:
 * Java 17
 
+# Development
+
 ### 1. Backend Setup
 
 * Clone the repository:
@@ -50,5 +52,19 @@ Das Spiel ist außerdem vorbei, sobald der Snackman alle seine Leben verloren ha
     ```bash
     npm run dev
     ```
+
+# Production
+
+### 1. Build for production
+  ```bash
+    cd backend
+    ./gradlew bootJar
+  ```
+
+Die Jar kann gestartet werden mit java -jar {JARNAME}.jar.
+Es wird automatisch ein Ordner erstellt für die Karten und die Hühner Skripts.
+Ggf. muss über den MapCreator eine Karte erstellt werden, wenn keine existieren.
+
+Es können außerdem Maps im .txt Format in den Ordner geschoben werden und beim reload vom Backend werden diese auch geladen.
 
 
