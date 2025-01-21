@@ -73,7 +73,9 @@
         </button>
         <div class="flex flex-col flex-1">
       <p class="text-lg w-50 font-semibold text-zinc-200"> Chickens: </p>
-      <input type="number" v-model="chickenCount"  class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
+      <input v-if="isGamemaster" type="number" v-model="chickenCount"  class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
+      <input v-if="!isGamemaster" type="number" disabled="true" v-model="chickenCount"  class=" p-3 bg-black backdrop-blur border-b border-yellow-400 rounded-lg text-zinc-300 " />
+      
 
     </div>
 
