@@ -245,16 +245,19 @@ watch(
   },
 )
 
-// Funktion, um die Rolle des Spielers zufällig zu setzen
+// Funktion, um die Rolle des Spielers zu setzen
 async function randomizeRoles() {
-  const roles = [Playerrole.SNACKMAN, Playerrole.GHOST];
-  for (const player of players.value) {
-    const randomRole: Playerrole = roles[Math.floor(Math.random() * roles.length)];
-    player.playerrole = randomRole; // Lokal setzen
-    console.log(`Assigning random role ${randomRole} to player ${player.name}`);
+  // zufälligen Spielerindex für die Rolle Snackman
+  const snackmanIndex = Math.floor(Math.random() * players.value.length);
 
-    // Rolle auf dem Server setzen
-    await setPlayerRoleViaStomp(player.name, randomRole, lobbyId).then((result: Result) => {
+ for (let i = 0; i < players.value.length; i++) {
+    const player = players.value[i];
+    const role = i === snackmanIndex ? Playerrole.SNACKMAN : Playerrole.GHOST; //  1 Snackman, Rest Ghosts
+
+    player.playerrole = role; 
+    console.log(`Assigning role ${role} to player ${player.name}`);
+
+    await setPlayerRoleViaStomp(player.name, role, lobbyId).then((result: Result) => {
       console.log(result);
     });
   }

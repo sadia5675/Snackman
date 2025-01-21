@@ -55,6 +55,9 @@ const spawnZ = ref(2);
 //für Ingame Spielernamen
 const playerNames = new Map<string, THREE.Sprite>();
 
+// farbiges Kreis über Item
+const itemSprites = new Map<THREE.Object3D, THREE.Sprite>();
+
 // für springen
 let jumpChargeTime = 0  // Zeit, die die Leertaste gedrückt wurde
 const maxJumpChargeTime = 1.5 // Maximale Ladezeit für großen Sprung in Sekunden
@@ -913,6 +916,84 @@ function createNameSprite(playerName: string) {
   return sprite;
 }
 
+function addGlowingEffect(item: THREE.Object3D, alpha: string) {
+// EGG:'white',
+  const glowColors: Record<string, string> = {
+  A: 'blue',
+  B: 'green',
+  C: 'yellow',
+  D: 'orange',
+
+  E: 'red',
+};
+
+const color = glowColors[alpha.toUpperCase()] || 'gray';
+
+// Textur mit einem leuchtenden Kreis
+const size = 256; // Größe der Textur
+const canvas = document.createElement('canvas');
+canvas.width = size;
+canvas.height = size;
+const context = canvas.getContext('2d');
+
+if (!context) return;
+
+// Hintergrund transparent
+context.clearRect(0, 0, size, size);
+
+const gradient = context.createRadialGradient(
+  size / 2, size / 2, 0, // Startpunkt
+  size / 2, size / 2, size / 2 // Endpunkt
+);
+// Transparente und weniger leuchtende Farben
+gradient.addColorStop(0, color); // Leuchtende Farbe (leicht transparent)
+gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Transparenz außen
+context.fillStyle = gradient;
+context.fillRect(0, 0, size, size);
+
+// Erstellung einer Sprite-Textur
+const texture = new THREE.CanvasTexture(canvas);
+const material = new THREE.SpriteMaterial({
+  map: texture,
+  transparent: true,
+  opacity: 0.3, // Transparenz auf 30%
+});
+const sprite = new THREE.Sprite(material);
+
+
+sprite.scale.set(0.8, 0.8, 0.8); // Größe des Glows
+sprite.position.copy(item.position);
+
+// Sprite zu Szene
+scene.add(sprite);
+
+// pulsierendes Leuchten
+animateGlow(sprite);
+
+return sprite;
+
+}
+
+// Animation für pulsierendes Leuchten
+function animateGlow(sprite: THREE.Sprite) {
+  let scaleDirection = 1; // 1 = größer, -1 = kleiner
+  const maxScale = 2; 
+  const minScale = 1.2; 
+
+  function pulse() {
+    sprite.scale.x += scaleDirection * 0.01;
+    sprite.scale.y += scaleDirection * 0.01;
+
+    if (sprite.scale.x > maxScale || sprite.scale.x < minScale) {
+      scaleDirection *= -1; // Richtung wechseln
+    }
+
+    requestAnimationFrame(pulse);
+  }
+
+  pulse();
+}
+
 
 const textureCache = new Map<string, THREE.Texture>();
 
@@ -1090,6 +1171,10 @@ function loadMap(map: string[], selectedTheme: { ground: string; wall: string })
             } else if (randomModelPath.includes('supriseEgg')) {
               item.scale.set(0.03, 0.03, 0.03)
               item.position.set(x, 0.6, z);
+            }
+            const nutriScoreEffect = addGlowingEffect(item, tile);
+            if (nutriScoreEffect) {
+              itemSprites.set(item, nutriScoreEffect);
             }
             scene.add(item);
 
@@ -1343,6 +1428,13 @@ function removeItemFromSceneByPosition(posX: number, posY: number, itemName?: st
     }
     // Entferne das Item aus der Szene
     scene.remove(itemToRemove);
+
+    // Entfernt den zugehörigen Glow-Effekt
+    const sprite = itemSprites.get(itemToRemove);
+    if (sprite) {
+      scene.remove(sprite);
+      itemSprites.delete(itemToRemove);
+    }
 
     // Entferne es aus der rotatingItems-Liste
     const index = rotatingItems.indexOf(itemToRemove);
