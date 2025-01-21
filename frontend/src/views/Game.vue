@@ -72,6 +72,26 @@ let controllerIndex: number | null = null;
 // Deadzone für die Achsen, um kleine Bewegungen zu ignorieren
 const deadzone = 0.2;
 
+//tutorial
+const showHelpHint = ref(true);
+const showTutorial = ref(false);
+const showWASDOverlay = ref(true);
+const showControllerOverlay = ref(false);
+
+const showController = () => {
+  showControllerOverlay.value =! showControllerOverlay.value;
+  setTimeout(() => {
+    showControllerOverlay.value = false;
+  }, 20000);
+};
+
+const closeTutorial = () => {
+  showTutorial.value =false
+};
+const closeControllerOverlay = () => {
+  showControllerOverlay.value = false;
+};
+
 // Event-Listener für Controller-Verbindung
 window.addEventListener("gamepadconnected", (event) => {
   console.log("Controller verbunden:", event.gamepad.id);
@@ -244,6 +264,12 @@ function handleKeyDownEvent(e : KeyboardEvent){
     case 'Space':
       isChargingJump = false;
       break
+    case 'KeyH':
+      showTutorial.value =! showTutorial.value;
+      break;
+    case 'KeyC':
+      showController();
+      break;
   }
 }
 
@@ -1369,6 +1395,15 @@ onUnmounted(async () => {
 
 
 onMounted(async () => {
+
+  //Tastenhinweis nur 8sek
+  setTimeout(()=> {
+    showWASDOverlay.value =false;
+  }, 4000);
+  setTimeout(() => {
+    showHelpHint.value =false;
+  }, 10000);
+
   try {
     await gameStore.fetchGameStatus(lobbyId)
     const playerName = sessionStorage.getItem('myName');
@@ -1569,6 +1604,107 @@ subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
     <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
       <div id="jumpBar" class="bg-red-500 h-full transition-all duration-100 ease-in-out" style="width: 0%;">
       </div>
+    </div>
+  </div>
+
+  <!-- Overlay für WASD-Steuerung -->
+  <div v-if="showWASDOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10 z-50 pointer-events-none">
+    <div class="flex flex-col items-center bg-white p-4 rounded-lg shadow-lg w-56 opacity-70">
+
+      <div class="mb-4 text-center">
+        <span class="text-sm font-bold">W</span>
+        <div class="text-xs text-gray-600">Vorwärts</div>
+      </div>
+      <div class="flex justify-between w-full">
+        <div class="text-center">
+          <span class="text-sm font-bold">A</span>
+          <div class="text-xs text-gray-600">Links</div>
+        </div>
+        <div class="text-center">
+          <span class="text-sm font-bold">D</span>
+          <div class="text-xs text-gray-600">Rechts</div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <span class="text-sm font-bold">S</span>
+        <div class="text-xs text-gray-600">Rückwärts</div>
+      </div>
+    </div>
+  </div>
+
+  <!--Tutorial-->
+  <div v-if="showTutorial" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-bold mb-4">Spielehinweise</h3>
+      <ul class="text-left mb-6">
+        <li class="mb-2">
+          Snackman sammelt Items, um Kalorien zu erhalten, die für das Springen benötigt werden!
+        </li>
+        <li class="mb-2">
+          Leichter Sprung: <strong>10 Kalorien</strong>
+        </li>
+        <li class="mb-2">
+          Schwerer Sprung: <strong>100 Kalorien</strong>
+        </li>
+        <li class="mb-2">
+          Rennen verbraucht <strong>10 Kalorien/sekunde</strong>
+        </li>
+        <li class="mb-2">
+          Drücke <strong>Leertaste</strong> zum Springen, halte sie gedrückt, um die Sprungkraft einzustellen
+        </li>
+        <li class="mb-2">
+          Drücke <strong>Shift</strong> um als Snackman schneller zu laufen
+        </li>
+        <li class="mb-2">
+          Geister fügen Schaden zu, wenn sie mit Snackman kollidieren
+        </li>
+        <li class="mb-2">
+          Sammle als Snackman Herzen, um Leben zu regenerieren
+        </li>
+        <li class="mb-2">
+          Schilder machen Snackman für <strong>5 Sekunden unverwundbar</strong>
+        </li>
+        <li class="mb-2">
+          Kurze Sprünge erlauben es, über Wände zu sehen, lange Sprünge bieten Weitsicht
+        </li>
+      </ul>
+      <button @click="closeTutorial" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+        Schließen
+      </button>
+    </div>
+  </div>
+
+  <!-- Controller Overlay -->
+  <div v-if="showControllerOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-bold mb-4">Controller Steuerung</h3>
+      <div class="flex flex-col items-center">
+        <img src="/src/assets/joystick.png" alt="Controller Steuerung" class="w-32 mb-4" />
+        <ul class="text-left">
+          <li class="mb-2">
+            <strong>Linker Joystick:</strong> Bewegung
+          </li>
+          <li class="mb-2">
+            <strong>Rechter Joystick:</strong> Kamera-Winkel
+          </li>
+          <li class="mb-2">
+            <strong>X:</strong> Springen
+          </li>
+        </ul>
+        <!-- Schließen Button -->
+        <button @click="closeControllerOverlay" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 mt-4">
+          Schließen
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- oben Bildschirm hilfe Hinweise für Tutorial -->
+  <div v-if="showHelpHint" class="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-4 p-2 z-50">
+    <div class="border-2 border-black text-center text-white bg-opacity-50 bg-black rounded-lg">
+      Press <strong>C</strong> for Controller Help
+    </div>
+    <div class="border-2 border-black text-center text-white bg-opacity-50 bg-black rounded-lg">
+      Press <strong>H</strong> for Help
     </div>
   </div>
 
