@@ -49,13 +49,16 @@ public class Chicken {
         PythonInterpreter.initialize(System.getProperties(), p, new String[] {});
         this.pyInterpreter = new PythonInterpreter();
 
+        if (CALORIESBONUS_EGG == 0){
+            CALORIESBONUS_EGG = 500;
+        }
+
         this.environmentApi = new ChickenEnvironmentApi(game);
     }
 
     public Egg eatSnack(FoodItems item, int posX, int posY){
         this.currentCalorie += item.getNutriScore().getCalorieBonus();
         if(this.currentCalorie>= this.CALORIESBONUS_EGG){
-            System.out.println("Egg created");
             this.currentCalorie = this.currentCalorie - this.CALORIESBONUS_EGG;
             Egg newEgg = new Egg(posX,posY);
             this.eggList.add(newEgg);

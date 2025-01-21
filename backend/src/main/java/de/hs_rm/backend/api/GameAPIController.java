@@ -116,9 +116,9 @@ public class GameAPIController {
 
     // Method to start the game
     @PostMapping("/start/{gameId}")
-    public ResponseEntity<?> startGame(@PathVariable String gameId,  @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> startGame(@PathVariable String gameId, @RequestBody Map<String, Object> payload) {
         String selectedMap = (String) payload.get("selectedMap");
-        int chickenNum =(Integer) payload.get("chickenNum");
+        int chickenNum = (Integer) payload.get("chickenNum");
 
         logger.info("Starting game with ID: {} and selected map: {}", gameId, selectedMap);
 
@@ -146,18 +146,19 @@ public class GameAPIController {
     }
 
     @PostMapping("/{lobbyId}/selectedTheme")
-    public ResponseEntity<Map<String, String>> checkSelectedTheme(@PathVariable String lobbyId){
+    public ResponseEntity<Map<String, String>> checkSelectedTheme(@PathVariable String lobbyId) {
         return ResponseEntity.ok(Map.of("selectedTheme", gameService.getSelectedTheme(lobbyId)));
     }
+
     @MessageMapping("/topic/game/{lobbyId}/setTheme")
     @SendTo("/topic/game/{lobbyId}")
     public Map<String, Object> setTheme(@DestinationVariable String lobbyId, @RequestBody Map<String, String> theme) {
         gameService.setSelectedTheme(lobbyId, theme.get("themeName"));
         messagingService.sendThemeUpdate(lobbyId, theme.get("themeName"));
         return Map.of(
-            "type", "themeUpdate",
-            "status", "ok",
-            "feedback", theme.get("themeName")
+                "type", "themeUpdate",
+                "status", "ok",
+                "feedback", theme.get("themeName")
         );
     }
 
@@ -168,9 +169,9 @@ public class GameAPIController {
             @RequestBody Map<String, String> map) {
         messagingService.sendMapUpdate(lobbyId, map.get("mapName"));
         return Map.of(
-            "type", "mapUpdate",
-            "status", "ok",
-            "feedback", map.get("mapName")
+                "type", "mapUpdate",
+                "status", "ok",
+                "feedback", map.get("mapName")
         );
     }
 
@@ -270,7 +271,7 @@ public class GameAPIController {
 
             // Spieler aus dem Spiel entfernen
             existingGame = gameService.leaveGame(lobbyid, player);
-            if(existingGame == null){
+            if (existingGame == null) {
                 return;
             }
 
@@ -293,34 +294,35 @@ public class GameAPIController {
     public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
         boolean madeValidMove = gameService.move(lobbyid, position);
 
-            if (madeValidMove) {
+        if (madeValidMove) {
 
-                boolean itemCollected = gameService.checkItemCollcted(lobbyid);
-                if(itemCollected){
-                    ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
-                    messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
-                }
-
-                boolean eggLayed = gameService.checkEggLayed(lobbyid);
-                if(eggLayed){
-                    EggcreatedResponse eggcreatedResponse = new EggcreatedResponse(position.getPosX(), position.getPosY());
-                    messagingService.sendEggUpdate(lobbyid, eggcreatedResponse);
-                }
-                
-                // sende das die Validation in Ordnung war
-                PlayerMoveValidationResponse playerMoveValidationResponse = new PlayerMoveValidationResponse(position);
-                messagingService.sendPositionValidation(lobbyid, playerMoveValidationResponse);
-
-                //Winner checken
-                PlayerRole winnerRole = gameService.checkWinner(lobbyid);
-                CollisionValidationResponse collisionValidationResponse = new CollisionValidationResponse(gameService.getCharacterListByGameId(lobbyid), winnerRole);
-                messagingService.sendPlayerCollision(lobbyid, collisionValidationResponse);
-
-
-                //senden der Liste von Chars
-                PlayerPositionResponse playerPositionResponse = new PlayerPositionResponse(gameService.getCharactersByGameId(lobbyid));
-                messagingService.sendNewCharacterPosition(lobbyid, playerPositionResponse);
+            boolean itemCollected = gameService.checkItemCollcted(lobbyid);
+            if (itemCollected) {
+                ItemCollectedResponse itemCollectedResponse = new ItemCollectedResponse(position.getPosX(), position.getPosY());
+                messagingService.sendItemUpdate(lobbyid, itemCollectedResponse);
             }
+
+            int eggLayed = gameService.checkEggLayed(lobbyid);
+            if (eggLayed != 0) {
+                logger.info("Egg location: {} {} {} width {} height {}", gameService.getGameById(lobbyid).getPlaymap().getWidth() % eggLayed, (double) gameService.getGameById(lobbyid).getPlaymap().getWidth() / eggLayed, eggLayed, gameService.getGameById(lobbyid).getPlaymap().getWidth(), gameService.getGameById(lobbyid).getPlaymap().getHeight());
+                EggcreatedResponse eggcreatedResponse = new EggcreatedResponse((int) eggLayed / gameService.getGameById(lobbyid).getPlaymap().getWidth(), eggLayed % gameService.getGameById(lobbyid).getPlaymap().getWidth());
+                messagingService.sendEggUpdate(lobbyid, eggcreatedResponse);
+            }
+
+            // sende das die Validation in Ordnung war
+            PlayerMoveValidationResponse playerMoveValidationResponse = new PlayerMoveValidationResponse(position);
+            messagingService.sendPositionValidation(lobbyid, playerMoveValidationResponse);
+
+            //Winner checken
+            PlayerRole winnerRole = gameService.checkWinner(lobbyid);
+            CollisionValidationResponse collisionValidationResponse = new CollisionValidationResponse(gameService.getCharacterListByGameId(lobbyid), winnerRole);
+            messagingService.sendPlayerCollision(lobbyid, collisionValidationResponse);
+
+
+            //senden der Liste von Chars
+            PlayerPositionResponse playerPositionResponse = new PlayerPositionResponse(gameService.getCharactersByGameId(lobbyid));
+            messagingService.sendNewCharacterPosition(lobbyid, playerPositionResponse);
+        }
 
     }
 
@@ -422,10 +424,9 @@ public class GameAPIController {
     }
 
 
-
     @MessageMapping("/topic/ingame/{lobbyid}/chickenPosition")
     @SendTo("/topic/ingame/{lobbyod}")
-    public Map<String, Object> chickenPosition(@DestinationVariable String lobbyid){
+    public Map<String, Object> chickenPosition(@DestinationVariable String lobbyid) {
 
         Game existingGame = gameService.getGameById(lobbyid);
         List<Chicken> chickens = existingGame.getChickens();

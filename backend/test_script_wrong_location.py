@@ -31,7 +31,6 @@ def right_hand_algo():
     # print("ENV: ")
     # print(actuell_environment)
 
-    print_environment(actuell_environment)
   
     
 
@@ -76,19 +75,11 @@ def move_to(delta_x, delta_y, change_angle, chicken_new_position, actuell_enviro
     new_pos_y = chickenObj.getPosY() + delta_y
     # new_angle = chickenObj.getAngle() + change_angle
     # new_angle = (chickenObj.getAngle() + change_angle) % 360
-    new_angle = change_angle 
-    print("Change Angel: ", change_angle)
-    print("Neuer Angle: ", new_angle)
+    new_angle = change_angle
     chickenObj.move(new_pos_x, new_pos_y, new_angle)
     
 
     actuell_environment[chicken_new_position].addChicken(chickenObj)
-
-    print("chicken bewegt sich nach : ",  new_angle)
-    print("Neue Chicken Position: ", chickenObj.getPosX(), chickenObj.getPosY(), chickenObj.getAngle())
-    print("Bewegungsschritt abgeschlossen") 
- 
-    
 
 
 def print_environment(actuell_environment):

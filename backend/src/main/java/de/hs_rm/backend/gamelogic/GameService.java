@@ -350,15 +350,15 @@ public class GameService {
         return false;
     }
 
-    public boolean checkEggLayed(String lobbyid){
+    public int checkEggLayed(String lobbyid){
         Game existingGame = getGameById(lobbyid);
         for(Tile tile : existingGame.getPlaymap().getTilesList()){
             if (tile.isEggRecentlyLayed()) {
                 tile.setEggRecentlyLayed(false);
-                return true;
+                return gameList.get(lobbyid).getPlaymap().getTilesList().indexOf(tile);
             }
         }
-        return false;
+        return 0;
     }
 
     public PlayerRole checkWinner(String lobbyid){
