@@ -60,7 +60,7 @@ onMounted(() => {
 
 //Controller Hinweis für Spieler
 const showController = () => {
-  showControllerOverlay.value =true;
+  showControllerOverlay.value =! showControllerOverlay.value;
   setTimeout(() => {
     showControllerOverlay.value = false;
   }, 20000);
@@ -280,7 +280,7 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         }
         break;
       case 'KeyH':
-        showTutorial.value = true;
+        showTutorial.value =! showTutorial.value;
         break;
       case 'KeyC':
         showController();
@@ -1657,6 +1657,9 @@ watch(
         </li>
         <li class="mb-2">
           Drücke <strong>Leertaste</strong> zum Springen, halte sie gedrückt, um die Sprungkraft einzustellen
+        </li>
+        <li class="mb-2">
+          Drücke <strong>Shift</strong> um als Snackman schneller zu laufen
         </li>
         <li class="mb-2">
           Geister fügen Schaden zu, wenn sie mit Snackman kollidieren
