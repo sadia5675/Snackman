@@ -5,10 +5,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NutriscoreConfig {
-    @Value("${egg.caloriesbonus:0}")
+    @Value("${egg.caloriesbonus}")
     private int eggCalorieBonus;
 
     public int getEggCalorieBonus() {
+        if(eggCalorieBonus == 0){
+            eggCalorieBonus = 500;
+        }
         return eggCalorieBonus;
     }
 }
