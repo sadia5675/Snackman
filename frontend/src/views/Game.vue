@@ -45,6 +45,7 @@ const map = ref<string[] | undefined>(undefined);
 const showHelpHint = ref(true);
 const showTutorial = ref(false);
 const showWASDOverlay = ref(true);
+const showControllerOverlay = ref(false);
 
 //nach 30 sekunden soll Tutorial hinweis ausgeblendet werden
 onMounted(() => {
@@ -57,10 +58,20 @@ onMounted(() => {
   }, 30000);
 });
 
+//Controller Hinweis für Spieler
+const showController = () => {
+  showControllerOverlay.value =true;
+  setTimeout(() => {
+    showControllerOverlay.value = false;
+  }, 20000);
+};
+
 const closeTutorial = () => {
   showTutorial.value =false
 };
-
+const closeControllerOverlay = () => {
+  showControllerOverlay.value = false;
+};
 
 //Movement
 let movingForward: boolean,
@@ -270,6 +281,9 @@ function registerListeners(window: Window, renderer: WebGLRenderer) {
         break;
       case 'KeyH':
         showTutorial.value = true;
+        break;
+      case 'KeyC':
+        showController();
         break;
     }
   })
@@ -1662,10 +1676,40 @@ watch(
       </button>
     </div>
   </div>
-  <div v-if="showHelpHint" class="absolute top-4 left-1/2 transform -translate-x-1/2 p-2 border-2 border-black text-center text-white bg-opacity-50 bg-black z-50 rounded-lg">
-    Press <strong>H</strong> for Help
-  </div>
 
+  <!-- Controller Overlay -->
+  <div v-if="showControllerOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-bold mb-4">Controller Steuerung</h3>
+      <div class="flex flex-col items-center">
+        <img src="/joystick.png" alt="Controller Steuerung" class="w-32 mb-4" />
+        <ul class="text-left">
+          <li class="mb-2">
+            <strong>Linker Joystick:</strong> Bewegung
+          </li>
+          <li class="mb-2">
+            <strong>Rechter Joystick:</strong> Kamera-Winkel
+          </li>
+          <li class="mb-2">
+            <strong>X:</strong> Springen
+          </li>
+        </ul>
+        <!-- Schließen Button -->
+        <button @click="closeControllerOverlay" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 mt-4">
+          Schließen
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- oben Bildschirm hilfe Hinweise für Tutorial -->
+  <div v-if="showHelpHint" class="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-4 p-2 z-50">
+    <div class="border-2 border-black text-center text-white bg-opacity-50 bg-black rounded-lg">
+      Press <strong>C</strong> for Controller Help
+    </div>
+    <div class="border-2 border-black text-center text-white bg-opacity-50 bg-black rounded-lg">
+      Press <strong>H</strong> for Help
+    </div>
+  </div>
 
   <Modal>
     <template #titel>
