@@ -6,17 +6,7 @@ const protocol = window.location.protocol === 'http:' ? 'ws' : 'wss'
 
 const stompClient = new Client({
   brokerURL: `${protocol}://${window.location.host}/ws`,
-  connectHeaders: {
-    //Eventuell Authentifizierung
-  },
-  onConnect: () => {
-    console.log('Connected to STOMP');
-    // Hier könnten globale Abonnements hinzugefügt werden, falls nötig
-  },
-  onDisconnect: () => {
-    console.log('Disconnected from STOMP');
-  },
-  });
+});
 
 // Funktion zum Abonnieren einer Lobby
 function subscribeTo(path: string, callback: (message: any) => void) {
@@ -27,9 +17,7 @@ function subscribeTo(path: string, callback: (message: any) => void) {
   stompClient.subscribe(`/topic${path}`, (message: Message) => {
 
     const response: IMessage = JSON.parse(message.body);
-
     switch(response.type){
-
       default:
         callback(response);
     }
@@ -44,8 +32,6 @@ function sendMessage(destination: string, body: any) {
       destination,
       body: JSON.stringify(body),
     });
-  } else {
-    console.error('WebSocket is not connected');
   }
 }
 

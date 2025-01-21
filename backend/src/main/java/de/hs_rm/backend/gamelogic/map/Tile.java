@@ -17,8 +17,8 @@ public class Tile {
     ConcurrentHashMap<String, Character> characterList;
     List<Chicken> chickenList;
 
-    boolean itemWasRecentlyCollected = false;
-
+    // null if no item collected recently, and item name if collected recently
+    String recentlyCollectedItemName = null;
     boolean eggRecentlyLayed = false;
     Logger logger = LoggerFactory.getLogger(Tile.class);
 
@@ -78,11 +78,11 @@ public class Tile {
                     if (item instanceof FoodItems) {
                         snackman.eatSnack((FoodItems) item);
                         logger.info("Snackman eats FoodItem '{}'.", item.getName());
-                        itemWasRecentlyCollected = true;
+                        recentlyCollectedItemName = item.getName();
                     } else if (item instanceof ObjectsItems) {
                         snackman.collectObjectItem((ObjectsItems) item);
                         snackman.useItem((ObjectsItems) item);
-                        itemWasRecentlyCollected = true;
+                        recentlyCollectedItemName = item.getName();
                     }
                     itemsToRemove.add(item);
                 } else if (character instanceof Ghost && item.getType() == PlayerRole.GHOST
@@ -90,7 +90,7 @@ public class Tile {
                     Ghost ghost = (Ghost) character;
                     ghost.collectObjectItem((ObjectsItems) item);
                     ghost.useItem((ObjectsItems) item);
-                    itemWasRecentlyCollected = true;
+                    recentlyCollectedItemName = item.getName();
                     itemsToRemove.add(item);
                 }
             }
@@ -143,7 +143,7 @@ public class Tile {
                     FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
                     Egg egg = chicken.eatSnack(foodItem, chicken.getPosX(), chicken.getPosY());
                     itemsToRemove.add(foodItem);
-                    this.itemWasRecentlyCollected = true;
+                    this.recentlyCollectedItemName = item.getName();
 
                     if(egg != null){
                         this.eggRecentlyLayed = true;
@@ -212,12 +212,12 @@ public class Tile {
         this.characterList = characterList;
     }
 
-    public boolean isItemWasRecentlyCollected() {
-        return itemWasRecentlyCollected;
+    public String getRecentlyCollectedItemName() {
+        return recentlyCollectedItemName;
     }
 
-    public void setItemWasRecentlyCollected(boolean itemWasRecentlyCollected) {
-        this.itemWasRecentlyCollected = itemWasRecentlyCollected;
+    public void setRecentlyCollectedItemName(String recentlyCollectedItemName) {
+        this.recentlyCollectedItemName = recentlyCollectedItemName;
     }
 
     public List<Chicken> getChickenList() {

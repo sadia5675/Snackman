@@ -129,7 +129,7 @@ public class Game {
             new FoodItems("cottoncandy", -1, -1, NutriScore.E));
     // vordefinierten ObjectsItems --> Pos muss geändert werden
     private static final List<ObjectsItems> OBJECTS_ITEMS = List.of(
-            new GhostObjectItem("Speed Boost", -1, -1, "Increases movement speed temporarily"),
+            new GhostObjectItem("Speed Boost", -1, -1, "Increases movement speed temporarily for all ghosts"),
             new SnackmanObjectItem("Shield", -1, -1, "Provides temporary invincibility"),
             new SnackmanObjectItem("Double Points", -1, -1, "Doubles points gained for a limited time"),
             new SnackmanObjectItem("Extra Life", -1, -1, "Grants an extra life"));
@@ -187,7 +187,7 @@ public class Game {
                 // ausreichend punkte und noch am leben
                 if (snackman.getCurrentPoints() >= maxPointsSnackman/2 && snackman.getLife() > 0) { // es soll die hälte der punkte sein laut PO
                     winnerRole = PlayerRole.SNACKMAN;
-                    end();
+                    this.end();
                     return;
                 }
             } else if (character instanceof Ghost) {
@@ -195,7 +195,7 @@ public class Game {
                 //snackman lebt nicht mehr und snackman hat nicht seine max punkte erreicht
                 if (snackman.getLife() <= 0 && snackman.getCurrentPoints() < maxPointsSnackman/2) {
                     winnerRole = PlayerRole.GHOST;
-                    end();
+                    this.end();
                     return;
                 }
             }
@@ -476,6 +476,7 @@ public class Game {
 
     public void end() {
         this.started = false;
+        this.chickens.forEach(Chicken::stopBehavior);
     }
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt
@@ -503,9 +504,7 @@ public class Game {
 
     public void leaveGame(Player player) {
         LOGGER.info(String.valueOf(players.size()));
-        // if (player.getName().contentEquals(gamemaster.getName())) {
-        //     throw new IllegalStateException("Gamemaster cannot leave the game.");
-        // }
+    
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getName().equals(player.getName())) {
                 LOGGER.info("Hier der kickende Spieler " + player.getName());

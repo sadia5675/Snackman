@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 # PythonInterpreter ist nur in der Lage Python bis 2.7 zu interpretieren
-
+running = True
 
 chickenObj = chicken
 environmentObj = environment
@@ -101,9 +101,15 @@ def print_environment(actuell_environment):
     ))
 
 
+def stop():
+    global running
+    running = False
+    print("Script stopped.")
+
+
 def run_auto():
     print("run_auto ausgeführt")
-    while True:
+    while running:
         right_hand_algo()
         time.sleep(1)
 

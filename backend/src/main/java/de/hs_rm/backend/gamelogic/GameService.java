@@ -1,7 +1,9 @@
 package de.hs_rm.backend.gamelogic;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import de.hs_rm.backend.exception.GameJoinException;
+import de.hs_rm.backend.exception.GameLeaveException;
 import de.hs_rm.backend.gamelogic.characters.players.Player;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerPosition;
 import de.hs_rm.backend.gamelogic.characters.players.Character;
@@ -101,21 +104,21 @@ public class GameService {
 
     }
 
-    public Game leaveGame(String gameId,Player player){
+    public List<Player> leaveGame(String gameId,Player player){
         Game game = gameList.get(gameId);
 
         if(game == null){
-            return null;
+            throw new GameLeaveException("Game nicht gefunden");
         }
 
         game.leaveGame(player);
 
         if(game.getPlayers().isEmpty()){
+            game.end();
             gameList.remove(gameId);
-            game = null;
+            return new ArrayList<>();
         }
-
-        return game;
+        return game.getPlayers();
     }
 
     public Boolean isJumpAllowed(String gameId, String playerName){
@@ -138,7 +141,7 @@ public class GameService {
 
     }
 
-    public Game joinGame(String gameId, Player player){
+    public List<Player> joinGame(String gameId, Player player){
         Game game = gameList.get(gameId);
 
         if(game == null){
@@ -160,7 +163,7 @@ public class GameService {
             throw new GameJoinException("Name already in Lobby!");
         }
 
-        return game;
+        return game.getPlayers();
     }
 
     public Game setRole(String gameId, String nameOfPlayerToSetRole, String role) {
@@ -339,15 +342,16 @@ public class GameService {
         return validMove;
     }
 
-    public boolean checkItemCollcted(String lobbyid){
+    public String checkItemCollcted(String lobbyid){
         Game existingGame = getGameById(lobbyid);
         for(Tile tile : existingGame.getPlaymap().getTilesList()){
-                if (tile.isItemWasRecentlyCollected()) {  
-                    tile.setItemWasRecentlyCollected(false);
-                    return true;
+                if (tile.getRecentlyCollectedItemName() != null) {
+                    String itemName = tile.getRecentlyCollectedItemName();
+                    tile.setRecentlyCollectedItemName(null);
+                    return itemName;
                 }
         }
-        return false;
+        return null;
     }
 
     public int checkEggLayed(String lobbyid){
