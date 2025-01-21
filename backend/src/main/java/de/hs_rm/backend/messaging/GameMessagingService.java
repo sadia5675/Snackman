@@ -1,7 +1,5 @@
 package de.hs_rm.backend.messaging;
 
-import java.util.HashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GameMessagingService {
 
-    Logger logger = LoggerFactory.getLogger(GameMessagingService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameMessagingService.class);
 
     private final SimpMessagingTemplate template;
 
@@ -20,7 +18,7 @@ public class GameMessagingService {
     }
 
     public void sendPositionValidation(String lobbyid, Object position){
-        //logger.info("Sending Validation");
+        // LOGGER.info("Sending Validation");
         template.convertAndSend("/topic/ingame/"+ lobbyid, position);
     }
 
@@ -33,7 +31,7 @@ public class GameMessagingService {
     }
 
     public void sendNewCharacterPosition(String lobbyid, Object position){
-        //logger.info("Sending playerPositions");
+        // LOGGER.info("Sending playerPositions");
         template.convertAndSend("/topic/ingame/playerPositions/" + lobbyid, position);
     }
 
@@ -42,40 +40,32 @@ public class GameMessagingService {
     }
 
     public void sendItemUpdate(String lobbyid, Object itemUpdate) {
-        //logger.info("Sending item update to lobby {}: {}", lobbyid, itemUpdate);
+        // LOGGER.info("Sending item update to lobby {}: {}", lobbyid, itemUpdate);
         template.convertAndSend("/topic/ingame/" + lobbyid + "/itemUpdates", itemUpdate);
     }
 
     public void sendEggUpdate(String lobbyid, Object eggUpdate) {
-        logger.info("Sending egg update to lobby {}: {}", lobbyid, eggUpdate);
+        // LOGGER.info("Sending egg update to lobby {}: {}", lobbyid, eggUpdate);
         template.convertAndSend("/topic/ingame/" + lobbyid + "/chicken/eggUpdate", eggUpdate);
     }
 
-
-    // ToDo Aron
-    // Chicken Daten ans Frontend schicken
-    // public void sendNewChickenPosition(String gameId, Object positionChicken) {
-    //     logger.info("Sending chicken position");
-    //     template.convertAndSend("/topic/ingame/chickenPosition/{gameId}");
-    // }
     public void sendThemeUpdate(String lobbyid, Object themeData) {
-        //logger.info("Sending theme update");
+        // LOGGER.info("Sending theme update");
         template.convertAndSend("/topic/game/" + lobbyid + "/theme", themeData);
     }
+
     public void sendMapUpdate (String lobbyid, Object mapData){
-        //logger.info("Sending map update");
+        // LOGGER.info("Sending map update");
         template.convertAndSend("/topic/game/" + lobbyid + "/map", mapData);
     }
 
     public void sendPlayerCollision(String lobbyid, Object collisionDetails) {
-        //logger.info("Sending player collision details");
+        // LOGGER.info("Sending player collision details");
         template.convertAndSend("/topic/ingame/PlayerKollision/" + lobbyid, collisionDetails);
     }
 
     public void sendNewChickenPosition(String lobyid, Object position){
-        //logger.info("Sending chickenPositions {}", position, "to lobby: {}", lobyid);
+        // LOGGER.info("Sending chickenPositions {}", position, "to lobby: {}", lobyid);
         template.convertAndSend("/topic/ingame/chickenPosition/" + lobyid, position);
     }
-
-
 }

@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public class GhostObjectItem extends ObjectsItems {
 
-    private static final Logger logger = LoggerFactory.getLogger(GhostObjectItem.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GhostObjectItem.class);
 
     public GhostObjectItem(String name, int x, int y, String effectDescription) {
         super(name, x, y, PlayerRole.GHOST, effectDescription);
@@ -13,7 +13,7 @@ public class GhostObjectItem extends ObjectsItems {
 
     @Override
     public void applyEffect(Player player) {
-        logger.info("Ghost-specific effect applied: {}",  getEffectDescription());
+        LOGGER.info("Ghost-specific effect applied: {}",  getEffectDescription());
     }
     
 }

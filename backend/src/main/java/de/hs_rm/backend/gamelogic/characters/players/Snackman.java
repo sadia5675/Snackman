@@ -18,7 +18,7 @@ public class Snackman extends Character {
     private boolean recentlyCaught;
     private long lastCaughtTime = 0; // Zeitpunkt der letzten Kollision in Millisekunden
 
-    private static final Logger logger = LoggerFactory.getLogger(Snackman.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Snackman.class);
 
     public Snackman(double speed, int posX, int posY, int life, int maxLife) {
         super(speed, posX, posY);
@@ -66,7 +66,7 @@ public class Snackman extends Character {
     // Methode: Aufnehmen von FoodItems
     public void eatSnack(FoodItems foodItem) {
         currentPoints += foodItem.getNutriScore().getCalorieBonus() * bonusFactor;
-        logger.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentPoints);
+        // LOGGER.info("FoodItem '{}' consumed: Current Calories = {}", foodItem.getName(), currentPoints);
     }
 
     @Override
@@ -113,12 +113,12 @@ public class Snackman extends Character {
                 lastCaughtTime = currentTime; // Zeitpunkt der letzten Kollision aktualisieren
                 recentlyCaught = true; // Immunität aktivieren
 
-                logger.info("Snackman lost a life. Remaining lives: {}", this.life);
+                LOGGER.info("Snackman lost a life. Remaining lives: {}", this.life);
 
                 if (this.life <= 0) {
-                    logger.info("Snackman has been caught and has no more lives.");
+                    LOGGER.info("Snackman has been caught and has no more lives.");
                 } else {
-                    logger.info("Snackman is immune for 5 seconds.");
+                    LOGGER.info("Snackman is immune for 5 seconds.");
                 }
 
                 // Nach 5 Sekunden Immunität beenden

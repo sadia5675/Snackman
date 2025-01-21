@@ -45,7 +45,7 @@ public class GameService {
     private String pathToChickenBot;
 
     private Map<String,Game> gameList = new HashMap<String,Game>();
-    Logger logger = LoggerFactory.getLogger(GameService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
     public Collection<Game> getGameList(){
         return gameList.values();
@@ -150,8 +150,8 @@ public class GameService {
 
         boolean containsName = game.getPlayers().stream().anyMatch(existingPlayer -> existingPlayer.getName().equals(player.getName()));
 
-        logger.info("Game: {}, Player {}, ContainsName: {}", gameId, player.getName(),containsName);
-        logger.info("PrivateLobby: {}, Player Password: {}, Game Password: {}", game.getPrivateLobby(), player.getPassword(), game.getPassword());
+        LOGGER.info("Game: {}, Player {}, ContainsName: {}", gameId, player.getName(),containsName);
+        LOGGER.info("PrivateLobby: {}, Player Password: {}, Game Password: {}", game.getPrivateLobby(), player.getPassword(), game.getPassword());
 
         if(game.getPrivateLobby() && !Objects.equals(player.getPassword(), game.getPassword())){
             throw new GameJoinException("Wrong Password!");

@@ -1,18 +1,13 @@
 package de.hs_rm.backend.gamelogic;
 
-import java.util.Collection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import de.hs_rm.backend.api.GameAPIController;
 import de.hs_rm.backend.gamelogic.characters.chicken.Chicken;
 import de.hs_rm.backend.gamelogic.characters.players.ChickenPosition;
 import de.hs_rm.backend.messaging.GameMessagingService;
@@ -22,7 +17,7 @@ public class ChickenService {
     
     private GameService gameService;
     private final GameMessagingService gameMessagingService;
-    Logger logger = LoggerFactory.getLogger(ChickenService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChickenService.class);
     
     public ChickenService(GameService gameService, GameMessagingService gameMessagingService) {
             this.gameService = gameService;
@@ -36,9 +31,6 @@ public class ChickenService {
                 continue;
             }
             List<ChickenPosition> chickenPositions = getChickenPositions(game);
-            for (ChickenPosition position : chickenPositions) {
-                logger.info("Chicken Position Detail: {}", position);
-            }
             gameMessagingService.sendNewChickenPosition(game.getId(), chickenPositions);
         }
     }
@@ -48,8 +40,7 @@ public class ChickenService {
         for (int i = 0; i < game.getChickens().size(); i++) {
             Chicken chicken = game.getChickens().get(i);
             ChickenPosition newChicken = new ChickenPosition(chicken.getId(), chicken.getPosX(), chicken.getPosY(),chicken.getAngle(),chicken.getEggList(),chicken.getCurrentCalorie());
-            System.out.println("chciekne id ist --> "+newChicken.getId());
-            logger.info("chciekne id ist --> "+newChicken.getId()); 
+            // LOGGER.info("chicken id ist --> " + newChicken.getId());
             positions.add(newChicken);
         }
         

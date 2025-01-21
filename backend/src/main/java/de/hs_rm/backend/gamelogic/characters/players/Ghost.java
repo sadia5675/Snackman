@@ -14,7 +14,7 @@ public class Ghost extends Character {
     private ObjectsItems item;
     private double speed = 1.0;
 
-    private static final Logger logger = LoggerFactory.getLogger(Ghost.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Ghost.class);
 
     public Ghost(double speed, int posX, int posY) {
         super(speed, posX, posY);
@@ -40,7 +40,7 @@ public class Ghost extends Character {
     // Reglung bei Kontakt mit Snackman--> Logik fehlt noch
     public void hit() {
         this.touchcount++;
-        logger.info("Ghosttouch  wurde addiert: {} ", this.touchcount);
+        LOGGER.info("Ghosttouch  wurde addiert: {} ", this.touchcount);
     }
 
     @Override
