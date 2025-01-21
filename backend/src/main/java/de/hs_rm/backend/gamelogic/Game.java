@@ -558,7 +558,7 @@ public class Game {
         Character curCharacter = characters.get(username);
 
         if(CALORIESBONUS_EGG == 0){
-            CALORIESBONUS_EGG = 400;
+            CALORIESBONUS_EGG = 500;
         }
 
         int roundedPosX = (int) Math.floor(posX);

@@ -1422,12 +1422,14 @@ onMounted(async () => {
     }
   })
 
-  subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
-    const posX = message.positionX;
-    const posY = message.positionY;
+subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
+  const posX = message.positionX;
+  const posY = message.positionY;
+  setTimeout(() => {
     surpriseChicken(posX, posY);
     console.log("Egg Update: ", message);
-  })
+  }, 2000);
+})
 
   subscribeTo(`/ingame/chickenPosition/${lobbyId}`, async (message: any) => {
     console.log("FROM CHICKEN POSITIONS: ", message);

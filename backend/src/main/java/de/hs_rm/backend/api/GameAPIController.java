@@ -305,7 +305,7 @@ public class GameAPIController {
             int eggLayed = gameService.checkEggLayed(lobbyid);
             if (eggLayed != 0) {
                 logger.info("Egg location: {} {} {} width {} height {}", gameService.getGameById(lobbyid).getPlaymap().getWidth() % eggLayed, (double) gameService.getGameById(lobbyid).getPlaymap().getWidth() / eggLayed, eggLayed, gameService.getGameById(lobbyid).getPlaymap().getWidth(), gameService.getGameById(lobbyid).getPlaymap().getHeight());
-                EggcreatedResponse eggcreatedResponse = new EggcreatedResponse((double) eggLayed / gameService.getGameById(lobbyid).getPlaymap().getWidth(), eggLayed % gameService.getGameById(lobbyid).getPlaymap().getWidth());
+                EggcreatedResponse eggcreatedResponse = new EggcreatedResponse((int) eggLayed / gameService.getGameById(lobbyid).getPlaymap().getWidth(), eggLayed % gameService.getGameById(lobbyid).getPlaymap().getWidth());
                 messagingService.sendEggUpdate(lobbyid, eggcreatedResponse);
             }
 
