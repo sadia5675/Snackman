@@ -92,11 +92,11 @@ public class Snackman extends Character {
             }, 5000);
             setCurrentObjectItem(null);
         } else if (item.getName().contentEquals("Extra Life")) {
-            logger.info("Hier das leben vor {}",this.life);
+            LOGGER.info("Hier das leben vor {}",this.life);
             if (life != maxLife) {
                 this.life++;
             }
-            logger.info("Hier das leben danach {}",this.life);
+            LOGGER.info("Hier das leben danach {}",this.life);
             setCurrentObjectItem(null);
         }
     }
