@@ -20,7 +20,7 @@ public class Tile {
     // null if no item collected recently, and item name if collected recently
     String recentlyCollectedItemName = null;
     boolean eggRecentlyLayed = false;
-    Logger logger = LoggerFactory.getLogger(Tile.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Tile.class);
 
     public Tile(TileType type) {
         this.type = type;
@@ -52,14 +52,14 @@ public class Tile {
     public boolean addCharacter(String username, Character character) {
         for (int i = 0; i < itemList.size(); i++) {
             Item item = itemList.get(i);
-            logger.info("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
+            // LOGGER.info("Checking item: {} for character: {}", item.getName(), character.getClass().getSimpleName());
             takeItems(character);
         }
 
 
         if(!this.characterList.containsKey(username)){
             this.characterList.put(username, character);
-            logger.info("ADDED CHAR: {} {}, LIST : {}", username, character, this.characterList);
+            // LOGGER.info("ADDED CHAR: {} {}, LIST : {}", username, character, this.characterList);
         }
 
 
@@ -77,7 +77,7 @@ public class Tile {
                     Snackman snackman = (Snackman) character; // Cast zu Snackman
                     if (item instanceof FoodItems) {
                         snackman.eatSnack((FoodItems) item);
-                        logger.info("Snackman eats FoodItem '{}'.", item.getName());
+                        // LOGGER.info("Snackman eats FoodItem '{}'.", item.getName());
                         recentlyCollectedItemName = item.getName();
                     } else if (item instanceof ObjectsItems) {
                         snackman.collectObjectItem((ObjectsItems) item);
@@ -96,13 +96,12 @@ public class Tile {
             }
             itemsToRemove.forEach(item -> itemList.remove(item));
             itemsToRemove.clear();
-            logger.debug("Item removed. Remaining items: {}", itemList.size());
+            // LOGGER.debug("Item removed. Remaining items: {}", itemList.size());
         }
 
     }
 
     private void checkCharacterCollision(Character character) {
-        // TODO: Kollision zwischen Ghost und Snackman
         if(character instanceof Snackman ){
             Snackman snackman = (Snackman) character;
         for (Character currentCharacter:characterList.values()){
@@ -111,7 +110,7 @@ public class Tile {
                 if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
                     snackman.caught();
                     ghost.hit();
-                    logger.info("Collision: Snackman caught by Ghost! Now imun fo the next 5 sec");
+                    // LOGGER.info("Collision: Snackman caught by Ghost! Now imun fo the next 5 sec");
                 }
                 }
             }
@@ -124,9 +123,9 @@ public class Tile {
                     if (!snackman.isRecentlyCaught()) { // Prüfen, ob Snackman nicht immun ist
                         snackman.caught();
                         ghost.hit();
-                        logger.info("Collision: Snackman caught by Ghost!");
+                        LOGGER.info("Collision: Snackman caught by Ghost!");
                     } else {
-                        logger.info("Collision ignored: Snackman is immune.");
+                        LOGGER.info("Collision ignored: Snackman is immune.");
                     }
                 }
             }
@@ -137,7 +136,6 @@ public class Tile {
         List<Item> itemsToRemove = new ArrayList<>();
         this.chickenList.add(chicken);
         if (!itemList.isEmpty()) {
-            // TODO: Item hier nehmen
             for (Item item : itemList) {
                 if(item instanceof FoodItems){
                     FoodItems foodItem = (FoodItems) item; //cast zu FoodItem
@@ -148,10 +146,10 @@ public class Tile {
                     if(egg != null){
                         this.eggRecentlyLayed = true;
                         itemList.remove(item);
-                        logger.info("Item '{}' removed from tile", item.getName());
-                        //Ei wird hier zum Tile hinzugefügt
-                        itemList.add(egg); //FEHLER!
-                        logger.info("Egg by chicken geboren and added to tile");
+                        // LOGGER.info("Item '{}' removed from tile", item.getName());
+                        // Ei wird hier zum Tile hinzugefügt
+                        itemList.add(egg);
+                        // LOGGER.info("Egg by chicken geboren and added to tile");
                         break;
                     }
 
@@ -183,7 +181,7 @@ public class Tile {
             // logger.info("ChickenList beim Entfernen: {}", chickenList.);
             return true;
         } else {
-            logger.info("Chicken not found in tile.");
+            // LOGGER.info("Chicken not found in tile.");
             return false;
 
         }

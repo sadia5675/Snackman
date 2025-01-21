@@ -583,17 +583,17 @@ public class Game {
         Tile targetTile = playmap.getTilesList().get(targetIndex);
 
         for(Chicken chicken: targetTile.getChickenList()){
-            LOGGER.info("Chicken aktuelle CAL {}", chicken.getCurrentCalorie());
+            // LOGGER.info("Chicken aktuelle CAL {}", chicken.getCurrentCalorie());
             if(chicken.getCurrentCalorie() >= CALORIESBONUS_EGG){
-                LOGGER.info("Kollision mit einem fetten Chicken: Zielkoordinaten posX={}, posY={}", posX, posY);
-                LOGGER.info("Chicken aktuelle Cal {} maxCal {}", chicken.getCurrentCalorie(), CALORIESBONUS_EGG);
+                // LOGGER.info("Kollision mit einem fetten Chicken: Zielkoordinaten posX={}, posY={}", posX, posY);
+                // LOGGER.info("Chicken aktuelle Cal {} maxCal {}", chicken.getCurrentCalorie(), CALORIESBONUS_EGG);
                 return false;
             }
         }
 
         // Ziel-Tile prüfen
         if (targetTile.getType() == TileType.WALL && curCharacter.getPosZ() < 3) {
-            LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
+            // LOGGER.info("Kollision mit einer Wand: Zielkoordinaten posX={}, posY={}", posX, posY);
             return false;
         }
         // Prüfung: Ist das Ziel-Tile das gleiche wie das aktuelle Tile?

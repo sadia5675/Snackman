@@ -74,7 +74,6 @@ public class GameAPIController {
     @Autowired
     PlayMapService playMapService;
 
-    Logger logger = LoggerFactory.getLogger(GameAPIController.class);
     private static final Logger LOGGER = LoggerFactory.getLogger(GameAPIController.class);
 
     // TODO: Sicherheit für Spiel, keys in responsebody
@@ -124,7 +123,7 @@ public class GameAPIController {
         String selectedMap = (String) payload.get("selectedMap");
         int chickenNum =(Integer) payload.get("chickenNum");
 
-        logger.info("Starting game with ID: {} and selected map: {}", gameId, selectedMap);
+        LOGGER.info("Starting game with ID: {} and selected map: {}", gameId, selectedMap);
 
         if (selectedMap == null || selectedMap.isEmpty()) {
             return createErrorResponse("Invalid request: 'selectedMap' is required.");
@@ -198,8 +197,8 @@ public class GameAPIController {
                 PlayMap playMap = playMapService.createPlayMap(selectedMapName);
                 Game existingGame = gameService.startGame(lobbyid, playMap, chickenNum);
 
-                logger.info("Received chickenNum: {}", existingGame.getChickenNum());
-                logger.info("Chickens before initialization: {}", existingGame.getChickens());
+                LOGGER.info("Received chickenNum: {}", existingGame.getChickenNum());
+                LOGGER.info("Chickens before initialization: {}", existingGame.getChickens());
 
                 response.put("type", "gameStart");
                 response.put("feedback", existingGame);
@@ -318,7 +317,7 @@ public class GameAPIController {
         response.put("chickens", chickens);
         response.put("status", "ok");
         response.put("time", LocalDateTime.now().toString());
-        logger.info("Sending Chicken Data: {}", chickens);
+        LOGGER.info("Sending Chicken Data: {}", chickens);
 
         return response;
     }
@@ -358,7 +357,7 @@ public class GameAPIController {
             response.put("feedback", existingGame.getPlayers());
             response.put("status", "ok");
             response.put("time", LocalDateTime.now().toString());
-            logger.info("Kicked {} successfully", usernameKicked);
+            LOGGER.info("Kicked {} successfully", usernameKicked);
 
             messagingService.sendPlayerList(gameId, response);
 
@@ -452,7 +451,7 @@ public class GameAPIController {
         try {
             player.setPlayerrole(PlayerRole.valueOf(role.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            logger.error("Invalid player role: {}", role);
+            LOGGER.error("Invalid player role: {}", role);
 
         }
         return createOkResponse(existingGame);
@@ -469,7 +468,7 @@ public class GameAPIController {
 
         try {
             Game existingGame = gameService.setRole(lobbyId, nameOfPlayerToSetRole, role);
-            logger.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role,
+            LOGGER.info("Player: {}, sets role: {}, for player: {}", actingPlayer.getName(), role,
                     nameOfPlayerToSetRole);
 
             response.put("type", "playerRole");

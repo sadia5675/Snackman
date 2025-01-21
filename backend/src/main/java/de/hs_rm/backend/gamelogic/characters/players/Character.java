@@ -17,7 +17,7 @@ public abstract class Character{
     // Player player;
     private double posX, posY, posZ;
     private ObjectsItems currentObjectItem;
-    private static final Logger logger = LoggerFactory.getLogger(Character.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Character.class);
 
     //private static final int MAX_LIFE =3;
 
