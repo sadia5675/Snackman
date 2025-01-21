@@ -84,12 +84,17 @@ public class Chicken {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            
+
         }
 
-        LOGGER.error("run_auto() aufgerufen");
+        LOGGER.info("run_auto() aufgerufen");
         pyInterpreter.exec("run_auto()");
 
+    }
+
+    public void stopBehavior() {
+        LOGGER.info("stopBehavior() aufgerufen");
+        pyInterpreter.exec("stop()");
     }
 
     public void move(int x, int y, int angle) {

@@ -32,6 +32,9 @@ public class ChickenService {
     @Scheduled(fixedRate = 500)
     public void sendChickenPositions() {
         for (Game game : gameService.getGameList()) {
+            if (!game.isStarted()) {
+                continue;
+            }
             List<ChickenPosition> chickenPositions = getChickenPositions(game);
             for (ChickenPosition position : chickenPositions) {
                 logger.info("Chicken Position Detail: {}", position);

@@ -187,7 +187,7 @@ public class Game {
                 // ausreichend punkte und noch am leben
                 if (snackman.getCurrentPoints() >= maxPointsSnackman/2 && snackman.getLife() > 0) { // es soll die hälte der punkte sein laut PO
                     winnerRole = PlayerRole.SNACKMAN;
-                    end();
+                    this.end();
                     return;
                 }
             } else if (character instanceof Ghost) {
@@ -195,7 +195,7 @@ public class Game {
                 //snackman lebt nicht mehr und snackman hat nicht seine max punkte erreicht
                 if (snackman.getLife() <= 0 && snackman.getCurrentPoints() < maxPointsSnackman/2) {
                     winnerRole = PlayerRole.GHOST;
-                    end();
+                    this.end();
                     return;
                 }
             }
@@ -476,6 +476,7 @@ public class Game {
 
     public void end() {
         this.started = false;
+        this.chickens.forEach(Chicken::stopBehavior);
     }
 
     // Entfernt einen Spieler aus der Liste, wenn sein uniqueName übereinstimmt

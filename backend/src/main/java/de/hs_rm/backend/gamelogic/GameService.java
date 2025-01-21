@@ -114,8 +114,8 @@ public class GameService {
         game.leaveGame(player);
 
         if(game.getPlayers().isEmpty()){
+            game.end();
             gameList.remove(gameId);
-            game = null;
             return new ArrayList<>();
         }
         return game.getPlayers();
