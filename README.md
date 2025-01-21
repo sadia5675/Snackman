@@ -17,9 +17,11 @@ Das Spiel ist außerdem vorbei, sobald der Snackman alle seine Leben verloren ha
 ---
 * Backend
   * **Spring Boot** for building the backend and serving API endpoints
+  * **Jython** library for the chicken movement scripts (in python)
 * Frontend
   *  **Vue.js** for building the responsive web interface
   * **Three.js** for creating and rendering the immersive 3D environment for the game.
+  * **Pinia** to handle api/websocket calls in the frontend
 
 ### Installation
 
