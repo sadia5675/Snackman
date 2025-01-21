@@ -20,10 +20,12 @@ import de.hs_rm.backend.gamelogic.map.PlayMap;
 import de.hs_rm.backend.gamelogic.map.PlayMapService;
 import de.hs_rm.backend.messaging.GameMessagingService;
 import de.hs_rm.backend.messaging.errorResponse.LeaveErrorResponse;
+import de.hs_rm.backend.messaging.errorResponse.PlayerJoinErrorResponse;
 import de.hs_rm.backend.messaging.response.CollisionValidationResponse;
 import de.hs_rm.backend.messaging.response.EggcreatedResponse;
 import de.hs_rm.backend.messaging.response.ItemCollectedResponse;
 import de.hs_rm.backend.messaging.response.LeaveResponse;
+import de.hs_rm.backend.messaging.response.PlayerJoinResponse;
 import de.hs_rm.backend.messaging.response.PlayerMoveValidationResponse;
 import de.hs_rm.backend.messaging.response.PlayerPositionResponse;
 import de.hs_rm.backend.gamelogic.characters.players.PlayerRole;
@@ -217,38 +219,22 @@ public class GameAPIController {
     @MessageMapping("/topic/game/{lobbyid}/join")
     @SendTo("/topic/game/{lobbyid}")
     public void joinLobby(Player player, @DestinationVariable String lobbyid) {
-        HashMap<String, Object> response = new HashMap<>();
-
         try {
-            Game existingGame = gameService.getGameById(lobbyid);
+            List<Player> existingPlayers = gameService.joinGame(lobbyid, player);
 
-            if (existingGame == null) {
-                logger.error("No game found with ID: {}", lobbyid);
-                response.put("type", "playerJoin");
-                response.put("feedback", "Game with ID " + lobbyid + " not found.");
-                response.put("status", "error");
-                response.put("time", LocalDateTime.now().toString());
-                messagingService.sendPlayerList(lobbyid, response);
+            if (existingPlayers == null) {
+                PlayerJoinErrorResponse playerJoinErrorResponse = new PlayerJoinErrorResponse("playerJoin", "error", "Game Not Found!");
+                messagingService.sendPlayerList(lobbyid, playerJoinErrorResponse);
                 return;
             }
 
-            existingGame = gameService.joinGame(lobbyid, player);
-            logger.info("Player: {}, joined game: {}", player.getName(), lobbyid);
-
-            response.put("type", "playerJoin");
-            response.put("feedback", existingGame.getPlayers());
-            response.put("status", "ok");
-            response.put("time", LocalDateTime.now().toString());
-
-            messagingService.sendPlayerList(lobbyid, response);
+            PlayerJoinResponse playerJoinResponse = new PlayerJoinResponse("playerJoin", "ok", existingPlayers);
+            messagingService.sendPlayerList(lobbyid, playerJoinResponse);
 
         } catch (GameJoinException e) {
-            response.put("type", "playerJoin");
-            response.put("feedback", e.getMessage());
-            response.put("status", "error");
-            response.put("time", LocalDateTime.now().toString());
 
-            messagingService.sendPlayerList(lobbyid, response);
+            PlayerJoinErrorResponse playerJoinErrorResponse = new PlayerJoinErrorResponse("playerJoin", "error", e.getMessage());
+            messagingService.sendPlayerList(lobbyid, playerJoinErrorResponse);
         }
     }
 
@@ -302,88 +288,6 @@ public class GameAPIController {
             }
 
     }
-
-
-    /* @MessageMapping("/topic/ingame/{lobbyid}/playerPosition")
-    public void moveCharacter(PlayerPosition position, @DestinationVariable String lobbyid) {
-
-        //Variable die dafür sogt das man eine bestimmten Abstand zu einer Wand hat
-        float offset = 0.005f;
-
-        //Zum Testen logik um Spieler zu bewegen fehlt noch
-
-        HashMap<String, Object> validationResponse = new HashMap<>();
-        HashMap<String, Object> response = new HashMap<>();
-        HashMap<String, Object> collisionDetails = new HashMap<>();
-        HashMap<String, Object> itemUpdateResponse = new HashMap<>();
-        Game existingGame = gameService.getGameById(lobbyid);
-
-        if(existingGame.isStarted()){
-            Map<String, Object> currentCharacters = existingGame.getCharacterDataWithNames();
-            boolean validMove = existingGame.move(position.getPlayerName(), position.getPosX(), position.getPosY(),
-                    position.getPosZ(), position.getAngle());
-
-            // Wenn Laut Game Bewegung nicht Valide, dann wird es nochmal mit anderen Werten
-            // probiert um den Spieler wieder aus der Wand raus zu schieben (4 Mal für alle
-            // 4 Himmelsrichtungen)
-            if (!validMove) {
-                if (existingGame.move(position.getPlayerName(), Math.round(position.getPosX()), position.getPosY(), position.getPosZ(), position.getAngle())) {
-                    position.setPosX((float) (Math.round(position.getPosX()) + offset));
-                    validMove = true;
-                } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.round(position.getPosY()), position.getPosZ(), position.getAngle())) {
-                    position.setPosY((float) (Math.round(position.getPosY()) + offset));
-                    validMove = true;
-                } else if (existingGame.move(position.getPlayerName(), Math.floor(position.getPosX()) - offset, position.getPosY(), position.getPosZ(), position.getAngle())) {
-                    position.setPosX((float) (Math.floor(position.getPosX()) - offset));
-                    validMove = true;
-                } else if (existingGame.move(position.getPlayerName(), position.getPosX(), Math.floor(position.getPosY()) - offset, position.getPosZ(), position.getAngle())) {
-                    position.setPosY((float) (Math.floor(position.getPosY()) - offset));
-                    validMove = true;
-                }
-            }
-
-            if (validMove) {
-                for(Tile tile : gameService.getGameById(lobbyid).getPlaymap().getTilesList()){
-                    if (tile.isItemWasRecentlyCollected()) {
-                        itemUpdateResponse.put("type", "itemCollected");
-                        itemUpdateResponse.put("positionX", position.getPosX());
-                        itemUpdateResponse.put("positionY", position.getPosY());
-                        itemUpdateResponse.put("status", "ok");
-                        itemUpdateResponse.put("time", LocalDateTime.now().toString());
-                        messagingService.sendItemUpdate(lobbyid, itemUpdateResponse);
-                        tile.setItemWasRecentlyCollected(false);
-                    }
-                }
-
-                // sende das die Validation in Ordnung war
-                validationResponse.put("type", "playerMoveValidation");
-                validationResponse.put("feedback", position);
-                validationResponse.put("status", "ok");
-                validationResponse.put("time", LocalDateTime.now().toString());
-
-                messagingService.sendPositionValidation(lobbyid, validationResponse);
-
-
-                existingGame.determineWinner();
-                // sendet all immer dieseer charackteren (mit oder ohne updates wie life oder ghosttouch)
-                Map<String, Character> updateCharacters = existingGame.getCharacters();
-                collisionDetails.put("type", "collisionValidation");
-                collisionDetails.put("updateCharacters", updateCharacters);
-                collisionDetails.put("winnerRole", existingGame.getWinnerRole());
-                collisionDetails.put("status", "ok");
-                collisionDetails.put("time", LocalDateTime.now().toString());
-                messagingService.sendPlayerCollision(lobbyid, collisionDetails);
-
-                //senden der Liste von Charsd
-                response.put("type", "playerPosition");
-                response.put("feedback", currentCharacters.values());
-                response.put("status", "ok");
-                response.put("time", LocalDateTime.now().toString());
-
-                messagingService.sendNewCharacterPosition(lobbyid, response);
-            }
-        }
-    }  */
 
     @PostMapping("/{gameId}/jumpAllowed")
     public ResponseEntity<Map<String, Boolean>> checkJumpAllowed(

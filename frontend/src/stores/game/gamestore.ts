@@ -118,6 +118,9 @@ export const useGameStore = defineStore('gameStore', () => {
 
   function joinLobby(lobbyId: string, newPlayer: IPlayerDTD): Promise<boolean> {
     return new Promise((resolve) => {
+      if (stompClient.active) {
+        stompClient.deactivate()
+      }
       stompClient.onConnect = () => {
         stompClient.unsubscribe(`${topicUrl}/${lobbyId}`)
 
@@ -134,9 +137,7 @@ export const useGameStore = defineStore('gameStore', () => {
         }
       }
 
-      if (!stompClient.connected) {
-        stompClient.activate()
-      }
+      stompClient.activate();      
     })
   }
 
