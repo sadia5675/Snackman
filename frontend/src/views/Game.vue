@@ -35,38 +35,6 @@ const players = new Map<string, number>(); // Spieler mit Namen als Key auf Char
 const loadingPlayers = new Map<string, boolean>(); // Spielername -> Ladevorgang
 const rotatingItems: THREE.Object3D[] = []; // Items, die sich drehen
 const map = ref<string[] | undefined>(undefined);
-
-//tutorial
-const showHelpHint = ref(true);
-const showTutorial = ref(false);
-const showWASDOverlay = ref(true);
-const showControllerOverlay = ref(false);
-
-//nach 30 sekunden soll Tutorial hinweis ausgeblendet werden
-onMounted(() => {
-  //Tastenhinweis nur 8sek
-  setTimeout(()=> {
-    showWASDOverlay.value =false;
-  }, 8000);
-  setTimeout(() => {
-    showHelpHint.value =false;
-  }, 30000);
-});
-
-//Controller Hinweis für Spieler
-const showController = () => {
-  showControllerOverlay.value =! showControllerOverlay.value;
-  setTimeout(() => {
-    showControllerOverlay.value = false;
-  }, 20000);
-};
-
-const closeTutorial = () => {
-  showTutorial.value =false
-};
-const closeControllerOverlay = () => {
-  showControllerOverlay.value = false;
-};
 const soundList: THREE.Audio[] = []
 
 //Movement
@@ -224,135 +192,64 @@ function createSceneCameraRendererControlsClockListener() {
   return {scene, camera, renderer, pointerLockControls, clock, listener}
 }
 
+function handleKeyUpEvent (e: KeyboardEvent) {
+  switch (e.code) {
+    case 'ShiftLeft':
+      switchSprint()
+      break
+    case 'KeyW':
+      movingForward = true
+      break
+    case 'KeyA':
+      movingLeft = true
+      break
+    case 'KeyS':
+      movingBackward = true
+      break
+    case 'KeyD':
+      movingRight = true
+      break
+    case 'Space':
+      if (gameStore.jumpAllowed) {
+        isChargingJump = true;
+      }
+      break;
+  }
+}
+
+function handleResize() {
+  //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth, window.innerHeight)
+
+  //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+}
+
+function handleKeyDownEvent(e : KeyboardEvent){
+  switch (e.code) {
+    case 'KeyW':
+      movingForward = false
+      break
+    case 'KeyA':
+      movingLeft = false
+      break
+    case 'KeyS':
+      movingBackward = false
+      break
+    case 'KeyD':
+      movingRight = false
+      break
+    case 'Space':
+      isChargingJump = false;
+      break
+  }
+}
+
 function registerListeners(window: Window, renderer: WebGLRenderer) {
   renderer.domElement.addEventListener('click', (e) => {
     renderer.domElement.requestPointerLock()
-  })
-
-  window.addEventListener('resize', (e) => {
-    //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
-    renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setSize(window.innerWidth, window.innerHeight)
-
-    //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-  })
-
-  document.addEventListener('pointerlockchange', (e) => {
-    if (!document.pointerLockElement) {
-      showSettings.value = true;
-    } else {
-      showSettings.value = false;
-    }
-  })
-
-  function handleKeyUpEvent (e: KeyboardEvent) {
-    switch (e.code) {
-      case 'ShiftLeft':
-        switchSprint()
-        break
-      case 'KeyW':
-        movingForward = true
-        break
-      case 'KeyA':
-        movingLeft = true
-        break
-      case 'KeyS':
-        movingBackward = true
-        break
-      case 'KeyD':
-        movingRight = true
-        break
-      case 'Space':
-        if (gameStore.jumpAllowed) {
-          isChargingJump = true;
-        }
-        break;
-    }
-  }
-
-
-  function handleResize() {
-    //renderer und somit auch die komplette szene wird auf neuen Browserfenster bereich angepasst
-    renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setSize(window.innerWidth, window.innerHeight)
-
-    //Durch das Anpassen der ".aspect" bleibt die FOV auch bei Änderung der Fenstergröße konstant
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-  }
-
-
-  function handleKeyDownEvent(e : KeyboardEvent){
-    switch (e.code) {
-      case 'KeyW':
-        movingForward = false
-        break
-      case 'KeyA':
-        movingLeft = false
-        break
-      case 'KeyS':
-        movingBackward = false
-        break
-      case 'KeyD':
-        movingRight = false
-        break
-      case 'Space':
-        isChargingJump = false;
-        break
-    }
-  }
-
-
-  window.addEventListener('keydown', (e) => {
-    switch (e.code) {
-      case 'ShiftLeft':
-        switchSprint()
-        break
-      case 'KeyW':
-        movingForward = true
-        break
-      case 'KeyA':
-        movingLeft = true
-        break
-      case 'KeyS':
-        movingBackward = true
-        break
-      case 'KeyD':
-        movingRight = true
-        break
-      case 'Space':
-        if (gameStore.jumpAllowed) {
-          isChargingJump = true;
-        }
-        break;
-      case 'KeyH':
-        showTutorial.value =! showTutorial.value;
-        break;
-      case 'KeyC':
-        showController();
-        break;
-    }
-  })
-  window.addEventListener('keyup', (e) => {
-    switch (e.code) {
-      case 'KeyW':
-        movingForward = false
-        break
-      case 'KeyA':
-        movingLeft = false
-        break
-      case 'KeyS':
-        movingBackward = false
-        break
-      case 'KeyD':
-        movingRight = false
-        break
-      case 'Space':
-        isChargingJump = false;
-        break
-    }
   })
 
 
@@ -1686,127 +1583,6 @@ subscribeTo(`/ingame/${lobbyId}/chicken/eggUpdate`, async (message: any) => {
       </button>
     </div>
   </div>
-
-  <!-- Overlay für WASD-Steuerung -->
-  <div v-if="showWASDOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10 z-50 pointer-events-none">
-    <div class="flex flex-col items-center bg-white p-4 rounded-lg shadow-lg w-56 opacity-70">
-
-      <div class="mb-4 text-center">
-        <span class="text-sm font-bold">W</span>
-        <div class="text-xs text-gray-600">Vorwärts</div>
-      </div>
-      <div class="flex justify-between w-full">
-        <div class="text-center">
-          <span class="text-sm font-bold">A</span>
-          <div class="text-xs text-gray-600">Links</div>
-        </div>
-        <div class="text-center">
-          <span class="text-sm font-bold">D</span>
-          <div class="text-xs text-gray-600">Rechts</div>
-        </div>
-      </div>
-      <div class="mt-4 text-center">
-        <span class="text-sm font-bold">S</span>
-        <div class="text-xs text-gray-600">Rückwärts</div>
-      </div>
-    </div>
-  </div>
-
-  <!--Tutorial-->
-  <div v-if="showTutorial" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h3 class="text-2xl font-bold mb-4">Spielehinweise</h3>
-      <ul class="text-left mb-6">
-        <li class="mb-2">
-          Snackman sammelt Items, um Kalorien zu erhalten, die für das Springen benötigt werden!
-        </li>
-        <li class="mb-2">
-          Leichter Sprung: <strong>10 Kalorien</strong>
-        </li>
-        <li class="mb-2">
-          Schwerer Sprung: <strong>100 Kalorien</strong>
-        </li>
-        <li class="mb-2">
-          Rennen verbraucht <strong>10 Kalorien/sekunde</strong>
-        </li>
-        <li class="mb-2">
-          Drücke <strong>Leertaste</strong> zum Springen, halte sie gedrückt, um die Sprungkraft einzustellen
-        </li>
-        <li class="mb-2">
-          Drücke <strong>Shift</strong> um als Snackman schneller zu laufen
-        </li>
-        <li class="mb-2">
-          Geister fügen Schaden zu, wenn sie mit Snackman kollidieren
-        </li>
-        <li class="mb-2">
-          Sammle als Snackman Herzen, um Leben zu regenerieren
-        </li>
-        <li class="mb-2">
-          Schilder machen Snackman für <strong>5 Sekunden unverwundbar</strong>
-        </li>
-        <li class="mb-2">
-          Kurze Sprünge erlauben es, über Wände zu sehen, lange Sprünge bieten Weitsicht
-        </li>
-      </ul>
-      <button @click="closeTutorial" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
-        Schließen
-      </button>
-    </div>
-  </div>
-
-  <!-- Controller Overlay -->
-  <div v-if="showControllerOverlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h3 class="text-2xl font-bold mb-4">Controller Steuerung</h3>
-      <div class="flex flex-col items-center">
-        <img src="/joystick.png" alt="Controller Steuerung" class="w-32 mb-4" />
-        <ul class="text-left">
-          <li class="mb-2">
-            <strong>Linker Joystick:</strong> Bewegung
-          </li>
-          <li class="mb-2">
-            <strong>Rechter Joystick:</strong> Kamera-Winkel
-          </li>
-          <li class="mb-2">
-            <strong>X:</strong> Springen
-          </li>
-        </ul>
-        <!-- Schließen Button -->
-        <button @click="closeControllerOverlay" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 mt-4">
-          Schließen
-        </button>
-      </div>
-    </div>
-  </div>
-  <!-- oben Bildschirm hilfe Hinweise für Tutorial -->
-  <div v-if="showHelpHint" class="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-4 p-2 z-50">
-    <div class="border-2 border-black text-center text-white bg-opacity-50 bg-black rounded-lg">
-      Press <strong>C</strong> for Controller Help
-    </div>
-    <div class="border-2 border-black text-center text-white bg-opacity-50 bg-black rounded-lg">
-      Press <strong>H</strong> for Help
-    </div>
-  </div>
-
-  <Modal>
-    <template #titel>
-      <h3 class="header-modal-adventure">Lautstärke</h3>
-    </template>
-    <template #content>
-      <div flex flex-col gap-3>
-        Musik <input type="range" class="form-control-range" id="formControlRange" v-model="musicVolume">
-        {{ musicVolume }}%
-        <br>
-        Effekte <input type="range" class="form-control-range" id="formControlRange" v-model="effectVolume">
-        {{ effectVolume }}%
-        <br>
-        <h2 class="text-2xl font-bold mb-4">Adjust Settings {{ showSettings }}</h2>
-        <button @click="lockPointer" class="button-small-adventure">
-          Close
-        </button>
-      </div>
-    </template>
-  </Modal>
 
 </template>
 
