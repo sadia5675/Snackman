@@ -70,3 +70,5 @@ Ggf. muss über den MapCreator eine Karte erstellt werden, wenn keine existieren
 Es können außerdem Maps im .txt Format in den Ordner geschoben werden und beim reload vom Backend werden diese auch geladen.
 
 
+## Anwendungsvorschau
+[🎥 SWTP-Video ansehen](https://www.dropbox.com/scl/fi/6v3fxpkp9z1pz1gn8jula/SWTP-Video.mp4?rlkey=wc4jct4ucp63z3x723jd6zso0&st=vq4uux5c&dl=0)
